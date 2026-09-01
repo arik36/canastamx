@@ -1,0 +1,96 @@
+# ============================================================
+# CanastaMX — monorepo
+# ============================================================
+
+# ---- SECRETOS. Nada de esto sube nunca. ----
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.p12
+credentials.json
+secrets/
+
+# ---- DATOS. Los archivos crudos viven en MinIO, no en Git. ----
+data/
+raw/
+*.parquet
+*.csv
+*.tsv
+*.duckdb
+*.sqlite
+*.sqlite3
+# Excepcion: las muestras que necesitan las pruebas
+!services/data-platform/tests/fixtures/*.csv
+!services/data-platform/tests/fixtures/*.parquet
+
+# ---- Volumenes de contenedor ----
+.volumes/
+minio-data/
+pgdata/
+postgres-data/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# ---- dbt ----
+target/
+dbt_packages/
+logs/
+.user.yml
+
+# ---- Dagster ----
+.dagster/
+dagster_home/
+tmp*/
+storage/
+history/
+schedules/
+
+# ---- Java / Spring Boot ----
+*.class
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+hs_err_pid*
+
+# ---- Node / Next.js / Expo ----
+node_modules/
+.next/
+out/
+.expo/
+.expo-shared/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.turbo/
+
+# ---- Editores ----
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+*.swp
+*~
+
+# ---- Sistema operativo ----
+.DS_Store
+Thumbs.db
+desktop.ini

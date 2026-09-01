@@ -1,0 +1,56 @@
+# ============================================================
+# CanastaMX — normalizacion entre Windows y Linux
+# Este archivo debe estar en el PRIMER commit del repositorio,
+# antes de que nadie suba codigo. Si se agrega despues, hay que
+# renormalizar con:  git add --renormalize .
+# ============================================================
+
+# Todo texto se guarda con LF en el repositorio Y en la copia de
+# trabajo de todos, sin importar el sistema operativo.
+* text=auto eol=lf
+
+# ---- Deben ser LF si o si: se ejecutan dentro de contenedores ----
+*.sh                text eol=lf
+*.bash              text eol=lf
+Dockerfile          text eol=lf
+*.dockerfile        text eol=lf
+docker-compose*.yml text eol=lf
+.env.example        text eol=lf
+gradlew             text eol=lf
+mvnw                text eol=lf
+*.sql               text eol=lf
+
+# ---- Deben ser CRLF: solo los ejecuta Windows ----
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# ---- Datos y configuracion ----
+*.csv  text eol=lf
+*.tsv  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+
+# ---- Binarios: Git no debe tocarlos jamas ----
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.svg     text eol=lf
+*.pdf     binary
+*.zip     binary
+*.gz      binary
+*.parquet binary
+*.xlsx    binary
+*.docx    binary
+*.pptx    binary
+*.jar     binary
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+
+# ---- Marcar documentacion para las estadisticas de GitHub ----
+docs/** linguist-documentation
