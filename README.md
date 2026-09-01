@@ -71,9 +71,9 @@ infra/        contenedores, gateway, scripts de operacion
 | | Integrante | Rol |
 |---|---|---|
 | A | Macias Campos Ariadne Lizett | Datos y plataforma |
-| B | (por definir) | Infraestructura, entrega continua y calidad |
-| C | (por definir) | Dominio y cliente movil |
-| D | (por definir) | Cliente web y maquetacion |
+| B | Soto Garnica Ari Adair | Infraestructura, entrega continua y calidad |
+| C | Liseth Yareth Lara Lopez y Fonseca Ríos Oscar Renato | Dominio y cliente movil |
+| D | Herrera Villalpando Karen Alejandra | Cliente web y maquetacion |
 
 ## Fuentes de datos
 
