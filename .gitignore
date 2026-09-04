@@ -94,3 +94,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ─────────────────────────────────────────────────────────────────────────
+# Agregado desde el paquete del equipo — 2026-09-04
+# ─────────────────────────────────────────────────────────────────────────
+!docs/experimento/bitacora.csv
+docker-compose.override.yml
+*:Zone.Identifier

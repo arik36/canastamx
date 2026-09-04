@@ -1,0 +1,79 @@
+name: Tarea
+description: Una unidad de trabajo con dueño, fecha y criterio de cierre.
+title: "[S?][Frente] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Una tarea no debe durar más de una semana. Si dura más, son dos tareas.
+
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué hay que hacer
+      description: En imperativo y con el detalle suficiente para que otro lo entienda sin preguntarte.
+      placeholder: |
+        Distribución de precios: mínimo, máximo, mediana y percentiles por categoría.
+        Contar precios en cero, negativos o absurdamente altos. Duplicados exactos.
+    validations:
+      required: true
+
+  - type: textarea
+    id: criterio
+    attributes:
+      label: Cómo saber que quedó
+      description: >
+        Un hecho que otra persona pueda verificar sin discutir. No "avanzar en el perfilado",
+        sino "existe el archivo X con la tabla Y llena".
+      placeholder: |
+        La sección de rangos y anomalías de docs/datos/perfilado/ está escrita
+        con números concretos, no con adjetivos.
+    validations:
+      required: true
+
+  - type: input
+    id: donde
+    attributes:
+      label: Dónde queda
+      description: Ruta dentro del repositorio, o el enlace si vive en Figma o Drive.
+      placeholder: docs/datos/perfilado/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frente
+    attributes:
+      label: Frente
+      options:
+        - Datos (A · Ariadne)
+        - Infra (B · Ari Adair)
+        - Dominio (C1 · Liseth)
+        - Móvil (C2 · Oscar)
+        - Web (D · Karen)
+        - Equipo
+    validations:
+      required: true
+
+  - type: input
+    id: semana
+    attributes:
+      label: Semana
+      placeholder: "1"
+    validations:
+      required: true
+
+  - type: input
+    id: fecha
+    attributes:
+      label: Fecha límite
+      placeholder: 4 de septiembre de 2026
+    validations:
+      required: true
+
+  - type: input
+    id: depende
+    attributes:
+      label: Depende de
+      description: Números de issue que tienen que cerrarse antes. Déjalo vacío si no depende de nada.
+      placeholder: "#3, #7"

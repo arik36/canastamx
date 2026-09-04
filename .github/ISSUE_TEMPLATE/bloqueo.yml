@@ -1,0 +1,59 @@
+name: Bloqueo
+description: Algo detenido que no puedes resolver solo. Ábrelo a las 24 horas de atorarte, no después.
+title: "[BLOQUEO] "
+labels: ["bloqueo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un problema bien planteado se resuelve en diez minutos. Uno mal planteado se come media reunión.
+        Después de abrirlo, avisa en el chat con el enlace.
+
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué está detenido
+      placeholder: El contenedor de Postgres analítico no arranca, así que no puedo cargar la capa cruda.
+    validations:
+      required: true
+
+  - type: textarea
+    id: intentos
+    attributes:
+      label: Qué ya intenté
+      description: Lista lo que probaste. Evita que te sugieran lo que ya hiciste.
+      placeholder: |
+        - Cambié el puerto a 5433
+        - Verifiqué que no hubiera otro Postgres corriendo (lsof -i :5432)
+        - Borré el volumen y volví a levantar
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error exacto
+      description: Copia y pega el mensaje completo. No lo parafrasees.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: bloqueado
+    attributes:
+      label: Qué issue está bloqueado por esto
+      placeholder: "#12"
+
+  - type: dropdown
+    id: quien
+    attributes:
+      label: Quién creo que lo puede resolver
+      options:
+        - A · Ariadne (datos)
+        - B · Ari Adair (infra)
+        - C1 · Liseth (dominio)
+        - C2 · Oscar (móvil)
+        - D · Karen (web)
+        - No sé
+    validations:
+      required: true
