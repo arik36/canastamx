@@ -1,0 +1,139 @@
+# CanastaMX — integración continua
+#
+# Dueño: B (Ari Adair).
+#
+# ARRANCA SOLA, POR ETAPAS. Cada trabajo revisa primero si el proyecto que le
+# toca ya existe. Si todavía no, lo dice y se salta, en verde.
+#
+# Esto es deliberado: el jueves 3, services/domain-service/ solo tiene un
+# .gitkeep. Una canalización que intenta compilar un proyecto inexistente sale
+# ROJA en toda solicitud, y nadie entiende por qué. Con la guarda, empieza a
+# verificar de verdad en cuanto aparece el pom.xml de C1, sin que nadie toque
+# este archivo.
+#
+# Para que esto sea una COMPUERTA y no solo un reporte, falta la etapa 2:
+# Settings → Branches → regla de main → Require status checks to pass.
+# Se hace el viernes 4, cuando estos trabajos ya hayan corrido una vez y
+# aparezcan en la lista para seleccionar. Ver docs/equipo/linea-base.md
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+
+  # ── Servicio de dominio · Java 21 + Maven ─────────────────────────────────
+  dominio:
+    name: Dominio (Java)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ¿Ya existe el proyecto?
+        id: existe
+        run: |
+          if [ -f services/domain-service/pom.xml ]; then
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::Todavía no hay pom.xml en services/domain-service/. Se omite hasta que C1 cierre T011."
+          fi
+
+      - name: Configurar JDK 21
+        if: steps.existe.outputs.hay == 'si'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compilar
+        if: steps.existe.outputs.hay == 'si'
+        working-directory: services/domain-service
+        run: mvn -B compile
+
+      # Semana 2: descomenta cuando existan pruebas
+      # - name: Pruebas
+      #   if: steps.existe.outputs.hay == 'si'
+      #   working-directory: services/domain-service
+      #   run: mvn -B test
+
+  # ── Plataforma de datos · Python 3.12 ─────────────────────────────────────
+  datos:
+    name: Datos (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ¿Ya hay código de Python?
+        id: existe
+        run: |
+          if [ -n "$(find services -name '*.py' -print -quit 2>/dev/null)" ]; then
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::Todavía no hay archivos .py en services/. Se omite."
+          fi
+
+      - name: Configurar Python 3.12
+        if: steps.existe.outputs.hay == 'si'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Análisis estático
+        if: steps.existe.outputs.hay == 'si'
+        run: |
+          pip install ruff
+          ruff check services/ --output-format=github
+
+      # Semana 2: descomenta cuando existan pruebas
+      # - name: Pruebas
+      #   if: steps.existe.outputs.hay == 'si'
+      #   run: |
+      #     pip install -r services/data-platform/requirements.txt
+      #     pytest services/data-platform/tests/ -v
+
+  # ── Higiene del repositorio · corre siempre, desde el día uno ─────────────
+  # Este es el único que verifica de verdad desde el principio, y es el que
+  # más sirve: atrapa el error que cuesta más caro deshacer.
+  higiene:
+    name: Higiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No se subió ningún .env
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "::error::Hay un archivo .env versionado. Solo .env.example puede subirse."
+            echo "Si tiene contraseñas reales, avísale a B: no basta con borrarlo en un commit nuevo."
+            exit 1
+          fi
+          echo "Sin archivos .env versionados."
+
+      - name: No se subieron carpetas de dependencias
+        run: |
+          malas=$(git ls-files | grep -E '(^|/)(node_modules|\.venv|target|__pycache__)/' | head -5)
+          if [ -n "$malas" ]; then
+            echo "::error::Hay carpetas de dependencias versionadas. Ver docs/equipo/linea-base.md"
+            echo "$malas"
+            exit 1
+          fi
+          echo "Sin carpetas de dependencias versionadas."
+
+      - name: No hay archivos pesados
+        run: |
+          grandes=$(git ls-files -z | xargs -0 -r ls -l 2>/dev/null \
+                    | awk '$5 > 10485760 {print $9, int($5/1048576) " MB"}')
+          if [ -n "$grandes" ]; then
+            echo "::error::Archivos de más de 10 MB en el repositorio:"
+            echo "$grandes"
+            exit 1
+          fi
+          echo "Sin archivos pesados."

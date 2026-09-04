@@ -1,0 +1,75 @@
+# Contrato de datos · fuente QQP · versión 1
+#
+# Lo escribe A en la semana 2 (T019). Se declara aquí, se hace cumplir con
+# Pandera en el momento de la ingesta, y se verifica en integración continua.
+#
+# CADA REGLA DE ESTE ARCHIVO SALE DE UN NÚMERO DEL PERFILADO. Si no puedes
+# señalar en docs/datos/perfilado.md de dónde salió un umbral, no lo pongas:
+# un contrato con umbrales inventados rechaza datos buenos y deja pasar malos.
+#
+# El nombre de cada columna es LITERAL: mayúsculas, acentos y guiones bajos
+# exactos como vienen en el archivo. Una mayúscula de diferencia hace fallar
+# la validación completa.
+
+contrato:
+  nombre: qqp
+  version: 1
+  fuente: PROFECO · Quién es Quién en los Precios
+  url: ""                          # de docs/datos/fuente-qqp.md
+  responsable: A
+  fecha: ""
+
+# ── Frescura ────────────────────────────────────────────────────────────────
+# Si el lote más reciente excede este umbral, se genera un incidente pero NO se
+# detienen los datos ya promovidos (flujo alterno C de CU-02).
+frescura:
+  umbral_dias: 0                   # sale de la periodicidad real de publicación
+  columna_fecha: ""
+
+# ── Estructura ──────────────────────────────────────────────────────────────
+# Cualquier discrepancia entre el esquema recibido y el declarado DETIENE el
+# proceso de inmediato, sin evaluar reglas por registro, y genera un incidente
+# de severidad alta (flujo alterno B de CU-02).
+estructura:
+  columnas_obligatorias: []
+  permitir_columnas_extra: false
+
+# ── Reglas por columna ──────────────────────────────────────────────────────
+# Los registros que incumplen se derivan a quarantine_registro con el motivo,
+# el identificador de lote y la regla violada (CU-03).
+columnas:
+
+  # - nombre: precio
+  #   tipo: float
+  #   obligatoria: true
+  #   reglas:
+  #     - mayor_que: 0             # perfilado §2: N precios en cero, M negativos
+  #     - menor_que_p99_por: categoria
+  #       factor: 10               # perfilado §2: umbral por categoría, no global
+  #   motivo_rechazo: "Precio fuera del rango admisible"
+
+  # - nombre: fechaRegistro
+  #   tipo: date
+  #   obligatoria: true
+  #   reglas:
+  #     - entre: ["2024-01-01", "2026-12-31"]   # ventana del protocolo
+  #   motivo_rechazo: "Fecha fuera de la ventana del recorte"
+
+  # - nombre: estado
+  #   tipo: string
+  #   obligatoria: true
+  #   reglas:
+  #     - en_catalogo: entidades_federativas     # lista de docs/datos/diccionario-qqp.md
+  #   motivo_rechazo: "Entidad federativa no reconocida"
+
+# ── Unicidad ────────────────────────────────────────────────────────────────
+# Sale del perfilado §2: qué combinación identifica un levantamiento único.
+unicidad:
+  clave: []                        # ej. [producto, establecimiento, fechaRegistro]
+  accion: cuarentena               # cuarentena · deduplicar
+
+# ── Umbral de rechazo del lote ──────────────────────────────────────────────
+# Si la proporción de registros rechazados supera esto, el lote completo se
+# marca como no apto para promoción (flujo alterno A de CU-02).
+lote:
+  max_pct_rechazo: 5.0

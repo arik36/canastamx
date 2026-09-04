@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Cómo trabajamos
+    url: https://github.com/arik36/canastamx/blob/main/docs/equipo/como-trabajamos.md
+    about: El ritmo del equipo, la regla de las 24 horas y qué significa "terminado".
+  - name: Git paso a paso
+    url: https://github.com/arik36/canastamx/blob/main/docs/equipo/git-paso-a-paso.md
+    about: Ramas, commits, solicitudes, conflictos y cómo deshacer errores.
+  - name: Cronograma
+    url: https://github.com/arik36/canastamx/blob/main/docs/equipo/cronograma.md
+    about: Las 14 semanas con actividades y criterios por integrante.

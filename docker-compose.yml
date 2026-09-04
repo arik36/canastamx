@@ -1,0 +1,151 @@
+# CanastaMX — entorno de desarrollo local
+#
+# Dueño: B (Ari Adair). Cualquier cambio pasa por él.
+#
+#   docker compose up -d        levanta todo
+#   docker compose ps           estado de cada servicio
+#   docker compose logs -f X    registro de un servicio
+#   docker compose down         apaga, conservando los datos
+#   docker compose down -v      apaga y BORRA los datos
+#
+# Antes de la primera vez: copia .env.example a .env y completa los valores.
+# El .env nunca se sube al repositorio.
+#
+# NOMBRES DE VARIABLE: son los que ya definió el bootstrap del repositorio
+# (OLTP_*, ANALYTICS_*, MINIO_*). No los cambies aquí sin cambiarlos también
+# en .env.example, o el compose levanta con variables vacías y Postgres
+# arranca sin contraseña.
+
+services:
+
+  # ── Base transaccional · datos de usuario ─────────────────────────────────
+  # La usa C1 desde el servicio de dominio. Ninguna consulta analítica la toca.
+  postgres-oltp:
+    image: postgres:16-alpine
+    container_name: cmx-postgres-oltp
+    environment:
+      POSTGRES_USER:     ${OLTP_USER}
+      POSTGRES_PASSWORD: ${OLTP_PASSWORD}
+      POSTGRES_DB:       ${OLTP_DB}
+    ports:
+      - "${OLTP_PORT:-5432}:5432"
+    volumes:
+      - oltp-data:/var/lib/postgresql/data
+    healthcheck:
+      # Sin esto, "up" reporta listo antes de que Postgres acepte conexiones
+      test: ["CMD-SHELL", "pg_isready -U ${OLTP_USER} -d ${OLTP_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [canastamx]
+
+  # ── Almacén analítico · capas silver, gold y cuarentena ───────────────────
+  # Lo usa A. Se publica en otro puerto para no chocar con la transaccional.
+  postgres-analytics:
+    image: postgres:16-alpine
+    container_name: cmx-postgres-analytics
+    environment:
+      POSTGRES_USER:     ${ANALYTICS_USER}
+      POSTGRES_PASSWORD: ${ANALYTICS_PASSWORD}
+      POSTGRES_DB:       ${ANALYTICS_DB}
+    ports:
+      - "${ANALYTICS_PORT:-5433}:5432"
+    volumes:
+      - analytics-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ANALYTICS_USER} -d ${ANALYTICS_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [canastamx]
+
+  # ── Almacenamiento de objetos · capa bronze en Parquet ────────────────────
+  # 9000 es la API compatible con S3; 9001 es la consola web.
+  minio:
+    image: minio/minio:latest
+    container_name: cmx-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks: [canastamx]
+
+  # ── Crea el bucket bronze y se apaga ──────────────────────────────────────
+  # Sin esto hay que crear el bucket a mano desde la consola, y se olvida.
+  minio-init:
+    image: minio/mc:latest
+    container_name: cmx-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET:        ${MINIO_BUCKET}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/$$MINIO_BUCKET &&
+      echo 'Bucket'  $$MINIO_BUCKET 'listo.'
+      "
+    networks: [canastamx]
+
+  # ── Cliente web de base de datos · para asomarse sin instalar nada ────────
+  adminer:
+    image: adminer:latest
+    container_name: cmx-adminer
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      postgres-oltp:
+        condition: service_healthy
+      postgres-analytics:
+        condition: service_healthy
+    networks: [canastamx]
+
+  # ── Puerta de enlace · se agrega en T008 (viernes 4) ──────────────────────
+  # Descomenta cuando toque Traefik. Los nombres *.localhost resuelven solos
+  # en los navegadores modernos, sin tocar el archivo hosts.
+  #
+  # traefik:
+  #   image: traefik:v3.1
+  #   container_name: cmx-traefik
+  #   command:
+  #     - "--api.dashboard=true"
+  #     - "--api.insecure=true"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #   ports:
+  #     - "80:80"
+  #     - "8090:8080"          # panel de Traefik
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks: [canastamx]
+  #
+  # Y a cada servicio que se quiera exponer, se le agregan etiquetas.
+  # Ojo: server.port es el puerto INTERNO del contenedor, no el publicado.
+  #
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.adminer.rule=Host(`db.canastamx.localhost`)"
+  #     - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+
+volumes:
+  oltp-data:
+  analytics-data:
+  minio-data:
+
+networks:
+  canastamx:
+    driver: bridge
