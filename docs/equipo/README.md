@@ -8,7 +8,7 @@ Todo lo que necesitas para trabajar en este proyecto sin preguntar. Se actualiza
 
 ```bash
 git switch main && git pull
-bash infra/scripts/verificar-base.sh
+bash infra/scripts/verificar-base.sh C1   # tu clave: A · B · C1 · C2 · D
 ```
 
 Si sale algo en rojo, **no ramifiques: avísalo en el chat.** Qué tiene que existir y por qué está en [`linea-base.md`](./linea-base.md).
@@ -20,8 +20,8 @@ Si sale algo en rojo, **no ramifiques: avísalo en el chat.** Qué tiene que exi
 | Si eres… | Lee, en este orden |
 |---|---|
 | **Alguien a punto de crear su primera rama** | **[La línea base](./linea-base.md).** Y corre `bash infra/scripts/verificar-base.sh <tu clave>` |
-| **Alguien a punto de crear su primera rama** | [Línea base](./linea-base.md), y corre `verificar-base.sh` |
 | **Alguien que va a trabajar hoy** | **[La ficha de tu tarea](./fichas/semana-01.md).** Completa, antes de empezar. No a media tarea |
+| **Nunca has trabajado con ramas** | **[El ciclo de trabajo](./ciclo-de-trabajo.md)**, completo. Se lee una vez, antes de empezar |
 | **Nuevo en el equipo** | [Cómo trabajamos](./como-trabajamos.md) → [Git paso a paso](./git-paso-a-paso.md) → [tu ficha de hoy](./fichas/semana-01.md) |
 | **El que monta el tablero (A)** | [El tablero](./tablero-github.md), parte 1 |
 | **Alguien que va a subir código hoy** | [Git paso a paso](./git-paso-a-paso.md), secciones 2, 3 y 4 |
@@ -57,9 +57,9 @@ Y el orden de uso, en un día normal: abres **el panel**, encuentras tu tarea, d
 | [`linea-base.md`](./linea-base.md) | **Qué debe existir en `main` antes de que nadie cree una rama.** Tres niveles y la etiqueta `base-v0` como señal de arranque |
 | [`fichas/semana-01.md`](./fichas/semana-01.md) | **Las 18 tareas de la semana 1, una ficha cada una**: qué entregas, qué verificar antes, de quién dependes, los conceptos explicados, paso a paso, cómo se ve terminado y errores frecuentes |
 | [`fichas/PLANTILLA-ficha.md`](./fichas/PLANTILLA-ficha.md) | Para escribir las fichas de la semana siguiente. Se llenan en la reunión, con todos presentes |
-| [`linea-base.md`](./linea-base.md) | Qué debe existir en `main` **antes de que alguien ramifique**, qué NO debe estar todavía, y las dos etapas de la protección de `main` |
 | [`mapa-dependencias.md`](./mapa-dependencias.md) | Qué tarea bloquea a cuál, las tres cadenas críticas y a quién avisarle al terminar |
 | [`como-trabajamos.md`](./como-trabajamos.md) | El ritmo del equipo: reporte diario, reunión semanal, la regla de las 24 horas, qué significa "terminado", el semáforo y dónde se dice qué |
+| [`ciclo-de-trabajo.md`](./ciclo-de-trabajo.md) | **El ciclo completo contado de principio a fin, con el porqué de cada paso.** Para quien viene de trabajar todo sobre `main`. Incluye cómo se nombran ramas, commits y etiquetas, y cuándo NO se usa una etiqueta |
 | [`git-paso-a-paso.md`](./git-paso-a-paso.md) | Cada operación de Git en dos vías, terminal y GitHub Desktop. Incluye cómo deshacer errores y un catálogo de mensajes de error |
 | [`cronograma.md`](./cronograma.md) | Las 14 semanas rebaseadas al 3 de septiembre, con actividades y criterios de cierre por integrante |
 | [`tablero-github.md`](./tablero-github.md) | Cómo se monta el tablero (una vez) y cómo se opera (todos los días) |
@@ -84,24 +84,6 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 | `.github/workflows/ci.yml` | B | vie 4 |
 | `contracts/qqp.contrato.yml` | A | semana 2 |
 | `README.md` | A, y lo verifica B | semana 3 |
-
----
-
-## Qué es cada cosa, y quién la toca
-
-Hay cinco artefactos con nombres parecidos. Se confunden, y conviene tenerlos claros desde hoy.
-
-| Artefacto | Qué es | Se llena o se lee | Quién lo toca | Cada cuánto |
-|---|---|---|---|---|
-| **Tablero de GitHub** (Projects e Issues) | **La fuente de verdad del avance.** Si una tarea no está aquí, no existe | Se llena | Los cinco | Todos los días |
-| **[`cronograma.md`](./cronograma.md)** | El **plan** de las 14 semanas: qué toca cada semana y a quién | Se lee | A lo edita si el plan cambia | Cuando algo se recorre |
-| **[`fichas/semana-01.md`](./fichas/semana-01.md)** | **Cómo se hace** cada tarea de la semana en curso | Se lee | Quien ejecuta la tarea | Se escribe una vez por semana, en la reunión |
-| **`CanastaMX_Bitacora.xlsx`** | El **reporte para el asesor**, con el semáforo por integrante y por semana | Se llena, exportando del tablero | A | Una vez por entrega institucional |
-| **El panel** (la página con enlace) | La **vista de consulta** desde el celular. No guarda nada del equipo | Se lee | Nadie lo edita a mano | Se republica si el plan cambia |
-
-Dicho de otro modo: **el cronograma dice qué**, **la ficha dice cómo**, **el tablero dice cómo va**, **el Excel se lo enseña al asesor** y **el panel es para consultarlo desde el teléfono**.
-
-El cronograma y el Excel se parecen porque cubren las mismas 85 tareas, pero uno es el plan narrado y el otro es el registro con estados y colores. Salen de la misma fuente, así que no se contradicen.
 
 ---
 

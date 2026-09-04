@@ -4,6 +4,8 @@ Manual de operación del repositorio. Todo procedimiento aparece dos veces: **po
 
 Nadie tiene que memorizar nada. Este archivo se abre mientras se trabaja.
 
+> **¿Es tu primera vez con ramas?** Empieza por [`ciclo-de-trabajo.md`](./ciclo-de-trabajo.md): cuenta el ciclo completo de principio a fin y explica el porqué de cada paso. Este de aquí es el manual de consulta, para buscar un comando concreto.
+
 > **Repositorio:** `github.com/arik36/canastamx` · **Rama principal:** `main`, protegida · **Regla que no se rompe:** nadie escribe directo en `main`.
 
 ---
