@@ -27,9 +27,9 @@ set -euo pipefail
 # crea sin asignar y lo asignan a mano después.
 # ─────────────────────────────────────────────────────────────────────────────
 USER_A="arik36"            # Ariadne  · datos y plataforma
-USER_B="Wolff"             # Ari Adair · infraestructura y CI
+USER_B="Wolff06"           # Ari Adair · infraestructura y CI
 USER_C1="lisslar"          # Liseth   · servicio de dominio
-USER_C2="Renato"           # Oscar    · cliente móvil
+USER_C2="Renato-Rios"      # Oscar    · cliente móvil
 USER_D="alesitaK"          # Karen    · cliente web y maquetación
 
 REPO="arik36/canastamx"
