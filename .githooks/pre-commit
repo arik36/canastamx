@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# pre-commit — CanastaMX
+#
+# Atrapa, antes de que se confirme, los dos errores más caros de deshacer:
+# un .env con credenciales y un archivo pesado. Los mismos que verifica la
+# canalización, pero aquí llegan diez minutos antes.
+#
+# Se activa con:  bash infra/scripts/instalar-hooks.sh
+
+fallas=0
+
+# ── 1. Ningún .env ──────────────────────────────────────────────────────────
+if git diff --cached --name-only | grep -qE '(^|/)\.env$'; then
+  echo >&2
+  echo "  ✗ Estás por confirmar un archivo .env." >&2
+  echo "    Solo .env.example puede subirse, y con los valores VACÍOS." >&2
+  echo "    Sácalo con:  git restore --staged .env" >&2
+  fallas=1
+fi
+
+# ── 2. Nada de carpetas de dependencias ─────────────────────────────────────
+basura=$(git diff --cached --name-only | grep -E '(^|/)(node_modules|\.venv|target|__pycache__)/' | head -3)
+if [[ -n "$basura" ]]; then
+  echo >&2
+  echo "  ✗ Estás por confirmar carpetas de dependencias:" >&2
+  echo "$basura" | sed 's/^/      /' >&2
+  echo "    Revisa tu .gitignore y saca esos archivos con git restore --staged" >&2
+  fallas=1
+fi
+
+# ── 3. Nada de más de 10 MB ─────────────────────────────────────────────────
+while IFS= read -r f; do
+  [[ -f "$f" ]] || continue
+  tam=$(wc -c < "$f")
+  if (( tam > 10485760 )); then
+    echo >&2
+    echo "  ✗ $f pesa $((tam/1048576)) MB. Los datos crudos viven en MinIO, no en Git." >&2
+    fallas=1
+  fi
+done < <(git diff --cached --name-only)
+
+if [[ $fallas -ne 0 ]]; then
+  echo >&2
+  echo "  Confirmación cancelada. Si de verdad sabes lo que haces: git commit --no-verify" >&2
+  echo >&2
+  exit 1
+fi
+
+exit 0

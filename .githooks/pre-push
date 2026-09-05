@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# pre-push — CanastaMX
+#
+# Se niega a enviar directamente a main. Git lo ejecuta solo, antes de cada
+# git push, y si sale con error el envío no ocurre.
+#
+# NO es seguridad: es una red para el error honesto. Quien quiera saltárselo
+# puede (--no-verify), pero ya no se le va a ir sin querer, que es lo que pasa
+# de verdad a las once de la noche.
+#
+# Se activa con:  bash infra/scripts/instalar-hooks.sh
+
+PROTEGIDAS="main master"
+
+while read -r ref_local sha_local ref_remoto sha_remoto; do
+  for rama in $PROTEGIDAS; do
+    if [[ "$ref_remoto" == "refs/heads/$rama" ]]; then
+      echo >&2
+      echo "  ✗ ENVÍO BLOQUEADO — estás empujando directo a '$rama'." >&2
+      echo >&2
+      echo "  En CanastaMX nadie escribe directo en $rama. Todo entra por" >&2
+      echo "  solicitud de incorporación." >&2
+      echo >&2
+      echo "  Si tu trabajo ya está confirmado en $rama por error, se rescata así:" >&2
+      echo >&2
+      echo "      git switch -c feat/tusiniciales-descripcion" >&2
+      echo "      git push -u origin feat/tusiniciales-descripcion" >&2
+      echo "      git switch $rama" >&2
+      echo "      git reset --hard origin/$rama" >&2
+      echo >&2
+      echo "  Detalle: docs/equipo/ciclo-de-trabajo.md, sección 9, caso 3." >&2
+      echo >&2
+      exit 1
+    fi
+  done
+done
+
+exit 0
