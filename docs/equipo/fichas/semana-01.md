@@ -1,6 +1,6 @@
 # Fichas de tarea · Semana 1
 
-**Del jueves 3 al lunes 7 de septiembre de 2026.** Dieciocho tareas, cinco personas.
+**Del lunes 7 al viernes 11 de septiembre de 2026.** Dieciocho tareas, cinco personas.
 
 Una ficha por tarea. Léela completa **antes** de empezar, no a media tarea. Los siete apartados están en el mismo orden siempre:
 
@@ -20,11 +20,11 @@ Una ficha por tarea. Léela completa **antes** de empezar, no a media tarea. Los
 
 ---
 
-# Jueves 3 de septiembre
+# Lunes 7 de septiembre
 
 Siete tareas. El día que desbloquea a todos.
 
-**Orden de prioridad de A**, porque tres de sus tareas bloquean a los demás y conviene saber qué se sacrifica si algo se cae: primero subir el paquete y cerrar la estructura *(desbloquea a los cuatro)*, luego localizar y descargar el archivo *(desbloquea a C2)*, y al final el perfilado nivel 1 *(no bloquea a nadie; puede caerse al viernes)*.
+**Orden de prioridad de A**, porque tres de sus tareas bloquean a los demás y conviene saber qué se sacrifica si algo se cae: primero subir el paquete y cerrar la estructura *(desbloquea a los cuatro)*, luego localizar y descargar el archivo *(desbloquea a C2)*, y al final el perfilado nivel 1 *(no bloquea a nadie; puede caerse al martes)*.
 
 ---
 
@@ -98,7 +98,7 @@ Abre la solicitud con el enlace que imprime el `push` e incorpórala. Esta prime
 - ☐ Require status checks — **déjala apagada por ahora**
 - ☑ Do not allow bypassing the above settings
 
-La casilla de verificaciones se queda apagada porque **GitHub solo deja seleccionar canalizaciones que ya corrieron alguna vez**, y hoy no ha corrido ninguna. La lista está vacía. La etapa 2 la hace B el viernes, al cerrar T009, cuando su canalización ya salió verde.
+La casilla de verificaciones se queda apagada porque **GitHub solo deja seleccionar canalizaciones que ya corrieron alguna vez**, y hoy no ha corrido ninguna. La lista está vacía. La etapa 2 la hace B el miércoles, al cerrar T009, cuando su canalización ya salió verde.
 
 Con la etapa 1 ya nadie escribe directo en `main`, que es el 90% del valor.
 
@@ -220,7 +220,7 @@ Más una nota de una línea por cada cosa rara que hayas notado al abrirlo. Esas
 
 ## T003 · A · Perfilado nivel 1
 
-**Tiempo estimado:** 90 minutos · **Prioridad del día: 3 de 3** — si se cae al viernes, no bloquea a nadie
+**Tiempo estimado:** 90 minutos · **Prioridad del día: 3 de 3** — si se cae al martes, no bloquea a nadie
 
 ### Qué entregas
 
@@ -245,8 +245,8 @@ Los tres niveles del perfilado responden preguntas distintas, y por eso están s
 | Nivel | Pregunta | Cuándo |
 |---|---|---|
 | **1 · Estructura** | ¿Qué hay? ¿Cuántas filas, qué columnas, de qué tipo, qué tan completas? | Hoy |
-| **2 · Rangos y anomalías** | ¿Los valores son plausibles? ¿Hay ceros, negativos, absurdos, duplicados? | Viernes |
-| **3 · Variantes de escritura** | ¿El mismo producto se escribe igual entre cadenas? | Viernes |
+| **2 · Rangos y anomalías** | ¿Los valores son plausibles? ¿Hay ceros, negativos, absurdos, duplicados? | Martes |
+| **3 · Variantes de escritura** | ¿El mismo producto se escribe igual entre cadenas? | Miércoles |
 
 **Tipo declarado contra tipo real.** El diccionario puede decir que `precio` es numérico y venir con `"$24.50"` o con celdas vacías. Pandas lo va a leer como texto. Esa diferencia es un hallazgo, y es exactamente la clase de cosa contra la que el contrato de datos de la semana 2 va a proteger.
 
@@ -510,7 +510,7 @@ curl http://localhost:8081/health
 
 ```
 $ curl http://localhost:8081/health
-{"status":"UP","service":"domain-service","time":"2026-09-03T21:14:02.881Z"}
+{"status":"UP","service":"domain-service","time":"2026-09-07T21:14:02.881Z"}
 ```
 
 Y los tres paquetes existen, aunque `domain` y `application` estén vacíos. Pega la respuesta de `curl` en el issue como evidencia.
@@ -565,7 +565,7 @@ head -1 archivo.csv
 
 Si el diccionario lista veinte columnas y el archivo trae dieciocho, **ese es un hallazgo** y va anotado en la sección de discrepancias.
 
-4. Marca con `?` toda columna cuyo significado no te quede claro. La lista de dudas va al final del documento y se resuelve en la reunión del lunes.
+4. Marca con `?` toda columna cuyo significado no te quede claro. La lista de dudas va al final del documento y se resuelve en la reunión del viernes.
 5. Para las columnas categóricas —estado, categoría, tipo de establecimiento— pídele a A la lista de valores distintos:
 
 ```python
@@ -581,7 +581,7 @@ df["estado"].unique()
 Más dos secciones al final:
 
 - **Discrepancias entre el diccionario y el archivo real**
-- **Dudas para la reunión del lunes** — numeradas, para poder responderlas una por una
+- **Dudas para la reunión del viernes** — numeradas, para poder responderlas una por una
 
 ### Errores frecuentes
 
@@ -639,7 +639,7 @@ El archivo de Figma del proyecto creado y compartido, más `docs/analisis/invent
    - Qué puede hacer el usuario ahí
    - Qué necesita del sistema para funcionar
    - Quién es el dueño del dato
-4. Anota tus dudas al final. Van a la reunión del lunes.
+4. Anota tus dudas al final. Van a la reunión del viernes.
 
 ### Cómo se ve terminado
 
@@ -651,12 +651,14 @@ El enlace de Figma abre en una ventana de incógnito y se ven los ocho *frames* 
 |---|---|---|
 | El enlace de Figma da 404 a los demás | Está en privado por defecto | Share → Anyone with the link → **can view**. Pruébalo en incógnito |
 | Inventas vistas que no están en el protocolo | Nadie te dijo que ya estaban definidas | Es la tabla de arriba. Ocho, ni una más |
-| Empiezas a diseñar en vez de inventariar | Es lo divertido | Hoy es la lista. El wireframe es mañana, en T016 y T017 |
+| Empiezas a diseñar en vez de inventariar | Es lo divertido | Hoy es la lista. Los wireframes vienen después: T016 el martes y T017 el miércoles |
 | El nombre del *frame* no coincide con el del protocolo | Se abrevia sin querer | Cópialos literales. En octubre alguien va a cruzar las dos listas |
 
-# Viernes 4 de septiembre
+---
 
-Nueve tareas. El día que produce el insumo de la reunión.
+# Martes 8 de septiembre
+
+Cinco tareas. Cada quien avanza sobre lo que dejó ayer: A entra a los rangos, B pone el enrutamiento, C1 abre el modelo, C2 levanta el proyecto móvil y D dibuja el primer wireframe.
 
 ---
 
@@ -755,119 +757,6 @@ Reglas de contrato que se derivan de esto:
 
 ---
 
-## T005 · A · Perfilado nivel 3: variantes de escritura
-
-**Tiempo estimado:** 2 a 3 horas · **La tarea más importante de la semana**
-
-### Qué entregas
-
-La tabla de variantes por producto en `docs/datos/perfilado.md`, con el conteo de veinte productos comunes, y una conclusión sobre si la meta de 85% de cobertura de H3 es realista.
-
-### Antes de empezar, verifica
-
-- [ ] T004 terminada: ya sabes cuántas cadenas y establecimientos hay.
-- [ ] Identificaste la columna de nombre de producto y la de cadena comercial.
-
-### Depende de · Bloquea a
-
-**Depende de:** T004. **Bloquea a:** T006 y, sobre todo, **a la hipótesis H3 del protocolo**.
-
-### Lo que necesitas saber
-
-**Por qué esta tarea decide algo del protocolo.** H3 compromete cobertura mínima del 85% y precisión mínima del 90% en la reconciliación de nombres de producto entre cadenas. Ese número se comprometió **antes** de ver los datos. Hoy se mide si es alcanzable.
-
-Ajustar la meta en septiembre con datos en la mano es método. Ajustarla en noviembre porque no salió es lo que el protocolo llama, textualmente, «ajuste retrospectivo de los criterios», y se declara que no se va a hacer. Hoy es el único momento en que se puede mover con honestidad.
-
-**El problema de reconciliación, en concreto.** El mismo producto físico se escribe distinto en cada cadena:
-
-```
-LECHE ENTERA LALA 1 LT
-Leche Lala entera 1L
-LALA LECHE ENT. 1000ML
-Leche entera Lala 1 litro
-```
-
-Cuatro cadenas, cuatro escrituras, un producto. Sin reconciliar, comparar precios entre cadenas es imposible, y comparar precios entre cadenas es la razón de ser del sistema.
-
-**Cómo leer el resultado:**
-
-| Variantes promedio por producto | Qué significa |
-|---|---|
-| 1 a 3 | La fuente ya trae un catálogo normalizado. H3 al 85% es cómodo |
-| 4 a 8 | Normal. H3 al 85% es alcanzable con normalización más comparación difusa |
-| Más de 10 | El problema es grande. Hay que **bajar la meta o acotar el recorte de productos**, y decirlo el lunes |
-
-### Paso a paso
-
-```python
-import re, unicodedata, pandas as pd
-
-def normaliza(s):
-    """Minúsculas, sin acentos, sin puntuación, espacios colapsados."""
-    s = str(s).lower()
-    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
-    s = re.sub(r"[^a-z0-9 ]", " ", s)
-    return re.sub(r"\s+", " ", s).strip()
-
-PROD, CADENA = "producto", "cadenaComercial"
-
-# 1. Los veinte productos más frecuentes
-top20 = df[PROD].value_counts().head(20).index.tolist()
-
-# 2. Variantes por producto normalizado
-df["_norm"] = df[PROD].apply(normaliza)
-var = (df.groupby("_norm")
-         .agg(variantes=(PROD, "nunique"),
-              cadenas=(CADENA, "nunique"),
-              ejemplos=(PROD, lambda s: " | ".join(sorted(set(s))[:4])))
-         .sort_values("variantes", ascending=False))
-print(var.head(20))
-
-# 3. La cifra que decide
-print("Variantes promedio por producto:", round(var["variantes"].mean(), 1))
-print("Mediana:", var["variantes"].median())
-print("Productos con más de 10 variantes:",
-      (var["variantes"] > 10).sum(), "de", len(var))
-```
-
-**Revisa a mano una muestra.** Toma diez grupos y verifica que las variantes agrupadas sean de verdad el mismo producto. Si `leche entera 1l` juntó leche entera y leche deslactosada, tu normalización es demasiado agresiva y la cifra está inflada.
-
-### Cómo se ve terminado
-
-```markdown
-## 3. Variantes de escritura
-
-Variantes promedio por producto: 6.4   ·   mediana: 5   ·   máximo: 31
-Productos con más de 10 variantes: 214 de 1,890 (11%)
-
-| Producto (normalizado) | Variantes | Cadenas | Ejemplos |
-|---|---|---|---|
-| leche entera lala 1 l  | 7 | 5 | LECHE ENTERA LALA 1 LT / Leche Lala entera 1L / ... |
-
-### Qué implica para H3
-Con 6.4 variantes promedio, la meta de 85% de cobertura es alcanzable
-mediante normalización más comparación difusa, siempre que el recorte de
-productos se limite a la canasta básica. Se recomienda sostener la meta.
-
-[o bien]
-
-Con 14.2 variantes promedio y 38% de productos por encima de 10 variantes,
-sostener el 85% no es realista sin trabajo manual extenso. Se recomienda
-ajustar la meta a 70% y documentar el ajuste en el ADR 001, antes de la
-entrega del 18 de septiembre.
-```
-
-### Errores frecuentes
-
-| Qué pasa | Por qué | Salida |
-|---|---|---|
-| Salen dos variantes por producto y parece muy fácil | La normalización juntó productos distintos | Revisa diez grupos a mano. Siempre |
-| Salen cincuenta variantes y parece imposible | No normalizaste antes de contar | Aplica `normaliza()` primero. Contar sobre el texto crudo mide otra cosa |
-| No sabes cuál columna es el producto | Puede haber `descripcion`, `producto`, `presentacion` | Pregúntale a C2, que tiene el diccionario. Puede que necesites concatenar dos |
-| Te quedas sin decidir sobre H3 | La conclusión se siente arriesgada | Es el punto de la tarea. Un número con una recomendación vale más que tres tablas sin conclusión |
-
----
-
 ## T008 · B · Traefik y enrutamiento local
 
 **Tiempo estimado:** 2 a 3 horas
@@ -942,123 +831,6 @@ Los dos nombres locales abren en el navegador, y el panel de Traefik lista las r
 
 ---
 
-## T009 · B · Integración continua mínima
-
-**Tiempo estimado:** 2 horas
-
-### Qué entregas
-
-`.github/workflows/ci.yml` que, al abrir una solicitud, corre análisis estático y compilación, y aparece en verde.
-
-### Antes de empezar, verifica
-
-- [ ] T001 terminada: `main` está protegida y existe `.github/workflows/`.
-- [ ] T011 (C1) **no es bloqueante**: la canalización se salta el trabajo de Java mientras no exista el `pom.xml`. Aun así, pregúntale a C1 cómo va: si ya terminó, puedes ver el trabajo compilando de verdad y no solo saltándose.
-
-### Depende de · Bloquea a
-
-**Depende de:** T001 y T011. **Bloquea a:** nada hoy, pero desde la semana 2 toda solicitud pasa por aquí.
-
-### Lo que necesitas saber
-
-**Qué es integración continua.** Un conjunto de verificaciones que corren solas en cada cambio propuesto. Si fallan, la solicitud no se puede incorporar. Convierte la calidad en condición de ingreso al repositorio en vez de en un acuerdo de buena voluntad.
-
-**«Mínima» hoy significa dos cosas:** que el código compile y que pase el análisis estático. Las pruebas llegan en la semana 2, cuando existan.
-
-**Un flujo de trabajo tiene tres partes:** cuándo corre (`on`), en qué máquina (`runs-on`), y qué hace (`steps`).
-
-**Usa trabajos separados por lenguaje.** Uno para Java y uno para Python. Si van juntos, un fallo de Python bloquea el reporte de Java y nadie sabe cuál falló.
-
-### Paso a paso
-
-1. Copia la plantilla `.github/workflows/ci.yml` del repositorio.
-2. **No tienes que ajustar nada para que arranque.** Cada trabajo revisa primero si el proyecto que le toca ya existe: si `services/domain-service/` todavía no tiene `pom.xml`, el trabajo de Java lo dice y se salta, en verde. Empieza a compilar solo, en cuanto C1 suba el suyo.
-
-   Esto es a propósito: una canalización que intenta compilar un proyecto inexistente sale **roja en toda solicitud**, y el resto del equipo no entiende por qué su cambio de documentación falla.
-3. Prueba con una solicitud de verdad:
-
-```bash
-git switch -c chore/aas-ci-minima
-# edita ci.yml
-git add .github/workflows/ci.yml
-git commit -m "ci: análisis estático y compilación en cada solicitud"
-git push -u origin chore/aas-ci-minima
-```
-
-4. Abre la solicitud. Abajo aparecen las verificaciones. **Espera a que terminen.**
-5. Si sale roja: *Details* → busca la línea que dice `Error:` → arregla en tu rama → commit → push. La solicitud se actualiza sola, no abras otra.
-6. **Protege `main`, etapa 2.** Ahora que la canalización ya corrió una vez, sus trabajos aparecen en la lista de GitHub. Settings → Branches → edita la regla de `main` → ☑ **Require status checks to pass** → selecciona **Dominio (Java)**, **Datos (Python)** e **Higiene**.
-
-Ese paso es el que convierte la canalización en compuerta. Sin él corre, reporta y no impide nada. A dejó la etapa 1 el miércoles —solicitud obligatoria y una aprobación—; esta es la que faltaba.
-
-### Cómo se ve terminado
-
-La solicitud muestra los dos trabajos con palomita verde, y el botón de incorporar está habilitado. En una rama con un error de sintaxis a propósito, sale roja y el botón se bloquea. **Pruébalo**: una compuerta que nunca cerró nadie sabe si cierra.
-
-### Errores frecuentes
-
-| Qué pasa | Por qué | Salida |
-|---|---|---|
-| El flujo no se dispara | Está en la rama, no en `main`, o el `on:` está mal | Los flujos se leen de la rama de la solicitud, pero conviene incorporarlo pronto |
-| `mvn: command not found` | Falta el paso de configurar Java | `actions/setup-java@v4` con `distribution: temurin` y `java-version: 21` |
-| Sale verde pero no verifica nada | Las rutas no existen y el paso se salta | Revisa el registro: si dice «no such directory», la ruta está mal |
-| Tarda diez minutos cada vez | Sin caché de dependencias | `cache: maven` en `setup-java` y `cache: pip` en `setup-python` |
-
----
-
-## T010 · B · Oracle Cloud y GitHub Student Pack
-
-**Tiempo estimado:** 45 minutos de trámite, más la espera
-
-### Qué entregas
-
-Ambos registros enviados, con captura del acuse en el issue.
-
-### Antes de empezar, verifica
-
-- [ ] Tienes tu credencial de estudiante o comprobante de inscripción a la mano, en foto legible.
-- [ ] Tienes tu correo institucional funcionando.
-
-### Depende de · Bloquea a
-
-**Depende de:** nada. **Bloquea a:** la semana 9, cuando toca preparar la máquina virtual y hacer el primer despliegue.
-
-### Lo que necesitas saber
-
-**Por qué se hace la primera semana si se usa hasta la novena.** Porque ninguno de los dos es instantáneo. El Student Pack requiere verificación con documento y puede tardar días o rebotar. Oracle Cloud pide tarjeta para verificar identidad —no cobra en la capa gratuita— y a veces rechaza el registro sin explicación clara.
-
-Si esto se hace en la semana 8, un rechazo deja al equipo sin nube en la semana del despliegue. Hacerlo hoy deja siete semanas de margen para resolver o buscar alternativa.
-
-**Qué da cada uno:**
-
-| Servicio | Qué aporta |
-|---|---|
-| Oracle Cloud, capa siempre gratuita | Máquinas virtuales sin costo permanente. Donde vive el sistema desplegado |
-| GitHub Student Developer Pack | Crédito en varios proveedores, dominio gratuito por un año, herramientas |
-
-**Alternativas si algo se cae:** Hetzner (de pago, barato y confiable), Fly.io o Railway en sus capas gratuitas, o Azure for Students si el Tec tiene convenio. **Pregunta en el Tec antes de pagar de tu bolsa.**
-
-### Paso a paso
-
-1. **Oracle Cloud** — `cloud.oracle.com` → Start for free. Región: elige una de Estados Unidos o Brasil, no Europa. Vas a necesitar tarjeta para verificar. **Anota qué región elegiste**: las instancias no se mueven entre regiones.
-2. **GitHub Student Pack** — `education.github.com/pack` → Get student benefits. Sube foto legible de tu credencial y usa el correo institucional. Si rebota, se puede volver a intentar con otro documento.
-3. Captura ambos acuses y pégalos en el issue.
-4. **Si alguno es rechazado, ábrelo como bloqueo el mismo día.** No lo dejes para la reunión del lunes: hay que activar la alternativa temprano.
-
-### Cómo se ve terminado
-
-Dos capturas en el issue: la de Oracle diciendo que la cuenta está en aprovisionamiento, y la de GitHub diciendo que la solicitud está en revisión. **Aprobado no es requisito hoy; enviado sí.**
-
-### Errores frecuentes
-
-| Qué pasa | Por qué | Salida |
-|---|---|---|
-| Oracle rechaza la tarjeta | Algunas tarjetas de débito mexicanas no pasan | Prueba otra, o pide apoyo en el chat. Es común y no es tu culpa |
-| El Student Pack rebota | La foto de la credencial no se lee, o el correo no es institucional | Vuelve a intentar con horario visible y documento nítido |
-| Elegiste región equivocada | Se ve igual al registrarse | Anótala hoy. En la semana 9 importa |
-
----
-
 ## T012 · C1 · Primer borrador del modelo de dominio
 
 **Tiempo estimado:** 3 horas
@@ -1100,7 +872,7 @@ Ejemplo concreto: `Canasta` es raíz y contiene `ItemDeCanasta`. Nadie modifica 
 
 **Dónde viven las reglas de negocio.** Dentro del agregado, no en el controlador ni en la consulta. «Una alerta se dispara cuando el precio observado cae por debajo del umbral» es un método de `Alerta`, y se prueba sin levantar Spring. Eso es lo que hace posible la cobertura de pruebas de la semana 10.
 
-**Punto de contacto con C2.** Lo que decidas aquí es lo que la app móvil va a consumir. Si defines que una canasta tiene un máximo de ítems, Oscar necesita saberlo para la pantalla. Coméntalo con él antes del lunes.
+**Punto de contacto con C2.** Lo que decidas aquí es lo que la app móvil va a consumir. Si defines que una canasta tiene un máximo de ítems, Oscar necesita saberlo para la pantalla. Coméntalo con él antes del viernes.
 
 ### Paso a paso
 
@@ -1108,7 +880,7 @@ Ejemplo concreto: `Canasta` es raíz y contiene `ItemDeCanasta`. Nadie modifica 
 2. **Clasifica cada uno** con la pregunta de la identidad. Justifica en una línea; la justificación es lo que se evalúa.
 3. **Dibuja los límites** de los tres agregados: qué queda dentro de cada uno.
 4. **Escribe las reglas de negocio** que van dentro de cada agregado, una por línea.
-5. **Anota lo que quede en duda** al final, para el lunes.
+5. **Anota lo que quede en duda** al final, para el viernes.
 
 ### Cómo se ve terminado
 
@@ -1283,6 +1055,242 @@ Un *frame* donde alguien que no conoce el proyecto puede decir qué información
 
 ---
 
+# Miércoles 9 de septiembre
+
+Cuatro tareas. Es el día que produce el insumo de la reunión: sale el perfilado nivel 3 —el número que decide si H3 es alcanzable— y la canalización de integración continua empieza a correr.
+
+---
+
+## T005 · A · Perfilado nivel 3: variantes de escritura
+
+**Tiempo estimado:** 2 a 3 horas · **La tarea más importante de la semana**
+
+### Qué entregas
+
+La tabla de variantes por producto en `docs/datos/perfilado.md`, con el conteo de veinte productos comunes, y una conclusión sobre si la meta de 85% de cobertura de H3 es realista.
+
+### Antes de empezar, verifica
+
+- [ ] T004 terminada: ya sabes cuántas cadenas y establecimientos hay.
+- [ ] Identificaste la columna de nombre de producto y la de cadena comercial.
+
+### Depende de · Bloquea a
+
+**Depende de:** T004. **Bloquea a:** T006 y, sobre todo, **a la hipótesis H3 del protocolo**.
+
+### Lo que necesitas saber
+
+**Por qué esta tarea decide algo del protocolo.** H3 compromete cobertura mínima del 85% y precisión mínima del 90% en la reconciliación de nombres de producto entre cadenas. Ese número se comprometió **antes** de ver los datos. Hoy se mide si es alcanzable.
+
+Ajustar la meta en septiembre con datos en la mano es método. Ajustarla en noviembre porque no salió es lo que el protocolo llama, textualmente, «ajuste retrospectivo de los criterios», y se declara que no se va a hacer. Hoy es el único momento en que se puede mover con honestidad.
+
+**El problema de reconciliación, en concreto.** El mismo producto físico se escribe distinto en cada cadena:
+
+```
+LECHE ENTERA LALA 1 LT
+Leche Lala entera 1L
+LALA LECHE ENT. 1000ML
+Leche entera Lala 1 litro
+```
+
+Cuatro cadenas, cuatro escrituras, un producto. Sin reconciliar, comparar precios entre cadenas es imposible, y comparar precios entre cadenas es la razón de ser del sistema.
+
+**Cómo leer el resultado:**
+
+| Variantes promedio por producto | Qué significa |
+|---|---|
+| 1 a 3 | La fuente ya trae un catálogo normalizado. H3 al 85% es cómodo |
+| 4 a 8 | Normal. H3 al 85% es alcanzable con normalización más comparación difusa |
+| Más de 10 | El problema es grande. Hay que **bajar la meta o acotar el recorte de productos**, y decirlo el viernes |
+
+### Paso a paso
+
+```python
+import re, unicodedata, pandas as pd
+
+def normaliza(s):
+    """Minúsculas, sin acentos, sin puntuación, espacios colapsados."""
+    s = str(s).lower()
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
+    s = re.sub(r"[^a-z0-9 ]", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+PROD, CADENA = "producto", "cadenaComercial"
+
+# 1. Los veinte productos más frecuentes
+top20 = df[PROD].value_counts().head(20).index.tolist()
+
+# 2. Variantes por producto normalizado
+df["_norm"] = df[PROD].apply(normaliza)
+var = (df.groupby("_norm")
+         .agg(variantes=(PROD, "nunique"),
+              cadenas=(CADENA, "nunique"),
+              ejemplos=(PROD, lambda s: " | ".join(sorted(set(s))[:4])))
+         .sort_values("variantes", ascending=False))
+print(var.head(20))
+
+# 3. La cifra que decide
+print("Variantes promedio por producto:", round(var["variantes"].mean(), 1))
+print("Mediana:", var["variantes"].median())
+print("Productos con más de 10 variantes:",
+      (var["variantes"] > 10).sum(), "de", len(var))
+```
+
+**Revisa a mano una muestra.** Toma diez grupos y verifica que las variantes agrupadas sean de verdad el mismo producto. Si `leche entera 1l` juntó leche entera y leche deslactosada, tu normalización es demasiado agresiva y la cifra está inflada.
+
+### Cómo se ve terminado
+
+```markdown
+## 3. Variantes de escritura
+
+Variantes promedio por producto: 6.4   ·   mediana: 5   ·   máximo: 31
+Productos con más de 10 variantes: 214 de 1,890 (11%)
+
+| Producto (normalizado) | Variantes | Cadenas | Ejemplos |
+|---|---|---|---|
+| leche entera lala 1 l  | 7 | 5 | LECHE ENTERA LALA 1 LT / Leche Lala entera 1L / ... |
+
+### Qué implica para H3
+Con 6.4 variantes promedio, la meta de 85% de cobertura es alcanzable
+mediante normalización más comparación difusa, siempre que el recorte de
+productos se limite a la canasta básica. Se recomienda sostener la meta.
+
+[o bien]
+
+Con 14.2 variantes promedio y 38% de productos por encima de 10 variantes,
+sostener el 85% no es realista sin trabajo manual extenso. Se recomienda
+ajustar la meta a 70% y documentar el ajuste en el ADR 001, antes de la
+entrega del 18 de septiembre.
+```
+
+### Errores frecuentes
+
+| Qué pasa | Por qué | Salida |
+|---|---|---|
+| Salen dos variantes por producto y parece muy fácil | La normalización juntó productos distintos | Revisa diez grupos a mano. Siempre |
+| Salen cincuenta variantes y parece imposible | No normalizaste antes de contar | Aplica `normaliza()` primero. Contar sobre el texto crudo mide otra cosa |
+| No sabes cuál columna es el producto | Puede haber `descripcion`, `producto`, `presentacion` | Pregúntale a C2, que tiene el diccionario. Puede que necesites concatenar dos |
+| Te quedas sin decidir sobre H3 | La conclusión se siente arriesgada | Es el punto de la tarea. Un número con una recomendación vale más que tres tablas sin conclusión |
+
+---
+
+## T009 · B · Integración continua mínima
+
+**Tiempo estimado:** 2 horas
+
+### Qué entregas
+
+`.github/workflows/ci.yml` que, al abrir una solicitud, corre análisis estático y compilación, y aparece en verde.
+
+### Antes de empezar, verifica
+
+- [ ] T001 terminada: `main` está protegida y existe `.github/workflows/`.
+- [ ] T011 (C1) **no es bloqueante**: la canalización se salta el trabajo de Java mientras no exista el `pom.xml`. Aun así, pregúntale a C1 cómo va: si ya terminó, puedes ver el trabajo compilando de verdad y no solo saltándose.
+
+### Depende de · Bloquea a
+
+**Depende de:** T001 y T011. **Bloquea a:** nada hoy, pero desde la semana 2 toda solicitud pasa por aquí.
+
+### Lo que necesitas saber
+
+**Qué es integración continua.** Un conjunto de verificaciones que corren solas en cada cambio propuesto. Si fallan, la solicitud no se puede incorporar. Convierte la calidad en condición de ingreso al repositorio en vez de en un acuerdo de buena voluntad.
+
+**«Mínima» hoy significa dos cosas:** que el código compile y que pase el análisis estático. Las pruebas llegan en la semana 2, cuando existan.
+
+**Un flujo de trabajo tiene tres partes:** cuándo corre (`on`), en qué máquina (`runs-on`), y qué hace (`steps`).
+
+**Usa trabajos separados por lenguaje.** Uno para Java y uno para Python. Si van juntos, un fallo de Python bloquea el reporte de Java y nadie sabe cuál falló.
+
+### Paso a paso
+
+1. Copia la plantilla `.github/workflows/ci.yml` del repositorio.
+2. **No tienes que ajustar nada para que arranque.** Cada trabajo revisa primero si el proyecto que le toca ya existe: si `services/domain-service/` todavía no tiene `pom.xml`, el trabajo de Java lo dice y se salta, en verde. Empieza a compilar solo, en cuanto C1 suba el suyo.
+
+   Esto es a propósito: una canalización que intenta compilar un proyecto inexistente sale **roja en toda solicitud**, y el resto del equipo no entiende por qué su cambio de documentación falla.
+3. Prueba con una solicitud de verdad:
+
+```bash
+git switch -c chore/aas-ci-minima
+# edita ci.yml
+git add .github/workflows/ci.yml
+git commit -m "ci: análisis estático y compilación en cada solicitud"
+git push -u origin chore/aas-ci-minima
+```
+
+4. Abre la solicitud. Abajo aparecen las verificaciones. **Espera a que terminen.**
+5. Si sale roja: *Details* → busca la línea que dice `Error:` → arregla en tu rama → commit → push. La solicitud se actualiza sola, no abras otra.
+6. **Protege `main`, etapa 2.** Ahora que la canalización ya corrió una vez, sus trabajos aparecen en la lista de GitHub. Settings → Branches → edita la regla de `main` → ☑ **Require status checks to pass** → selecciona **Dominio (Java)**, **Datos (Python)** e **Higiene**.
+
+Ese paso es el que convierte la canalización en compuerta. Sin él corre, reporta y no impide nada. A dejó la etapa 1 antes de arrancar la semana —solicitud obligatoria y una aprobación—; esta es la que faltaba.
+
+### Cómo se ve terminado
+
+La solicitud muestra los dos trabajos con palomita verde, y el botón de incorporar está habilitado. En una rama con un error de sintaxis a propósito, sale roja y el botón se bloquea. **Pruébalo**: una compuerta que nunca cerró nadie sabe si cierra.
+
+### Errores frecuentes
+
+| Qué pasa | Por qué | Salida |
+|---|---|---|
+| El flujo no se dispara | Está en la rama, no en `main`, o el `on:` está mal | Los flujos se leen de la rama de la solicitud, pero conviene incorporarlo pronto |
+| `mvn: command not found` | Falta el paso de configurar Java | `actions/setup-java@v4` con `distribution: temurin` y `java-version: 21` |
+| Sale verde pero no verifica nada | Las rutas no existen y el paso se salta | Revisa el registro: si dice «no such directory», la ruta está mal |
+| Tarda diez minutos cada vez | Sin caché de dependencias | `cache: maven` en `setup-java` y `cache: pip` en `setup-python` |
+
+---
+
+## T010 · B · Oracle Cloud y GitHub Student Pack
+
+**Tiempo estimado:** 45 minutos de trámite, más la espera
+
+### Qué entregas
+
+Ambos registros enviados, con captura del acuse en el issue.
+
+### Antes de empezar, verifica
+
+- [ ] Tienes tu credencial de estudiante o comprobante de inscripción a la mano, en foto legible.
+- [ ] Tienes tu correo institucional funcionando.
+
+### Depende de · Bloquea a
+
+**Depende de:** nada. **Bloquea a:** la semana 9, cuando toca preparar la máquina virtual y hacer el primer despliegue.
+
+### Lo que necesitas saber
+
+**Por qué se hace la primera semana si se usa hasta la novena.** Porque ninguno de los dos es instantáneo. El Student Pack requiere verificación con documento y puede tardar días o rebotar. Oracle Cloud pide tarjeta para verificar identidad —no cobra en la capa gratuita— y a veces rechaza el registro sin explicación clara.
+
+Si esto se hace en la semana 8, un rechazo deja al equipo sin nube en la semana del despliegue. Hacerlo hoy deja siete semanas de margen para resolver o buscar alternativa.
+
+**Qué da cada uno:**
+
+| Servicio | Qué aporta |
+|---|---|
+| Oracle Cloud, capa siempre gratuita | Máquinas virtuales sin costo permanente. Donde vive el sistema desplegado |
+| GitHub Student Developer Pack | Crédito en varios proveedores, dominio gratuito por un año, herramientas |
+
+**Alternativas si algo se cae:** Hetzner (de pago, barato y confiable), Fly.io o Railway en sus capas gratuitas, o Azure for Students si el Tec tiene convenio. **Pregunta en el Tec antes de pagar de tu bolsa.**
+
+### Paso a paso
+
+1. **Oracle Cloud** — `cloud.oracle.com` → Start for free. Región: elige una de Estados Unidos o Brasil, no Europa. Vas a necesitar tarjeta para verificar. **Anota qué región elegiste**: las instancias no se mueven entre regiones.
+2. **GitHub Student Pack** — `education.github.com/pack` → Get student benefits. Sube foto legible de tu credencial y usa el correo institucional. Si rebota, se puede volver a intentar con otro documento.
+3. Captura ambos acuses y pégalos en el issue.
+4. **Si alguno es rechazado, ábrelo como bloqueo el mismo día.** No lo dejes para la reunión del viernes: hay que activar la alternativa temprano.
+
+### Cómo se ve terminado
+
+Dos capturas en el issue: la de Oracle diciendo que la cuenta está en aprovisionamiento, y la de GitHub diciendo que la solicitud está en revisión. **Aprobado no es requisito hoy; enviado sí.**
+
+### Errores frecuentes
+
+| Qué pasa | Por qué | Salida |
+|---|---|---|
+| Oracle rechaza la tarjeta | Algunas tarjetas de débito mexicanas no pasan | Prueba otra, o pide apoyo en el chat. Es común y no es tu culpa |
+| El Student Pack rebota | La foto de la credencial no se lee, o el correo no es institucional | Vuelve a intentar con horario visible y documento nítido |
+| Elegiste región equivocada | Se ve igual al registrarse | Anótala hoy. En la semana 9 importa |
+
+---
+
 ## T017 · D · Wireframe de la consola de observabilidad
 
 **Tiempo estimado:** 2 a 3 horas · **Requiere visto bueno de A por escrito**
@@ -1345,15 +1353,15 @@ Dos *frames*: «todo bien» y «con incidente». Alguien que los vea uno tras ot
 
 ---
 
-# Sábado 5 y domingo 6 · colchón
+# Jueves 10 de septiembre
 
-Sin trabajo planeado para nadie, con una sola excepción.
+Una sola tarea, y es la que sostiene la reunión del viernes.
 
 ---
 
 ## T006 · A · Informe de perfilado versión cero
 
-**Tiempo estimado:** 3 horas · **Domingo 6**
+**Tiempo estimado:** 3 horas · **Jueves 10**
 
 ### Qué entregas
 
@@ -1365,7 +1373,7 @@ Sin trabajo planeado para nadie, con una sola excepción.
 
 ### Depende de · Bloquea a
 
-**Depende de:** todo el perfilado. **Bloquea a:** T018, la reunión del lunes. Sin informe, la reunión no tiene de qué decidir y hay que reagendarla.
+**Depende de:** todo el perfilado. **Bloquea a:** T018, la reunión del viernes. Sin informe, la reunión no tiene de qué decidir y hay que reagendarla.
 
 ### Lo que necesitas saber
 
@@ -1387,7 +1395,7 @@ Sin trabajo planeado para nadie, con una sola excepción.
 2. Pega las tres secciones del perfilado, cada una con sus tablas.
 3. Escribe la conclusión **al final y en firme**, con tres partes: el veredicto, el recorte recomendado con su justificación numérica, y la postura sobre H3.
 4. Marca lo que quede sin resolver como pregunta abierta para la reunión.
-5. Súbelo por solicitud y avisa en el chat el domingo, no el lunes: los demás deberían llegar leídos.
+5. Súbelo por solicitud y avisa en el chat el jueves, no el viernes: los demás deberían llegar leídos.
 
 ### Cómo se ve terminado
 
@@ -1403,7 +1411,9 @@ Un documento que alguien puede leer en diez minutos y salir sabiendo si el proye
 
 ---
 
-# Lunes 7 de septiembre
+# Viernes 11 de septiembre
+
+La reunión de decisión. Los cinco, cámara encendida.
 
 ---
 
@@ -1451,7 +1461,7 @@ Un documento que alguien puede leer en diez minutos y salir sabiendo si el proye
 ```markdown
 # ADR 001 · Fuente de datos
 
-- **Fecha:** 7 de septiembre de 2026
+- **Fecha:** 11 de septiembre de 2026
 - **Estado:** aceptada
 - **Participantes:** los cinco integrantes
 
@@ -1477,7 +1487,7 @@ Más, en el tablero: la columna de la semana 2 poblada y el horario de la reuni�
 
 | Qué pasa | Por qué | Salida |
 |---|---|---|
-| La reunión se va en leer el informe | Nadie lo leyó antes | Se manda el domingo y se lee antes. Si nadie lo leyó, se pospone media hora |
+| La reunión se va en leer el informe | Nadie lo leyó antes | Se manda el jueves y se lee antes. Si nadie lo leyó, se pospone media hora |
 | Se decide «seguir viendo» | Es cómodo | No es una decisión. Se decide hoy |
 | El ADR se escribe «después» | La reunión se acaba y todos se van | Se escribe en los últimos diez minutos, con todos presentes |
 | Se cambia el recorte y nadie corrige el protocolo | Se olvida | La sección de consecuencias del ADR pone nombre y fecha |
@@ -1501,4 +1511,4 @@ Más, en el tablero: la columna de la semana 2 poblada y el horario de la reuni�
 - [ ] Proyecto móvil base arrancando
 - [ ] Tablero con las tareas de la semana 2 y horario fijo de reunión acordado
 
-**Las fichas de la semana 2 se escriben el lunes 7, al cerrar la reunión**, con `PLANTILLA-ficha.md`. Escribirlas es parte de cerrar la reunión, no una tarea aparte: es el momento en que ya se sabe qué se recorrió y qué no.
+**Las fichas de la semana 2 se escriben el viernes 11, al cerrar la reunión**, con `PLANTILLA-ficha.md`. Escribirlas es parte de cerrar la reunión, no una tarea aparte: es el momento en que ya se sabe qué se recorrió y qué no.

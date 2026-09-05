@@ -5,7 +5,7 @@
 # ARRANCA SOLA, POR ETAPAS. Cada trabajo revisa primero si el proyecto que le
 # toca ya existe. Si todavía no, lo dice y se salta, en verde.
 #
-# Esto es deliberado: el jueves 3, services/domain-service/ solo tiene un
+# Esto es deliberado: el lunes 7, services/domain-service/ solo tiene un
 # .gitkeep. Una canalización que intenta compilar un proyecto inexistente sale
 # ROJA en toda solicitud, y nadie entiende por qué. Con la guarda, empieza a
 # verificar de verdad en cuanto aparece el pom.xml de C1, sin que nadie toque
@@ -13,7 +13,7 @@
 #
 # Para que esto sea una COMPUERTA y no solo un reporte, falta la etapa 2:
 # Settings → Branches → regla de main → Require status checks to pass.
-# Se hace el viernes 4, cuando estos trabajos ya hayan corrido una vez y
+# Se hace el miércoles 9, cuando estos trabajos ya hayan corrido una vez y
 # aparezcan en la lista para seleccionar. Ver docs/equipo/linea-base.md
 
 name: CI
@@ -30,6 +30,9 @@ jobs:
   dominio:
     name: Dominio (Java)
     runs-on: ubuntu-latest
+    # Sin esto, el techo de GitHub son 360 minutos: un trabajo atorado se come
+    # seis horas de la bolsa mensual de minutos del repositorio privado.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -66,6 +69,7 @@ jobs:
   datos:
     name: Datos (Python)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -105,6 +109,7 @@ jobs:
   higiene:
     name: Higiene
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 

@@ -12,7 +12,7 @@ Antes de la primera flecha de este mapa hay una que no aparece dibujada, porque 
 
 **Nadie crea una rama hasta que `main` tenga la línea base completo.** Qué es exactamente y cómo se verifica está en [`linea-base.md`](./linea-base.md). En corto: `.gitignore`, la estructura de carpetas, las guías, las plantillas y las plantillas de issue y solicitud, más los cinco colaboradores con la invitación **aceptada**.
 
-Lo deja listo A el miércoles 2. Cada quien lo comprueba antes de ramificar:
+Lo deja listo A antes del lunes 7. Cada quien lo comprueba antes de ramificar:
 
 ```bash
 git switch main && git pull
@@ -44,7 +44,7 @@ Y del otro lado: **si estás esperando algo, dilo el mismo día**. No a las 48 h
 ```
                           ┌──────────────────────────────────┐
                           │  T001 · A                        │
-                          │  Estructura del repositorio      │  jue 3 · prioridad 1
+                          │  Estructura del repositorio      │  lun 7 · prioridad 1
                           └───────────────┬──────────────────┘
                                           │  desbloquea a los cuatro
         ┌──────────────┬──────────────────┼──────────────────┬──────────────┐
@@ -73,12 +73,12 @@ Y del otro lado: **si estás esperando algo, dilo el mismo día**. No a las 48 h
                                                           │            └───┬────┘
                                                           │                ▼
                                                           │           ┌─────────┐
-                                                          │           │ T006 A  │ dom 6
+                                                          │           │ T006 A  │ jue 10
                                                           │           │ informe │
                                                           │           └────┬────┘
                                                           │                ▼
                                                           └──────►  ┌─────────────┐
-                                                                    │  T018 EQUIPO│ lun 7
+                                                                    │  T018 EQUIPO│ vie 11
                                                                     │  Reunión    │
                                                                     └─────────────┘
 ```
@@ -111,7 +111,7 @@ T001 estructura → T007 compose, T011 Spring, T014 Expo, T015 inventario
 
 *Si se rompe:* cuatro personas sin poder empezar. El costo es cuatro veces el retraso.
 
-*Cómo se protege:* es la prioridad 1 del jueves de A, por encima incluso de la descarga de datos. Y el insumo que puede atrasarla —los usuarios de GitHub de los otros cuatro— se pide **hoy, miércoles 2**, no el jueves.
+*Cómo se protege:* es la prioridad 1 del lunes de A, por encima incluso de la descarga de datos. Y el insumo que puede atrasarla —los usuarios de GitHub de los otros cuatro— se pide **antes del lunes 7**, no ese mismo lunes.
 
 ### 3 · La cadena silenciosa — la que se rompía sin que nadie lo notara
 
@@ -131,13 +131,13 @@ B necesita algo que compilar. Si C1 se atrasaba y no le avisaba, **B iba a pensa
 
 | Quien espera | Espera de | Qué | Cuándo se libera |
 |---|---|---|---|
-| **B, C1, C2, D** | A | La estructura del repositorio | jue 3, temprano |
-| **C2** | A | El enlace del diccionario de QQP | jue 3, en cuanto lo tenga |
-| **B** | C1 | El esqueleto de Spring, para tener qué compilar | jue 3, fin del día |
-| **D** | A | Visto bueno del wireframe de la consola | vie 4 |
-| **A** | C2 | El nombre real de las columnas de precio y categoría | vie 4, temprano |
-| **C2** | C1 | Qué reglas tiene la canasta, para la pantalla | antes del lun 7 |
-| **Los cinco** | A | El informe de perfilado | dom 6, para leerlo antes de la reunión |
+| **B, C1, C2, D** | A | La estructura del repositorio | lun 7, temprano |
+| **C2** | A | El enlace del diccionario de QQP | lun 7, en cuanto lo tenga |
+| **B** | C1 | El esqueleto de Spring, para tener qué compilar | lun 7, fin del día |
+| **D** | A | Visto bueno del wireframe de la consola | mié 9 |
+| **A** | C2 | El nombre real de las columnas de precio y categoría | mar 8, temprano |
+| **C2** | C1 | Qué reglas tiene la canasta, para la pantalla | antes del vie 11 |
+| **Los cinco** | A | El informe de perfilado | jue 10, para leerlo antes de la reunión |
 
 ---
 

@@ -8,7 +8,7 @@ Esta guía la ejecuta A una sola vez (montaje), y después la usan los cinco tod
 
 # Parte 1 — Montaje
 
-> **Quién:** A · **Cuándo:** jueves 3 de septiembre · **Cuánto:** 40 minutos
+> **Quién:** A · **Cuándo:** antes del lunes 7 de septiembre · **Cuánto:** 40 minutos
 
 ## 1.1 Crea el proyecto
 
@@ -140,7 +140,7 @@ docs/datos/perfilado/
 ## Depende de
 #3 (perfilado nivel 1)
 
-Semana: 1 · Frente: Datos · Fecha límite: 4 de septiembre
+Semana: 1 · Frente: Datos · Fecha límite: 8 de septiembre
 ```
 
 **"Cómo saber que quedó" es la parte que no se puede omitir.** Es lo que permite que otra persona revise sin discutir, y lo que convierte "avancé bastante" en un hecho verificable.

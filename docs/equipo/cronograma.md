@@ -1,15 +1,32 @@
 # Cronograma rebaseado — CanastaMX
 
-**Rebase del 2 de septiembre de 2026.** La semana 1 se comprime en jueves 3, viernes 4 y lunes 7. **Ninguna entrega institucional se mueve.** Las semanas 2 a 14 conservan sus fechas originales.
+**Replaneación del 5 de septiembre de 2026.** La semana 1 arranca el **lunes 7** y corre completa, de lunes a viernes. **Ninguna entrega institucional se mueve** y **no se recorta ninguna función del proyecto.** Las semanas 4 a 14 conservan sus fechas originales.
 
-Qué cambió respecto al manual original:
+## Por qué se movió
 
-| | Manual original | Rebase |
+El rebase anterior empezaba el jueves 3 y comprimía la semana 1 en tres días, uno de ellos en fin de semana. Eso funcionaba en el papel, pero pedía que cinco personas con horarios distintos coincidieran en un jueves y un viernes ya empezados, y ponía la única tarea de fin de semana del semestre sobre A. Arrancar el lunes 7 devuelve la semana 1 a su forma normal —cinco días hábiles, sin sábados ni domingos— a cambio de recortar la semana 2 a tres días.
+
+| | Rebase del 2 de septiembre | Replaneación del 5 |
 |---|---|---|
-| Semana 1 | lun 31 ago – vie 4 sep, cinco días | jue 3 – lun 7 sep, tres días de trabajo |
-| Reunión de decisión | viernes 4 de septiembre | **lunes 7 de septiembre** |
-| Se recorre a semana 2 | — | sistema de diseño (D) y cierre del modelo de dominio (C1) |
+| Semana 1 | jue 3 – lun 7, tres días con fin de semana | **lun 7 – vie 11, cinco días hábiles** |
+| Reunión de decisión | lunes 7 | **viernes 11** |
+| Informe de perfilado (T006) | domingo 6 | **jueves 10** |
+| Semana 2 | 8 – 13 sep, cinco días | **14 – 16 sep, tres días** |
+| Semana 3 | 14 – 20 sep | **17 – 18 sep**, la entrega y su consolidación |
+| Se recorre a semana 4 | — | T020 guión de ingesta (A) y T021 separar entornos (B) |
 | Entregas institucionales | 18 sep · 9 oct · 4 nov · 18 nov · 2, 7 y 9 dic | **idénticas** |
+| Tareas del semestre | 85 | **85** |
+
+## Qué cuesta, dicho con nombre
+
+Dos tareas salen de la semana 2 y caen en la semana 4: el **primer guión de ingesta** de A y la **separación de entornos** de B. Ninguna de las dos se necesita antes de lo siguiente:
+
+| Tarea | Se necesita en | Fecha | Margen |
+|---|---|---|---|
+| T020 · guión de ingesta (A) | semana 7, ingesta de extremo a extremo | 18 de octubre | 21 días |
+| T021 · separar entornos (B) | semana 8, entorno de pruebas aislado | 25 de octubre | 28 días |
+
+El costo real está en otro lado: **la semana 4 de A pasa de una tarea a tres**, y la de B de una a dos. Es la semana del 21 al 27 de septiembre, sin entrega institucional de por medio. Si el 21 se ve apretado, lo que se mueve es el modelo dimensional de A —no bloquea a nadie hasta la semana 9— y eso se decide en la reunión del viernes 18, no antes.
 
 ---
 
@@ -27,7 +44,7 @@ El manual definía cuatro. El integrante C son dos personas, lo que rompe la reg
 
 C1 y C2 comparten el contrato OpenAPI del servicio de dominio: C1 lo publica, C2 lo consume. Es su punto de acuerdo y su punto de fricción; se revisa en cada reunión semanal.
 
-> Si Liseth y Oscar prefieren el reparto al revés, cámbienlo **en la reunión del lunes 7 y no después**. Lo que no es negociable es que cada frente tenga un solo dueño.
+> Si Liseth y Oscar prefieren el reparto al revés, cámbienlo **en la reunión del viernes 11 y no después**. Lo que no es negociable es que cada frente tenga un solo dueño.
 
 ---
 
@@ -45,11 +62,15 @@ El **16 de noviembre es festivo** y cae dos días antes de la entrega final. Esa
 
 ---
 
-## Semana 1 comprimida — jueves 3 a lunes 7 de septiembre
+## Semana 1 — lunes 7 a viernes 11 de septiembre
 
 **Objetivo único:** decidir si la fuente de PROFECO sirve. Si el archivo no tiene lo que suponemos, hay que saberlo ahora y no en octubre, cuando ya no haya margen para cambiar de rumbo.
 
-### Jueves 3 de septiembre — día doble
+Dieciocho tareas repartidas en cinco días hábiles. **Ningún trabajo cae en sábado ni en domingo.**
+
+### Lunes 7 de septiembre — el día que desbloquea a todos
+
+Antes de nada, **reunión de arranque de 30 minutos**: los cinco clonan, corren `bash infra/scripts/verificar-base.sh <su clave>` y `bash infra/scripts/instalar-hooks.sh`. Nadie crea una rama antes de que su verificación salga en verde.
 
 | Quién | Actividad | Cómo saber que quedó |
 |---|---|---|
@@ -61,25 +82,32 @@ El **16 de noviembre es festivo** y cae dos días antes de la entrega final. Esa
 | C2 | Descarga y lee el diccionario de datos de QQP. Anota qué columnas existen y qué significa cada una. | Existe `docs/datos/diccionario-qqp.md` con la lista de columnas y su significado. |
 | D | Crea el archivo de Figma. Inventario de las ocho vistas con una línea de contenido cada una. | Enlace de Figma en el README; inventario en `docs/analisis/inventario-vistas.md`. |
 
-### Viernes 4 de septiembre
+### Martes 8 de septiembre
 
 | Quién | Actividad | Cómo saber que quedó |
 |---|---|---|
 | A | **Perfilado nivel 2.** Distribución de precios: mínimo, máximo, mediana y percentiles por categoría. Precios en cero, negativos o absurdos. Duplicados exactos. Cuántos establecimientos y cadenas. | La sección de rangos y anomalías está escrita con números concretos, no con adjetivos. |
-| A | **Perfilado nivel 3, el crítico.** Cuántas formas distintas de escribir aparecen para un mismo producto. Veinte productos comunes, contando variantes entre cadenas. | Tabla de variantes por producto, con el conteo de los veinte. **Este número decide si la meta de 85% de cobertura de H3 es realista o hay que ajustarla.** |
-| B | Traefik en el archivo de composición, enrutamiento local por nombre de servicio. Crea `.env.example`. Integración continua mínima: análisis estático y compilación al abrir una solicitud. | Los servicios responden por nombre de dominio local. Una solicitud de prueba dispara la canalización y sale en verde. |
-| B | Registro en Oracle Cloud y solicitud del GitHub Student Pack. | Ambos registros enviados, con captura del acuse. |
+| B | Traefik en el archivo de composición, enrutamiento local por nombre de servicio. Crea `.env.example`. | Los servicios responden por nombre de dominio local en lugar de por puerto. |
 | C1 | Primer borrador del modelo de dominio: qué son entidades, qué son objetos de valor, dónde están los límites de los agregados Usuario, Canasta y Alerta. | Existe `docs/analisis/modelo-dominio.md` con la lista y su justificación. |
 | C2 | Instala Node 20 y Expo. Proyecto móvil base que arranca en un teléfono real o emulador, con navegación entre dos pantallas vacías. | La app abre en el teléfono de Oscar. Captura en el issue. |
-| D | Wireframe de baja fidelidad del tablero analítico y de la consola de observabilidad. La consola se revisa **con A** antes de darla por buena: los seis indicadores tienen que leerse de un vistazo. | Los dos wireframes existen en Figma. A dio su visto bueno por escrito en el issue. |
+| D | Wireframe de baja fidelidad del tablero analítico: qué gráficas van, en qué orden y con qué filtros. | El wireframe existe en Figma y se ve desde el enlace compartido. |
 
-### Sábado 5 y domingo 6 — colchón
+### Miércoles 9 de septiembre — el día que produce el insumo de la reunión
 
-Sin trabajo planeado para nadie, con una excepción: **A redacta el informe de perfilado versión cero**, porque de ese informe depende la reunión del lunes. Es la única tarea de fin de semana del semestre y recae en quien la propuso.
+| Quién | Actividad | Cómo saber que quedó |
+|---|---|---|
+| A | **Perfilado nivel 3, el crítico.** Cuántas formas distintas de escribir aparecen para un mismo producto. Veinte productos comunes, contando variantes entre cadenas. | Tabla de variantes por producto, con el conteo de los veinte. **Este número decide si la meta de 85% de cobertura de H3 es realista o hay que ajustarla.** |
+| B | Integración continua mínima: análisis estático y compilación al abrir una solicitud. | Una solicitud de prueba dispara la canalización y sale en verde. |
+| B | Registro en Oracle Cloud y solicitud del GitHub Student Pack. | Ambos registros enviados, con captura del acuse. |
+| D | Wireframe de la consola de observabilidad. Se revisa **con A** antes de darla por buena: los seis indicadores tienen que leerse de un vistazo. | El wireframe existe en Figma y A dio su visto bueno por escrito en el issue. |
 
-`docs/datos/informe-perfilado-v0.md`, tres secciones y una conclusión explícita: **la fuente sirve, o no sirve, y por qué.**
+### Jueves 10 de septiembre — el informe
 
-### Lunes 7 de septiembre — reunión de decisión
+Una sola tarea, y es la que sostiene la reunión: **A redacta el informe de perfilado versión cero.** `docs/datos/informe-perfilado-v0.md`, tres secciones y una conclusión explícita: **la fuente sirve, o no sirve, y por qué.**
+
+Se sube y se avisa **el jueves, no el viernes**: los otros cuatro tienen que llegar leídos a la reunión.
+
+### Viernes 11 de septiembre — reunión de decisión
 
 La reunión más importante del semestre. Cuarenta y cinco minutos, los cinco presentes, cámara encendida.
 
@@ -109,17 +137,22 @@ La reunión más importante del semestre. Cuarenta y cinco minutos, los cinco pr
 
 ## Fase 1 — Exploración y definición
 
-### Semana 2 · 8 al 13 de septiembre
+### Semana 2 · 14 al 16 de septiembre — tres días
+
+Semana corta a propósito: los jueves 17 y viernes 18 se reservan para consolidar la entrega. **Una tarea por persona**, y las cinco cierran el miércoles 16.
 
 | Quién | Actividad | Queda en |
 |---|---|---|
-| A | Contrato de datos versión uno para QQP en YAML: columnas, tipos, obligatoriedad, rangos y umbral de frescura. Primer guión de ingesta que descarga el archivo y lo guarda como Parquet particionado en MinIO. | `contracts/`, `services/data-platform/ingestion/` |
-| B | Separa entornos de desarrollo y pruebas. Manejo de secretos. Extiende la integración continua para que corra `pytest`. | `infra/envs/`, `.github/workflows/` |
+| A | Contrato de datos versión uno para QQP en YAML: columnas, tipos, obligatoriedad, rangos y umbral de frescura. | `contracts/` |
 | C1 | Cierra el modelo de dominio: atributos de cada entidad y reglas de negocio dentro del agregado. Estructura el servicio en capas. Implementa Usuario y Canasta con sus reglas. | `docs/analisis/`, `services/domain-service/` |
 | C2 | Navegación completa de la app con las cuatro pantallas vacías: búsqueda, detalle, mi canasta, alertas. | `clients/mobile/` |
 | D | Sistema de diseño mínimo en Figma: paleta, tipografía y componentes base, aplicado a los wireframes existentes. Completa los wireframes de las ocho vistas. | Figma, enlace en `docs/analisis/` |
 
-### Semana 3 · 14 al 20 de septiembre — **entrega del 18**
+> **B no tiene tarea nueva esta semana.** Es deliberado: es quien tiene que dejar la canalización de integración continua estable y el `README.md` verificable para la entrega del 18, y las dos cosas se hacen revisando lo que ya existe, no agregando. El **primer guión de ingesta** (A) y la **separación de entornos** (B) se corrieron a la semana 4; se necesitan hasta las semanas 7 y 8.
+
+### Semana 3 · 17 y 18 de septiembre — **entrega del 18**
+
+Dos días. No hay desarrollo nuevo: se cierra, se revisa cruzado y se entrega.
 
 | Quién | Actividad | Queda en |
 |---|---|---|
@@ -134,11 +167,15 @@ La reunión más importante del semestre. Cuarenta y cinco minutos, los cinco pr
 
 ## Fase 2 — Requerimientos, análisis y diseño
 
-### Semana 4 · 21 al 27 de septiembre
+### Semana 4 · 21 al 27 de septiembre — **la semana cargada**
+
+Recibe las dos tareas que salieron de la semana 2. A pasa de una tarea a tres y B de una a dos. Es el único costo de la replaneación, y no hay entrega institucional de por medio.
 
 | Quién | Actividad | Queda en |
 |---|---|---|
 | A | Modelo dimensional completo: declaración de grano, tabla de hechos, cuatro dimensiones, agregados y diccionario. Requerimientos no funcionales de datos: frescura, completitud, latencia. | `docs/datos/modelo-dimensional.md` |
+| A | **↩ recorrida de la semana 2.** Primer guión de ingesta: descarga el archivo y lo guarda como Parquet particionado en MinIO. | `services/data-platform/ingestion/` |
+| B | **↩ recorrida de la semana 2.** Separa entornos de desarrollo y pruebas. Manejo de secretos. Extiende la integración continua para que corra `pytest`. | `infra/envs/`, `.github/workflows/` |
 | B | Estrategia de ramas y plantilla de solicitudes. Organiza el tablero por iteración. | `.github/`, GitHub Projects |
 | C1 | Casos de uso CU-08 a CU-11 en formato completo (Cockburn). | `docs/analisis/casos-uso/` |
 | C2 | Caso de uso CU-12 en formato completo. | `docs/analisis/casos-uso/` |
@@ -272,4 +309,4 @@ Todo lo que se construye existe para poder contrastar esto en la semana 13:
 | **H3 Reconciliación** | Cobertura y precisión de la normalización de nombres entre cadenas | Cobertura ≥ 85%, precisión ≥ 90% sobre 200 pares |
 | **H4 Validez del índice** | Correlación entre el índice de canasta propio y el INPC oficial | Positiva y significativa; divergencias documentadas |
 
-El perfilado nivel 3 del viernes 4 es el que dice si H3 es alcanzable con 85% o hay que ajustar la meta **antes** de comprometerla. Ajustarla en septiembre con datos es método; ajustarla en noviembre porque no salió es otra cosa.
+El perfilado nivel 3 del miércoles 9 es el que dice si H3 es alcanzable con 85% o hay que ajustar la meta **antes** de comprometerla. Ajustarla en septiembre con datos es método; ajustarla en noviembre porque no salió es otra cosa.

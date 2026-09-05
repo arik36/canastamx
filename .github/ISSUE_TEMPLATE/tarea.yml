@@ -67,7 +67,7 @@ body:
     id: fecha
     attributes:
       label: Fecha límite
-      placeholder: 4 de septiembre de 2026
+      placeholder: 11 de septiembre de 2026
     validations:
       required: true
 

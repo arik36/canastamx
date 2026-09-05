@@ -14,7 +14,7 @@ Este archivo es el acuerdo. Se lee una vez completo y después se consulta.
 | **Una vez por semana, día y hora fijos** | Reunión de equipo | 45 minutos |
 | **Viernes** | Cada quien deja su rama incorporada o explica por qué no | — |
 
-El horario fijo de la reunión se acuerda el **lunes 7 de septiembre** y no se mueve el resto del semestre. Un equipo que renegocia el horario cada semana termina reuniéndose cada tres.
+El horario fijo de la reunión se acuerda el **viernes 11 de septiembre** y no se mueve el resto del semestre. Un equipo que renegocia el horario cada semana termina reuniéndose cada tres.
 
 ### El reporte diario
 
