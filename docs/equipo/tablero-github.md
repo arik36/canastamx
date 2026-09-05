@@ -19,7 +19,9 @@ Esta guía la ejecuta A una sola vez (montaje), y después la usan los cinco tod
 
 ## 1.2 Configura las columnas
 
-Por defecto trae tres. Necesitas cinco. Haz clic en el `+` a la derecha de la última columna para agregar, y en los tres puntos de cada una para renombrar.
+Por defecto trae tres: **Todo**, **In Progress** y **Done**.
+
+Conviene saber cómo está armado, porque no es obvio: **las columnas no son columnas, son los valores de un campo** que GitHub crea solo, llamado `Status`. Renombrar una columna es renombrar una opción de ese campo. Lo más cómodo es hacerlo todo junto en **Settings** → el campo `Status`, donde además se arrastran para ordenarlas.
 
 | Columna | Qué contiene |
 |---|---|
@@ -39,11 +41,23 @@ Tres puntos arriba a la derecha → **Settings** → **Custom fields** → **New
 |---|---|---|
 | `Semana` | Number | 1 a 14 |
 | `Frente` | Single select | `Datos`, `Infra`, `Dominio`, `Móvil`, `Web`, `Equipo` |
-| `Estado` | Single select | `Sin empezar`, `En curso`, `Parcial`, `Aprobada`, `Retrasada` |
 | `Fecha límite` | Date | — |
-| `Evidencia` | Text | Enlace a la PR o al archivo |
+| `Evidencia` | Text | Enlace a la solicitud o al archivo |
 
 Con `Semana` y `Frente` puedes filtrar el tablero por persona o por semana en un clic, que es lo que hace útil la reunión.
+
+> **Cuatro campos, no cinco.** Una versión anterior de esta guía pedía además un campo `Estado` con `Sin empezar · En curso · Parcial · Aprobada · Retrasada`. **No lo crees.** Se pisa con el campo `Status` que GitHub crea solo —el que da las columnas del tablero— y dos campos que dicen casi lo mismo se contradicen a la primera semana: alguien arrastra la tarjeta de columna y se le olvida cambiar el otro.
+>
+> El semáforo de la bitácora sale de la columna:
+>
+> | Columna | Estado en la bitácora |
+> |---|---|
+> | Backlog · Esta semana | Sin empezar |
+> | En curso | En curso |
+> | En revisión | Parcial |
+> | Hecho | Aprobada |
+>
+> *Retrasada* es la única que no sale de ahí: se marca con la etiqueta `bloqueo`, o comparando contra `Fecha límite`.
 
 ## 1.4 Crea las vistas
 
@@ -102,7 +116,27 @@ Léelo antes de correrlo. Al final imprime cuántos issues creó.
 
 En cualquiera de los dos casos, **solo se siembran las semanas 1 a 3 por ahora**. Sembrar las catorce de golpe produce un tablero con 70 tarjetas que nadie mira. Las siguientes se cargan en la reunión semanal, que es cuando ya sabes qué se recorrió.
 
-## 1.8 Protege `main`
+## 1.7 bis · Llena los campos de las tarjetas
+
+Los issues sembrados llegan al tablero con `Semana`, `Frente` y `Fecha límite` vacíos, y llenarlos a mano son noventa ediciones. No hace falta: **todo eso ya está en el título y el cuerpo de cada issue** —`[S1][Datos]` es semana 1, frente Datos— así que se puede leer y escribir solo.
+
+```bash
+gh auth refresh -s project -h github.com     # una sola vez: 'project' no viene por defecto
+python3 infra/scripts/llenar-tablero.py --simular
+python3 infra/scripts/llenar-tablero.py
+```
+
+El modo `--simular` no escribe nada: enseña las 30 líneas que va a poner para que las revises antes. **Este guión sí se puede volver a correr** —escribe el mismo valor encima, no duplica—, a diferencia del de siembra.
+
+Si se queja de que faltan campos, es que el paso 1.3 no está completo: los nombres tienen que coincidir exactamente, acentos incluidos.
+
+## 1.7 ter · Marca la semana en curso
+
+En la vista **Por persona**, que es tabla, selecciona con las casillas las filas de la semana en curso y cámbiales el `Status` a **Esta semana** de un jalón. GitHub deja editar varias filas seleccionadas a la vez.
+
+## 1.8 Protege `main` — y qué hacer mientras no se pueda
+
+Cuando se pueda, es esto:
 
 **Settings** → **Branches** → **Add branch protection rule**.
 
@@ -112,7 +146,11 @@ En cualquiera de los dos casos, **solo se siembran las semanas 1 a 3 por ahora**
 - ☑ Require status checks to pass before merging
 - ☑ Do not allow bypassing the above settings
 
-Sin esto, la regla de "nadie escribe en `main`" es un acuerdo verbal que alguien va a romper sin querer un martes a las once de la noche.
+Sin esto, la regla de «nadie escribe en `main`» es un acuerdo verbal que alguien va a romper sin querer un martes a las once de la noche.
+
+**Hoy no se puede.** GitHub no cobra por proteger ramas en repositorios **públicos**, pero sí en los **privados** de cuenta personal, y `arik36/canastamx` es privado. Mientras tanto se sostiene con tres cosas: los ganchos de `.githooks/` —que cada quien instala en su máquina—, la verificación **Higiene** de la canalización, y **una auditoría de dos comandos al inicio de cada reunión semanal**.
+
+Los tres caminos posibles, la auditoría y qué hay que decidir están en [`reunion-de-arranque.md`](./reunion-de-arranque.md), en la sección «Quién aprueba las solicitudes».
 
 ---
 
