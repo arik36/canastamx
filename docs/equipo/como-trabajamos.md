@@ -109,7 +109,7 @@ Los detalles de Git están en [`git-paso-a-paso.md`](./git-paso-a-paso.md). Aqu�
 
 **Ninguna tarea vive más de una semana.** Si algo te va a tomar dos semanas, no es una tarea: son dos. Pártela al crearla.
 
-**Una rama, una solicitud, un revisor.** El revisor por defecto está en la tabla del manual de Git.
+**Una rama, una solicitud, un revisor.** Quién te revisa está en la tabla de suplencias, [más abajo en este mismo archivo](#7-reglas-de-suplencia): tu segundo es tu revisor.
 
 ---
 

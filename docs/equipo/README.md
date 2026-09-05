@@ -22,7 +22,7 @@ Si sale algo en rojo, **no ramifiques: avísalo en el chat.** Qué tiene que exi
 | **Alguien a punto de crear su primera rama** | **[La línea base](./linea-base.md).** Y corre `bash infra/scripts/verificar-base.sh <tu clave>` |
 | **Alguien que va a trabajar hoy** | **[La ficha de tu tarea](./fichas/semana-01.md).** Completa, antes de empezar. No a media tarea |
 | **Nunca has trabajado con ramas** | **[El ciclo de trabajo](./ciclo-de-trabajo.md)**, completo. Se lee una vez, antes de empezar |
-| **Nuevo en el equipo** | [Cómo trabajamos](./como-trabajamos.md) → [Git paso a paso](./git-paso-a-paso.md) → [tu ficha de hoy](./fichas/semana-01.md) |
+| **Nuevo en el equipo** | [La reunión de arranque](./reunion-de-arranque.md), actos 1 y 2 → [Cómo trabajamos](./como-trabajamos.md) → [tu ficha de hoy](./fichas/semana-01.md) |
 | **El que monta el tablero (A)** | [El tablero](./tablero-github.md), parte 1 |
 | **Alguien que va a subir código hoy** | [Git paso a paso](./git-paso-a-paso.md), secciones 2, 3 y 4 |
 | **Alguien atorado** | [Git paso a paso](./git-paso-a-paso.md), secciones 9 y 11 |
@@ -59,6 +59,7 @@ Y el orden de uso, en un día normal: abres **el panel**, encuentras tu tarea, d
 | [`fichas/PLANTILLA-ficha.md`](./fichas/PLANTILLA-ficha.md) | Para escribir las fichas de la semana siguiente. Se llenan en la reunión, con todos presentes |
 | [`mapa-dependencias.md`](./mapa-dependencias.md) | Qué tarea bloquea a cuál, las tres cadenas críticas y a quién avisarle al terminar |
 | [`como-trabajamos.md`](./como-trabajamos.md) | El ritmo del equipo: reporte diario, reunión semanal, la regla de las 24 horas, qué significa "terminado", el semáforo y dónde se dice qué |
+| [`reunion-de-arranque.md`](./reunion-de-arranque.md) | **El guion de la sesión del lunes 7**, en dos actos: de cero a poder trabajar, y una tarea completa de la tarjeta a `Hecho`. Incluye qué es `--no-verify` y quién aprueba las solicitudes mientras `main` no está protegida |
 | [`ciclo-de-trabajo.md`](./ciclo-de-trabajo.md) | **El ciclo completo contado de principio a fin, con el porqué de cada paso.** Para quien viene de trabajar todo sobre `main`. Incluye cómo se nombran ramas, commits y etiquetas, y cuándo NO se usa una etiqueta |
 | [`git-paso-a-paso.md`](./git-paso-a-paso.md) | Cada operación de Git en dos vías, terminal y GitHub Desktop. Incluye cómo deshacer errores y un catálogo de mensajes de error |
 | [`cronograma.md`](./cronograma.md) | Las 14 semanas replaneadas al arranque del 7 de septiembre, con actividades y criterios de cierre por integrante |
@@ -80,6 +81,7 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 | [`docs/analisis/modelo-dominio.md`](../analisis/modelo-dominio.md) | C1 | mar 8 |
 | [`docs/adr/001-fuente-de-datos.md`](../adr/001-fuente-de-datos.md) | Equipo | vie 11 |
 | [`docs/adr/000-plantilla.md`](../adr/000-plantilla.md) | Quien decida algo | siempre |
+| [`docs/equipo/entorno/PLANTILLA.md`](./entorno/PLANTILLA.md) | Los cinco | lun 7, en la reunión |
 | `docker-compose.yml` · `.env.example` · `.gitignore` | B | lun 7 y mar 8 |
 | `.github/workflows/ci.yml` | B | mié 9 |
 | `contracts/qqp.contrato.yml` | A | semana 2 |
