@@ -113,7 +113,7 @@ services:
         condition: service_healthy
     networks: [canastamx]
 
-  # ── Puerta de enlace · se agrega en T008 (viernes 4) ──────────────────────
+  # ── Puerta de enlace · se agrega en T008 (martes 8) ───────────────────────
   # Descomenta cuando toque Traefik. Los nombres *.localhost resuelven solos
   # en los navegadores modernos, sin tocar el archivo hosts.
   #

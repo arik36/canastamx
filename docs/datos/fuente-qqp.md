@@ -1,6 +1,6 @@
 # Fuente de datos · Quién es Quién en los Precios
 
-<!-- Llena T002 (A) · jueves 3 de septiembre.
+<!-- Llena T002 (A) · lunes 7 de septiembre.
      Todo lo de aquí se MIDE, no se supone. Verifica con la terminal, no con Excel:
      Excel corta en 1,048,576 filas sin avisar. -->
 

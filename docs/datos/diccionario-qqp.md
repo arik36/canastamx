@@ -1,6 +1,6 @@
 # Diccionario de datos · QQP
 
-<!-- Lo llena C2 (Oscar) en T013 · jueves 3 de septiembre.
+<!-- Lo llena C2 (Oscar) en T013 · lunes 7 de septiembre.
      Fuente: https://datos.profeco.gob.mx/diccionarioDatosQQP.php
      A te pasa el enlace exacto por el chat. NO busques por tu cuenta:
      hay más de una versión publicada y documentar la equivocada es peor

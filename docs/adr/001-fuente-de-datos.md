@@ -1,6 +1,6 @@
 # ADR 001 · Fuente de datos
 
-<!-- Se escribe en T018, en los últimos diez minutos de la reunión del lunes 7,
+<!-- Se escribe en T018, en los últimos diez minutos de la reunión del viernes 11,
      con los cinco presentes. No "después": después nadie lo escribe. -->
 
 - **Fecha:** 7 de septiembre de 2026
@@ -13,7 +13,7 @@
      Ejemplo: "El conjunto trae 3.2 millones de filas de 2024 a 2026, con 0.34%
      de precios en cero y 6.4 variantes de escritura promedio por producto." -->
 
-Se perfiló la fuente durante la semana del 3 al 6 de septiembre. Los hallazgos están en `docs/datos/informe-perfilado-v0.md`.
+Se perfiló la fuente durante la semana del 7 al 10 de septiembre. Los hallazgos están en `docs/datos/informe-perfilado-v0.md`.
 
 ## Decisión
 

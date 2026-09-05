@@ -1,6 +1,6 @@
 # Informe de perfilado · fuente QQP · versión 0
 
-<!-- Lo escribe A en T006 · domingo 6 de septiembre.
+<!-- Lo escribe A en T006 · jueves 10 de septiembre.
      Esto NO es un resumen: es una RECOMENDACIÓN. La diferencia está en el
      último párrafo. Un resumen termina en "estos son los hallazgos"; una
      recomendación termina en "por lo tanto propongo esto, y estos números

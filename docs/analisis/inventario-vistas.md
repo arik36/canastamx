@@ -1,6 +1,6 @@
 # Inventario de vistas
 
-<!-- Lo llena D (Karen) en T015 · jueves 3 de septiembre.
+<!-- Lo llena D (Karen) en T015 · lunes 7 de septiembre.
 
      LAS OCHO VISTAS YA ESTÁN DEFINIDAS EN EL PROTOCOLO. No las inventes: si
      propones otras, el prototipo del 18 de septiembre no va a corresponder al

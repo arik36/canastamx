@@ -61,7 +61,7 @@ Y el orden de uso, en un día normal: abres **el panel**, encuentras tu tarea, d
 | [`como-trabajamos.md`](./como-trabajamos.md) | El ritmo del equipo: reporte diario, reunión semanal, la regla de las 24 horas, qué significa "terminado", el semáforo y dónde se dice qué |
 | [`ciclo-de-trabajo.md`](./ciclo-de-trabajo.md) | **El ciclo completo contado de principio a fin, con el porqué de cada paso.** Para quien viene de trabajar todo sobre `main`. Incluye cómo se nombran ramas, commits y etiquetas, y cuándo NO se usa una etiqueta |
 | [`git-paso-a-paso.md`](./git-paso-a-paso.md) | Cada operación de Git en dos vías, terminal y GitHub Desktop. Incluye cómo deshacer errores y un catálogo de mensajes de error |
-| [`cronograma.md`](./cronograma.md) | Las 14 semanas rebaseadas al 3 de septiembre, con actividades y criterios de cierre por integrante |
+| [`cronograma.md`](./cronograma.md) | Las 14 semanas replaneadas al arranque del 7 de septiembre, con actividades y criterios de cierre por integrante |
 | [`tablero-github.md`](./tablero-github.md) | Cómo se monta el tablero (una vez) y cómo se opera (todos los días) |
 | [`entregas/`](./entregas/) | Una ficha por entrega institucional |
 | [`AUDITORIA-2026-09-02.md`](./AUDITORIA-2026-09-02.md) | Los ocho problemas detectados en la revisión del sistema de trabajo, y qué se hizo con cada uno |
@@ -72,16 +72,16 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 
 | Plantilla | Quién la llena | Cuándo |
 |---|---|---|
-| [`docs/datos/fuente-qqp.md`](../datos/fuente-qqp.md) | A | jue 3 |
-| [`docs/datos/perfilado.md`](../datos/perfilado.md) | A | jue 3 y vie 4 |
-| [`docs/datos/informe-perfilado-v0.md`](../datos/informe-perfilado-v0.md) | A | dom 6 |
-| [`docs/datos/diccionario-qqp.md`](../datos/diccionario-qqp.md) | C2 | jue 3 |
-| [`docs/analisis/inventario-vistas.md`](../analisis/inventario-vistas.md) | D | jue 3 |
-| [`docs/analisis/modelo-dominio.md`](../analisis/modelo-dominio.md) | C1 | vie 4 |
-| [`docs/adr/001-fuente-de-datos.md`](../adr/001-fuente-de-datos.md) | Equipo | lun 7 |
+| [`docs/datos/fuente-qqp.md`](../datos/fuente-qqp.md) | A | lun 7 |
+| [`docs/datos/perfilado.md`](../datos/perfilado.md) | A | lun 7, mar 8 y mié 9 |
+| [`docs/datos/informe-perfilado-v0.md`](../datos/informe-perfilado-v0.md) | A | jue 10 |
+| [`docs/datos/diccionario-qqp.md`](../datos/diccionario-qqp.md) | C2 | lun 7 |
+| [`docs/analisis/inventario-vistas.md`](../analisis/inventario-vistas.md) | D | lun 7 |
+| [`docs/analisis/modelo-dominio.md`](../analisis/modelo-dominio.md) | C1 | mar 8 |
+| [`docs/adr/001-fuente-de-datos.md`](../adr/001-fuente-de-datos.md) | Equipo | vie 11 |
 | [`docs/adr/000-plantilla.md`](../adr/000-plantilla.md) | Quien decida algo | siempre |
-| `docker-compose.yml` · `.env.example` · `.gitignore` | B | jue 3 y vie 4 |
-| `.github/workflows/ci.yml` | B | vie 4 |
+| `docker-compose.yml` · `.env.example` · `.gitignore` | B | lun 7 y mar 8 |
+| `.github/workflows/ci.yml` | B | mié 9 |
 | `contracts/qqp.contrato.yml` | A | semana 2 |
 | `README.md` | A, y lo verifica B | semana 3 |
 

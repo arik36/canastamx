@@ -1,6 +1,6 @@
 # Perfilado de la fuente QQP
 
-<!-- Llenan T003, T004 y T005 (A) · jueves 3 y viernes 4.
+<!-- Llenan T003, T004 y T005 (A) · lunes 7, martes 8 y miércoles 9.
      Regla: números, no adjetivos. "Hay bastantes nulos" no sirve;
      "88 nulos, 0.02%" sí. -->
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 1 · Estructura  <!-- T003, jueves 3 -->
+## 1 · Estructura  <!-- T003, lunes 7 -->
 
 **Volumen:** ______ filas × ______ columnas
 **Rango de fechas:** de ______ a ______ · fechas ilegibles: ______
@@ -27,7 +27,7 @@
 
 ---
 
-## 2 · Rangos y anomalías  <!-- T004, viernes 4 -->
+## 2 · Rangos y anomalías  <!-- T004, martes 8 -->
 
 Precios en cero: ______ ( ___% ) · negativos: ______ · nulos: ______ ( ___% )
 Duplicados exactos: ______ ( ___% )
@@ -50,7 +50,7 @@ Establecimientos distintos: ______ · cadenas: ______ · municipios: ______
 
 ---
 
-## 3 · Variantes de escritura  <!-- T005, viernes 4 · decide H3 -->
+## 3 · Variantes de escritura  <!-- T005, miércoles 9 · decide H3 -->
 
 Variantes promedio por producto: ______ · mediana: ______ · máximo: ______
 Productos con más de 10 variantes: ______ de ______ ( ___% )

@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-<!-- Lo escribe C1 (Liseth) en T012 · viernes 4 de septiembre.
+<!-- Lo escribe C1 (Liseth) en T012 · martes 8 de septiembre.
 
      Los TRES agregados ya están nombrados en el protocolo: Usuario, Canasta y
      Alerta. No inventes otros. Tu trabajo es decidir qué hay DENTRO de cada uno.
