@@ -97,6 +97,29 @@ bash infra/scripts/verificar-base.sh C1   # tu clave: A · B · C1 · C2 · D
 
 Revisa que tu copia tenga la línea base y que tus herramientas estén instaladas. Si dice **PUEDES CREAR TU RAMA**, ya estás. Si no, arregla lo que marque o avisa en el chat. Detalle en [`linea-base.md`](./linea-base.md).
 
+### 3.4 Activa los ganchos de Git
+
+```bash
+bash infra/scripts/instalar-hooks.sh
+```
+
+Un comando, una vez, después de clonar. Activa dos redes que viven versionadas en `.githooks/`:
+
+| Gancho | Qué impide |
+|---|---|
+| `pre-commit` | Confirmar un `.env`, carpetas de dependencias (`node_modules/`, `.venv/`, `target/`) o archivos de más de 10 MB |
+| `pre-push` | Enviar directamente a `main` |
+
+**Por qué esto y no la protección de ramas de GitHub.** La protección de ramas en un repositorio privado exige plan de pago, y el nuestro es gratuito mientras llega el GitHub Student Pack. Estos ganchos son gratis, viven en el repositorio y atrapan **el error honesto**, que es el que de verdad ocurre: el `git push` a `main` de las once de la noche, o el `git add .` que se lleva un `.env`.
+
+No son seguridad. Corren en tu máquina y quien quiera puede saltárselos con `--no-verify`. Son una red, no una reja. Cuando llegue el plan Pro, la protección del servidor se suma encima y entonces sí es una reja.
+
+**Cada integrante los activa por su cuenta**, porque `core.hooksPath` es configuración local: no viaja con el clon. Compruébalo con:
+
+```bash
+git config core.hooksPath      # debe decir .githooks
+```
+
 ---
 
 ## 4 · El ciclo completo, con un ejemplo real
@@ -534,6 +557,12 @@ Esos tres comandos contestan casi cualquier duda. Y si de verdad se enredó todo
 ## 10 · La tarjeta de un vistazo
 
 ```bash
+# ── UNA VEZ, DESPUÉS DE CLONAR ──────────────────────────────
+git config --global user.name "Tu Nombre Completo"
+git config --global user.email "tu-correo-de-github@ejemplo.com"
+bash infra/scripts/instalar-hooks.sh
+bash infra/scripts/verificar-base.sh C1        # tu clave
+
 # ── CADA TAREA ──────────────────────────────────────────────
 git switch main && git pull              # 1. parte de lo último
 git switch -c feat/inic-descripcion      # 2. tu rama
