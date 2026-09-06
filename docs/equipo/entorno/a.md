@@ -13,7 +13,7 @@
 | git | 2.43.0 | `git --version` |
 | gh | 2.45.0 | `gh --version` |
 | Python | 3.12.3 | `python3 --version` |
-| pip | **pendiente** | `pip3 --version` → *command not found*. **Lo necesito esta semana** para el perfilado (T003–T005): pandas no se instala sin él |
+| pip | 24.0 | `pip --version`. **Ojo: en mi máquina `pip3` no existe, solo `pip`.** Quien siga mis pasos con `pip3` va a ver *command not found* y no le falta nada |
 | Docker | **pendiente** | `docker --version` → *command not found*. Lo necesito en la semana 7, cuando la ingesta escriba en MinIO |
 
 ## Notas
