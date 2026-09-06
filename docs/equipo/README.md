@@ -22,7 +22,8 @@ Si sale algo en rojo, **no ramifiques: avísalo en el chat.** Qué tiene que exi
 | **Alguien a punto de crear su primera rama** | **[La línea base](./linea-base.md).** Y corre `bash infra/scripts/verificar-base.sh <tu clave>` |
 | **Alguien que va a trabajar hoy** | **[La ficha de tu tarea](./fichas/semana-01.md).** Completa, antes de empezar. No a media tarea |
 | **Nunca has trabajado con ramas** | **[El ciclo de trabajo](./ciclo-de-trabajo.md)**, completo. Se lee una vez, antes de empezar |
-| **Nuevo en el equipo** | [La reunión de arranque](./reunion-de-arranque.md), actos 1 y 2 → [Cómo trabajamos](./como-trabajamos.md) → [tu ficha de hoy](./fichas/semana-01.md) |
+| **Recién llegado, sin nada instalado** | **[La guía de tu sistema operativo](./instalar/)**. Windows, Linux o WSL |
+| **Nuevo en el equipo** | **[El video del ciclo completo](#enlaces)** → [La reunión de arranque](./reunion-de-arranque.md), actos 1 y 2 → [Cómo trabajamos](./como-trabajamos.md) → [tu ficha de hoy](./fichas/semana-01.md) |
 | **El que monta el tablero (A)** | [El tablero](./tablero-github.md), parte 1 |
 | **Alguien que va a subir código hoy** | [Git paso a paso](./git-paso-a-paso.md), secciones 2, 3 y 4 |
 | **Alguien atorado** | [Git paso a paso](./git-paso-a-paso.md), secciones 9 y 11 |
@@ -59,6 +60,8 @@ Y el orden de uso, en un día normal: abres **el panel**, encuentras tu tarea, d
 | [`fichas/PLANTILLA-ficha.md`](./fichas/PLANTILLA-ficha.md) | Para escribir las fichas de la semana siguiente. Se llenan en la reunión, con todos presentes |
 | [`mapa-dependencias.md`](./mapa-dependencias.md) | Qué tarea bloquea a cuál, las tres cadenas críticas y a quién avisarle al terminar |
 | [`como-trabajamos.md`](./como-trabajamos.md) | El ritmo del equipo: reporte diario, reunión semanal, la regla de las 24 horas, qué significa "terminado", el semáforo y dónde se dice qué |
+| [`instalar/`](./instalar/) | **Cómo preparar tu máquina**, una guía por sistema operativo: [Windows](./instalar/windows.md) · [Linux](./instalar/linux.md) · [Windows con WSL](./instalar/windows-wsl.md) |
+| [`simulacion-grabada.md`](./simulacion-grabada.md) | **El guion del video**: una tarea completa de la tarjeta a `main`, escena por escena, con qué se dice y qué se teclea. Lo graba A una vez y queda como referencia todo el semestre |
 | [`reunion-de-arranque.md`](./reunion-de-arranque.md) | **El guion de la sesión del lunes 7**, en dos actos: de cero a poder trabajar, y una tarea completa de la tarjeta a `Hecho`. Incluye qué es `--no-verify` y quién aprueba las solicitudes mientras `main` no está protegida |
 | [`ciclo-de-trabajo.md`](./ciclo-de-trabajo.md) | **El ciclo completo contado de principio a fin, con el porqué de cada paso.** Para quien viene de trabajar todo sobre `main`. Incluye cómo se nombran ramas, commits y etiquetas, y cuándo NO se usa una etiqueta |
 | [`git-paso-a-paso.md`](./git-paso-a-paso.md) | Cada operación de Git en dos vías, terminal y GitHub Desktop. Incluye cómo deshacer errores y un catálogo de mensajes de error |
@@ -134,7 +137,8 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 | Figma | *(D lo agrega aquí)* |
 | Drive del equipo | *(A lo agrega aquí)* |
 | Bitácora en Excel | *(A lo agrega aquí)* |
-| Panel del equipo | *(A lo agrega aquí)* |
+| Panel del equipo | [claude.ai/code/artifact/da43e83d…](https://claude.ai/code/artifact/da43e83d-1d0e-4a33-89de-201b353d01d1) |
+| Video del ciclo completo | *(A lo agrega aquí después de grabarlo)* |
 
 ---
 
