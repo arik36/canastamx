@@ -40,7 +40,7 @@
 
 ### PseudoCodigo de perfilado_nivel1.py 
 <!--Logica detras de datos/perfilado/perfilado_nivel1.py: script usado para comparar el estado real de las columas en los .csv-->
-
+```bash
 para cada carpeta en [QQP_2025, QQP_2026]:
     para cada archivo .csv en la carpeta:
         si el archivo es una de las 2 excepciones de mayo 2026:
@@ -58,19 +58,19 @@ para cada carpeta en [QQP_2025, QQP_2026]:
 al terminar:
     calcular % de nulos = nulos acumulados / filas totales
     reportar: filas, columnas, tipos, % nulos, rango de fechas, entidades
-
+```
 
 **Discrepancias entre tipo declarado y tipo real:**
 
-- datos.profeco.gob.mx/diccionarioDatosQQP.php no documento todo: el diccionario solo marca 15 columnas del diccionario oficial. Tu script encontró 18. Las tres de más — folio, cv_producto, cv_marca — no aparecen en 
+- datos.profeco.gob.mx/diccionarioDatosQQP.php no documento todo: el diccionario solo marca 15 columnas del diccionario oficial. El script docs/datos/perfilado/perfilado_nivel1.py encontró 18. Las tres de más — folio, cv_producto, cv_marca — no aparecen en el sitio oficial. 
 
-- `folio` parece ser mas una llave de registro única
+- `folio` parece ser mas una llave de registro única.
 
-- `fecha_registro` (declarado `Datetime`, viene como `str` en dos formatos) 
+- `fecha_registro` (declarado `Datetime`, viene como `str` en dos formatos). 
 
 - `precio` sale `float64`, razonablemente cerca de lo declarado (`Número (18,2)`) — sin discrepancia grave aquí, a diferencia de lo que yo misma había anticipado antes de correr el script.
 
-- El script en `docs/perfilado/perfilado_nivel1.py` devuelve 37 entidades pero 7 de ellas se repiten (no aparece Colima ni Nayarit en ningún lado de la lista.)
+- El script en `docs/perfilado/perfilado_nivel1.py` devuelve 37 entidades pero 7 de ellas se repiten (no aparece Colima ni Nayarit en ningún lado de la lista).
 ---
 
 ## 2 · Rangos y anomalías  <!-- T004, martes 8 -->
