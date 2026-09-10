@@ -170,35 +170,37 @@ La consulta en DuckDB contó cuántas veces se repiten exactamente esos precios 
 
 - - No son errores aleatorios: Una lavadora a $9,999.00 aparece 4,515 veces; las pantallas a ese mismo precio aparecen  3,669 veces; y las batidoras a $999.00 se repiten 2,044 veces.
 
-┌───────────────────────────────────┬─────────────────────────────────────┬─────────┬───────┐
-│             categoria             │              producto               │ precio  │ veces │
-│              varchar              │               varchar               │ double  │ int64 │
-├───────────────────────────────────┼─────────────────────────────────────┼─────────┼───────┤
-│ Aparatos Electricos               │ Lavadoras                           │  9999.0 │  4515 │
-│ Aparatos Electronicos             │ Pantallas                           │  9999.0 │  3669 │
-│ Aparatos Electricos               │ Estufas                             │  9999.0 │  2541 │
-│ Aparatos Electricos               │ Batidoras                           │   999.0 │  2044 │
-│ Aparatos Electricos               │ Licuadoras                          │   999.0 │  1724 │
-│ Aparatos Electricos               │ Planchas                            │   999.0 │  1664 │
-│ Aparatos Electricos               │ Extractores de Jugos y Exprimidores │   999.0 │  1233 │
-│ Aparatos Electronicos             │ Bocinas Portátiles                  │  9999.0 │  1164 │
-│ Aparatos Electricos               │ Refrigeradores                      │  9999.0 │  1132 │
-│ Medicamentos                      │ Pulmonarom                          │   999.0 │   901 │
-│      ·                            │   ·                                 │     ·   │     · │
-│      ·                            │   ·                                 │     ·   │     · │
-│      ·                            │   ·                                 │     ·   │     · │
-│ Medicamentos                      │ Tafil                               │   999.0 │     1 │
-│ Medicamentos                      │ Sermion                             │   999.0 │     1 │
-│ Aparatos Electronicos             │ C?maras Digitales                   │  9999.0 │     1 │
-│ Medicamentos                      │ Competact                           │   999.0 │     1 │
-│ Medicamentos                      │ Nexium                              │   999.0 │     1 │
-│ Aparatos Electrónicos             │ Tablet                              │   999.0 │     1 │
-│ Medicamentos                      │ Tafirol Flex                        │   999.0 │     1 │
-│ Medicamentos                      │ Seloken Zok                         │   999.0 │     1 │
-│ Aparatos Electricos               │ Lavadoras                           │ 99999.0 │     1 │
-│ Arts. de Esparcimiento (Juguetes) │ Electrónicos de Video               │  9999.0 │     1 │
-└───────────────────────────────────┴─────────────────────────────────────┴─────────┴───────┘
-  135 rows (20 shown)                                                             4 columns
+```text
+┌─────────────────────────┬───────────────────────────────────────┬────────┬───────┐
+│        categoria        │               producto                │ precio │ veces │
+│         varchar         │                varchar                │ double │ int64 │
+├─────────────────────────┼───────────────────────────────────────┼────────┼───────┤
+│ Aparatos Electricos     │ Lavadoras                             │ 9999.0 │  4515 │
+│ Aparatos Electronicos   │ Pantallas                             │ 9999.0 │  3669 │
+│ Aparatos Electricos     │ Estufas                               │ 9999.0 │  2541 │
+│ Aparatos Electricos     │ Batidoras                             │  999.0 │  2044 │
+│ Aparatos Electricos     │ Licuadoras                            │  999.0 │  1724 │
+│ Aparatos Electricos     │ Planchas                              │  999.0 │  1664 │
+│ Aparatos Electricos     │ Extractores de Jugos y Exprimidores   │  999.0 │  1233 │
+│ Aparatos Electronicos   │ Bocinas Portátiles                    │ 9999.0 │  1164 │
+│ Aparatos Electricos     │ Refrigeradores                        │ 9999.0 │  1132 │
+│ Medicamentos            │ Pulmonarom                            │  999.0 │   901 │
+│            .            │                   .                   │      . │     . │
+│            .            │                   .                   │      . │     . │
+│            .            │                   .                   │      . │     . │
+│ Aparatos Electrónicos   │ Tablet                                │  999.0 │     1 │
+│ Medicamentos            │ Seloken Zok                           │  999.0 │     1 │
+│ Medicamentos            │ Tafirol Flex                          │  999.0 │     1 │
+│ Aparatos Electricos     │ Lavadoras                             │99999.0 │     1 │
+│ Medicamentos            │ Competact                             │  999.0 │     1 │
+│ Medicamentos            │ Vasculflow                            │  999.0 │     1 │
+│ Aparatos Electronicos   │ C?maras Digitales                     │ 9999.0 │     1 │
+│ Medicamentos            │ Sermion                               │  999.0 │     1 │
+│ Medicamentos            │ Travatan                              │  999.0 │     1 │
+│ Medicamentos            │ Nexium                                │  999.0 │     1 │
+└─────────────────────────┴───────────────────────────────────────┴────────┴───────┘
+135 rows (20 shown)                                                      4 columns
+```
 - - ¿porque entonces tenemos 0 errores en precio?
 Por qué la regla del 10x p99 es una fórmula estadística que busca "raros aislados" (como un frijol de $800). Al haber miles de lavadoras y pantallas registradas a $9,999.00, el valor infló la distribución o se integró en ella. Como el percentil 99 quedó altísimo, pedir que un valor superara 10 veces ese percentil volvió la regla inalcanzable.
 
