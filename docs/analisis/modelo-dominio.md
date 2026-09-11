@@ -21,10 +21,11 @@
 ## Agregado 1 · Usuario
 
 **Raíz:** Usuario
+| Elemento | Tipo | Por qué |
+|---|---|---|
 | Usuario | Entidad | Tiene identidad propia que permanece aunque cambien sus atributos. |
 | CorreoElectronico | Objeto de valor | Representa un correo electrónico validado y no tiene identidad propia. |
 | Contraseña | Objeto de valor | Puede cambiar sin modificar la identidad del usuario. |
-
 **Reglas dentro del agregado:**
 
 <!-- Cada regla tiene que poder ser un método de una clase, probable sin
@@ -38,7 +39,8 @@
 ## Agregado 2 · Canasta
 
 **Raíz:** Canasta
-
+| Elemento | Tipo | Por qué |
+|---|---|---|
 | Canasta | Entidad | Tiene identidad propia y es la raíz del agregado. |
 | ItemDeCanasta | Entidad local | Identidad solo dentro de la canasta; no se accede desde afuera. |
 | Cantidad | Objeto de valor | Representa la cantidad de unidades de un producto y debe ser válida. |
@@ -56,7 +58,8 @@
 ## Agregado 3 · Alerta
 
 **Raíz:** Alerta
-
+| Elemento | Tipo | Por qué |
+|---|---|---|
 | Alerta | Entidad | Tiene identidad propia porque representa una alerta específica que puede mantenerse y cambiar de estado. |
 | UmbralDePrecio | Objeto de valor | Representa el precio límite que debe cumplirse para activar la alerta y no tiene identidad propia. |
 | ProductoId | Referencia | Identifica el producto al que pertenece la alerta sin incluir el objeto Producto completo. |
