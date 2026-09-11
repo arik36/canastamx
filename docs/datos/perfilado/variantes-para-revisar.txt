@@ -1,0 +1,76 @@
+VERIFICACIÓN MANUAL DE LA NORMALIZACIÓN (T005)
+
+Para cada grupo: ¿todos los literales de abajo son de verdad LO MISMO?
+Si alguno no lo es, la normalización lo juntó mal y hay que anotarlo
+en «Agrupamientos incorrectos» de la sección 3 de perfilado.md.
+
+======================================================================
+
+### CON MÁS VARIANTES (donde estaría el error)
+
+clave: pasa uva pasa   (2 literal/es)
+         4,093  'Pasa (uva Pasa)'
+           295  'Pasa (Uva Pasa)'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: vagitrol v   (2 literal/es)
+        11,389  'Vagitrol -v'
+           626  'Vagitrol -V'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: acido folico   (2 literal/es)
+         7,559  'Acido Fólico'
+           373  'Ácido Fólico'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: minibocinas portatiles bluetooth   (2 literal/es)
+         9,443  'Minibocinas Portátiles Bluetooth'
+           597  'MiniBocinas Portátiles Bluetooth'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: sistema gb solucion alopecia   (2 literal/es)
+         9,677  'Sistema Gb. Solución Alopecia'
+           990  'Sistema GB. Solución Alopecia'
+    ¿correcto? [ ] sí   [ ] no →
+
+### AL AZAR (control)
+
+clave: coctel de frutas en alm bar   (1 literal/es)
+         1,355  'Coctel de Frutas en Alm?bar'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: bactrim f   (1 literal/es)
+        11,430  'Bactrim F'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: gasa   (1 literal/es)
+        44,823  'Gasa'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: ma z pozolero   (1 literal/es)
+           806  'Ma?z Pozolero'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: pan blanco bolillo   (1 literal/es)
+        21,759  'Pan Blanco Bolillo'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: severin n f   (1 literal/es)
+         4,257  'Severin N.f.'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: uniclar   (1 literal/es)
+         4,327  'Uniclar'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: planchas   (1 literal/es)
+        78,521  'Planchas'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: pantozol   (1 literal/es)
+        10,996  'Pantozol'
+    ¿correcto? [ ] sí   [ ] no →
+
+clave: celebrex   (1 literal/es)
+        32,145  'Celebrex'
+    ¿correcto? [ ] sí   [ ] no →
