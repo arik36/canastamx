@@ -79,6 +79,10 @@ services:
       timeout: 10s
       retries: 5
     networks: [canastamx]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio-console.rule=Host(`minio.canastamx.localhost`)"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
 
   # ── Crea el bucket bronze y se apaga ──────────────────────────────────────
   # Sin esto hay que crear el bucket a mano desde la consola, y se olvida.
@@ -112,34 +116,29 @@ services:
       postgres-analytics:
         condition: service_healthy
     networks: [canastamx]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`db.canastamx.localhost`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
 
   # ── Puerta de enlace · se agrega en T008 (martes 8) ───────────────────────
   # Descomenta cuando toque Traefik. Los nombres *.localhost resuelven solos
   # en los navegadores modernos, sin tocar el archivo hosts.
-  #
-  # traefik:
-  #   image: traefik:v3.1
-  #   container_name: cmx-traefik
-  #   command:
-  #     - "--api.dashboard=true"
-  #     - "--api.insecure=true"
-  #     - "--providers.docker=true"
-  #     - "--providers.docker.exposedbydefault=false"
-  #     - "--entrypoints.web.address=:80"
-  #   ports:
-  #     - "80:80"
-  #     - "8090:8080"          # panel de Traefik
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   networks: [canastamx]
-  #
-  # Y a cada servicio que se quiera exponer, se le agregan etiquetas.
-  # Ojo: server.port es el puerto INTERNO del contenedor, no el publicado.
-  #
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.adminer.rule=Host(`db.canastamx.localhost`)"
-  #     - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+  traefik:
+    image: traefik:v3.6.2
+    container_name: cmx-traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "${TRAEFIK_WEB_PORT:-80}:80"      
+      - "${TRAEFIK_DASHBOARD_PORT:-8090}:8080"          # panel de Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [canastamx]
 
 volumes:
   oltp-data:
