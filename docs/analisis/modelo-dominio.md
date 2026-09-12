@@ -25,7 +25,7 @@
 |---|---|---|
 | Usuario | Entidad | Tiene identidad propia que permanece aunque cambien sus atributos. |
 | CorreoElectronico | Objeto de valor | Representa un correo electrónico validado y no tiene identidad propia. |
-| Contraseña | Objeto de valor | Puede cambiar sin modificar la identidad del usuario. |
+| ContraseñaCifrada | Objeto de valor | Puede cambiar sin modificar la identidad del usuario. |
 **Reglas dentro del agregado:**
 
 <!-- Cada regla tiene que poder ser un método de una clase, probable sin
@@ -81,7 +81,6 @@
 |---|---|---|
 | Dinero | Monto y moneda | Evita sumar pesos con dólares, y centraliza el redondeo |
 | CorreoElectronico | Cadena validada | La validación vive en el tipo, no repartida en cada controlador |
-|  |  |  |
 | Cantidad | Número entero validado | Evita manejar cantidades inválidas y concentra la regla de que una cantidad debe ser mayor que cero. |
 ---
 

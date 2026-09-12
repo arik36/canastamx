@@ -11,15 +11,8 @@
 	<groupId>mx.tecnm.canastamx</groupId>
 	<artifactId>domain-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
+	<name>domain-service<name/>
+	<description>Servicio de dominio de CanastaMX para la gestión de usuarios, canastas y alertas</description>
 	<scm>
 		<connection/>
 		<developerConnection/>
