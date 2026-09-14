@@ -15,6 +15,7 @@
 # Settings → Branches → regla de main → Require status checks to pass.
 # Se hace el miércoles 9, cuando estos trabajos ya hayan corrido una vez y
 # aparezcan en la lista para seleccionar. Ver docs/equipo/linea-base.md
+# 
 
 name: CI
 
