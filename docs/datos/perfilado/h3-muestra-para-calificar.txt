@@ -1,0 +1,2026 @@
+MUESTRA PARA CALIFICAR H3 · pares que la normalización NO unió
+
+Cada par son dos artículos que quedaron en claves distintas, o sea que el
+sistema los trata hoy como dos cosas diferentes.
+
+  [x] sí  →  son el MISMO artículo. El sistema NO lo detectó.
+             Esto es un FALLO de cobertura y cuenta EN CONTRA.
+
+  [x] no  →  son artículos DISTINTOS. El sistema hizo bien en separarlos.
+             Esto cuenta A FAVOR.
+
+CUIDADO: la polaridad es al revés que en `variantes-para-revisar.txt`.
+Allá «sí» era bueno. Aquí «sí» significa que se nos escapó uno.
+
+Bajo cada par vienen las dos escrituras YA NORMALIZADAS. Compara ésas:
+en los literales de arriba puede haber diferencias que el sistema ya
+resuelve —un apóstrofo, una mayúscula— y que no son la que importa.
+
+Cobertura = (pares que son el mismo y el sistema SÍ unió)
+            ────────────────────────────────────────────
+            (todos los pares que son el mismo)
+
+Los «sí» de este archivo son el denominador que faltaba: los que son el
+mismo artículo y NO se unieron. Sin ellos la cobertura sale 100% siempre.
+
+======================================================================
+
+par 001 · parecido 0.992
+   A  Atún · Lata 130 Gr. en Hojuelas en Agua con Aceite · Mazatán
+            652 filas · S Mart, Oxxo, Chedraui
+   B  Atún · Lata 130 Gr. en Hojuelas en Agua con Aceite · Mazatún
+         11,360 filas · Minisuper, Oxxo, Farmacia San Pablo
+   ·  ya normalizados, la diferencia está aquí:
+      A: atun · lata 130 gr en hojuelas en agua con aceite · mazatan
+      B: atun · lata 130 gr en hojuelas en agua con aceite · mazatun
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 002 · parecido 0.990
+   A  Atún · Lata 130 Gr. en Hojuelas en Agua · Mazatán
+            591 filas · Bodega Aurrera, Alsuper, Alsuper Fresh Market
+   B  Atún · Lata 130 Gr. en Hojuelas en Agua · Mazatún
+         10,035 filas · Fresko la Comer, Supermercado Gonzalez, Chedraui Selecto
+   ·  ya normalizados, la diferencia está aquí:
+      A: atun · lata 130 gr en hojuelas en agua · mazatan
+      B: atun · lata 130 gr en hojuelas en agua · mazatun
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 003 · parecido 0.990
+   A  Frijol · Bolsa 906 Gr. Negro · El Duende Frijolín
+            336 filas · Bodega Aurrera, H.e.b.
+   B  Frijol · Bolsa 906 Gr. Negro · El Duende Frijolón
+             24 filas · H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 906 gr negro · el duende frijolin
+      B: frijol · bolsa 906 gr negro · el duende frijolon
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 004 · parecido 0.990
+   A  Frijol · Bolsa 906 Gr. Pinto · El Duende Frijolín
+            243 filas · Operadora Merco, Bodega Aurrera, Wal-mart
+   B  Frijol · Bolsa 906 Gr. Pinto · El Duende Frijolón
+             14 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 906 gr pinto · el duende frijolin
+      B: frijol · bolsa 906 gr pinto · el duende frijolon
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 005 · parecido 0.986
+   A  Papel Higiénico · Paquete 4 Rollos. 185 Hojas Dobles · Precíssimo
+          6,172 filas · Mercado Soriana, Mega Soriana, Wal-mart Express
+   B  Papel Higiénico · Paquete 4 Rollos. 185 Hojas Dobles · Precíssimo. Eco
+          2,364 filas · Mega Soriana, Mercado Soriana, Soriana Super
+   ·  ya normalizados, la diferencia está aquí:
+      A: papel higienico · paquete 4 rollos 185 hojas dobles · precissimo
+      B: papel higienico · paquete 4 rollos 185 hojas dobles · precissimo eco
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 006 · parecido 0.985
+   A  Pañales Desechables · Paquete 40 Piezas. Etapa 4. Niña · Huggies. Ultra Confort
+         13,649 filas · Alsuper, Benavides, Ley
+   B  Pañales Desechables · Paquete 40 Piezas. Etapa 4. Niño · Huggies. Ultra Confort
+         12,984 filas · Wal-mart, Benavides, Sumesa
+   ·  ya normalizados, la diferencia está aquí:
+      A: panales desechables · paquete 40 piezas etapa 4 nina · huggies ultra confort
+      B: panales desechables · paquete 40 piezas etapa 4 nino · huggies ultra confort
+   ¿son el MISMO artículo?  [ ] sí   [x] no
+
+par 007 · parecido 0.985
+   A  Pañales Desechables · Paquete 40 Piezas. Etapa 3. Niña · Huggies. Ultra Confort
+         12,919 filas · U.n.a.m., Farmacia Guadalajara, Chedraui Selecto
+   B  Pañales Desechables · Paquete 40 Piezas. Etapa 3. Niño · Huggies. Ultra Confort
+         12,533 filas · Aprecio, S Mart, Fresko la Comer
+   ·  ya normalizados, la diferencia está aquí:
+      A: panales desechables · paquete 40 piezas etapa 3 nina · huggies ultra confort
+      B: panales desechables · paquete 40 piezas etapa 3 nino · huggies ultra confort
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 008 · parecido 0.985
+   A  Pañales Desechables · Paquete 60 Piezas. Etapa 4. Niña · Huggies. Ultra Confort
+         11,304 filas · Super Aki Xtra, Soriana Express, Mega Soriana
+   B  Pañales Desechables · Paquete 60 Piezas. Etapa 4. Niño · Huggies. Ultra Confort
+         11,005 filas · H.e.b., Super Aki Xtra, Super Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: panales desechables · paquete 60 piezas etapa 4 nina · huggies ultra confort
+      B: panales desechables · paquete 60 piezas etapa 4 nino · huggies ultra confort
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 009 · parecido 0.982
+   A  Pilas Eléctricas · Paquete con 6. Aaa · Eveready. Gold
+            290 filas · Hipermercado Soriana, Mega Soriana, Minisuper
+   B  Pilas Eléctricas · Paquete con 6. Aa · Eveready. Gold
+          1,249 filas · Wal-mart Express, Mega Soriana, Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: pilas electricas · paquete con 6 aaa · eveready gold
+      B: pilas electricas · paquete con 6 aa · eveready gold
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 010 · parecido 0.982
+   A  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Nutri
+         14,773 filas · Chedraui, Ley Express, Aprecio
+   B  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Tamariz
+            334 filas · Hipermercado Soriana, Oxxo, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · nutri
+      B: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · tamariz
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 011 · parecido 0.981
+   A  Toalla Femenina · Bolsa 32 Piezas. Regulares con Alas. Flujo Abundante · Naturella
+          7,916 filas · Alsuper, Ley, Soriana Super
+   B  Toalla Femenina · Bolsa 32 Piezas. Regulares Sin Alas. Flujo Abundante · Naturella
+          9,767 filas · H.e.b., Mi Tienda del Ahorro, Farmacia Guadalajara
+   ·  ya normalizados, la diferencia está aquí:
+      A: toalla femenina · bolsa 32 piezas regulares con alas flujo abundante · naturella
+      B: toalla femenina · bolsa 32 piezas regulares sin alas flujo abundante · naturella
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 012 · parecido 0.979
+   A  Huevo · Paquete C/18 Blanco · D´oro
+             69 filas · Superissste
+   B  Huevo · Paquete C/18 Blanco · Dorado
+             66 filas · Sumesa, Fresko la Comer, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 18 blanco · d oro
+      B: huevo · paquete c 18 blanco · dorado
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 013 · parecido 0.979
+   A  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Ganata
+             63 filas · Chedraui, Wal-mart
+   B  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Nutri
+         14,773 filas · Chedraui, Ley Express, Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · ganata
+      B: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · nutri
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 014 · parecido 0.977
+   A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Segunda · S/M
+            267 filas · Central de Abasto
+   B  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje · S/m
+         45,076 filas · Tiendas Garis, Super Kompras, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: jitomate · 1 kg granel saladette huaje o tomate saladette huaje segunda · s m
+      B: jitomate · 1 kg granel saladette huaje o tomate saladette huaje · s m
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 015 · parecido 0.977
+   A  Refresco · Botella 2 Lt. No Retornable. · Sidral Mundet
+         11,967 filas · Chedraui Selecto, Bodega Aurrera Express, Bodega Aurrera
+   B  Refresco · Botella 2 Lt. No Retornable · Sidral Mundet Light
+          4,927 filas · 7 Eleven, U.n.a.m., Ley
+   ·  ya normalizados, la diferencia está aquí:
+      A: refresco · botella 2 lt no retornable · sidral mundet
+      B: refresco · botella 2 lt no retornable · sidral mundet light
+   ¿son el MISMO artículo?  [] sí   [X] no
+
+par 016 · parecido 0.977
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Borden
+            213 filas · H.e.b.
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · León
+            423 filas · Hipermercado Soriana, Mega Soriana, Super Kompras
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · borden
+      B: leche ultrapasteurizada · caja 1 lt entera · leon
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 017 · parecido 0.977
+   A  Jabón de Pasta · Barra 400 Gr. con Envoltura · Corona
+             29 filas · Abarrotes Super Cabrera Class
+   B  Jabón de Pasta · Barra 400 Gr. con Envoltura · Roma
+         11,761 filas · Ley, Super Aki Xtra, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de pasta · barra 400 gr con envoltura · corona
+      B: jabon de pasta · barra 400 gr con envoltura · roma
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 018 · parecido 0.976
+   A  Camarón · 1 Kg. Granel. Macuil o Camarón para Pelar Macuil. Congelado · S/M
+             90 filas · Mega Soriana, S Mart, Mercado Soriana
+   B  Camarón · 1 Kg. Granel. Macuil o Camarón para Pelar Macuil. Descongelado · S/M
+             15 filas · Hipermercado Soriana, Wal-mart, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: camaron · 1 kg granel macuil o camaron para pelar macuil congelado · s m
+      B: camaron · 1 kg granel macuil o camaron para pelar macuil descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 019 · parecido 0.976
+   A  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Ganata
+             63 filas · Chedraui, Wal-mart
+   B  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal · Tamariz
+            334 filas · Hipermercado Soriana, Oxxo, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · ganata
+      B: producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal · tamariz
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 020 · parecido 0.976
+   A  Desodorante · Roll On 50 Gr. Powder Dry. para Dama · Rexona
+          7,987 filas · Fresko la Comer, Farmacia Guadalajara, Aprecio
+   B  Desodorante · Roll On 50 Ml. Powder Dry. para Dama · Rexona
+          7,737 filas · Wal-mart, Abarrotera Sanchez, Bodega Aurrera Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: desodorante · roll on 50 gr powder dry para dama · rexona
+      B: desodorante · roll on 50 ml powder dry para dama · rexona
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 021 · parecido 0.976
+   A  Talco para Bebé · Botella 200 Gr. Azul · Baby Magic. Mennen
+         14,633 filas · City Market, Bodega Aurrera, Farmacia Guadalajara
+   B  Talco para Bebé · Botella 200 Gr. Rosa · Baby Magic. Mennen
+         12,833 filas · Soriana Express, Mi Tienda del Ahorro, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: talco para bebe · botella 200 gr azul · baby magic mennen
+      B: talco para bebe · botella 200 gr rosa · baby magic mennen
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 022 · parecido 0.976
+   A  Refresco · Botella 1 Lt. No Retornable · Coca Cola
+         14,003 filas · La Comer, U.n.a.m., Supermercado Gonzalez
+   B  Refresco · Botella 1 Lt. No Retornable · Coca Cola. Light
+          8,279 filas · Minisuper, Fresko la Comer, City Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: refresco · botella 1 lt no retornable · coca cola
+      B: refresco · botella 1 lt no retornable · coca cola light
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 023 · parecido 0.975
+   A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera Exportación · S/M
+              5 filas · Central de Abasto, Mercado el Meson Estrella, Wal-mart
+   B  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera Nacional · S/M
+              2 filas · Central de Abasto, Fresko la Comer
+   ·  ya normalizados, la diferencia está aquí:
+      A: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera exportacion · s m
+      B: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera nacional · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 024 · parecido 0.975
+   A  Pastelillos y Pan Dulce Empaquetado · Paquete con 2 Barritas. Fresa (67 Gr.) · Marinela
+             52 filas · Minisuper, Supermercado Gonzalez, Bodega Aurrera
+   B  Pastelillos y Pan Dulce Empaquetado · Paquete con 2 Barritas. Piña (67 Gr.) · Marinela
+             53 filas · Supermercado Gonzalez, Minisuper, Oxxo
+   ·  ya normalizados, la diferencia está aquí:
+      A: pastelillos y pan dulce empaquetado · paquete con 2 barritas fresa 67 gr · marinela
+      B: pastelillos y pan dulce empaquetado · paquete con 2 barritas pina 67 gr · marinela
+   ¿son el MISMO artículo?  [ ] sí   [x] no
+
+par 025 · parecido 0.975
+   A  Papel Higiénico · Paquete 4 Rollos. 195 Hojas Dobles · Lys
+          8,391 filas · Central de Abastos, Central de Abasto, Chedraui
+   B  Papel Higiénico · Paquete 4 Rollos. 195 Hojas Dobles · Marli
+             66 filas · Central de Abasto, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: papel higienico · paquete 4 rollos 195 hojas dobles · lys
+      B: papel higienico · paquete 4 rollos 195 hojas dobles · marli
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 026 · parecido 0.975
+   A  Polvo P/preparar Bebidas · Sobre 7 Gr. Naranja · Livean
+            493 filas · Mercado Soriana, Oxxo, Alsuper
+   B  Polvo P/preparar Bebidas · Sobre 7 Gr. Naranja · Splenda
+          9,846 filas · Sumesa, Ley, Bodega Aurrera Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: polvo p preparar bebidas · sobre 7 gr naranja · livean
+      B: polvo p preparar bebidas · sobre 7 gr naranja · splenda
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 027 · parecido 0.975
+   A  Pan de Caja · Paquete Grande 620 Gr. Rebanado Blanco. Rinde · Bimbo
+          1,853 filas · La Comer, Mercado Soriana, Wal-mart Express
+   B  Pan de Caja · Paquete Grande 620 Gr. Rebanado Blanco · Bimbo
+         41,335 filas · Farmacia San Pablo, Neto (Super Precio), Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: pan de caja · paquete grande 620 gr rebanado blanco rinde · bimbo
+      B: pan de caja · paquete grande 620 gr rebanado blanco · bimbo
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 028 · parecido 0.975
+   A  Yoghurt · Bote 900 Gr. Natural. Sin Azúcar · Alpura
+          1,387 filas · Mi Tienda del Ahorro, H.e.b., Sumesa
+   B  Yoghurt · Bote 900 Gr. Natural. Sin Azúcar · Lala
+          1,804 filas · City Market, Farmacia Guadalajara, U.n.a.m.
+   ·  ya normalizados, la diferencia está aquí:
+      A: yoghurt · bote 900 gr natural sin azucar · alpura
+      B: yoghurt · bote 900 gr natural sin azucar · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 029 · parecido 0.975
+   A  Refresco · Botella 2 Lt. No Retornable · Sprite
+         12,325 filas · Chedraui Selecto, Bodega Aurrera Express, Bodega Aurrera
+   B  Refresco · Botella 2 Lt. No Retornable. · Squirt
+         16,084 filas · Chedraui, City Market, Operadora Merco
+   ·  ya normalizados, la diferencia está aquí:
+      A: refresco · botella 2 lt no retornable · sprite
+      B: refresco · botella 2 lt no retornable · squirt
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 030 · parecido 0.975
+   A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera Nacional · S/M
+              2 filas · Central de Abasto, Fresko la Comer
+   B  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera · S/M
+            283 filas · Bodega Aurrera, Wal-mart, Operadora Merco
+   ·  ya normalizados, la diferencia está aquí:
+      A: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera nacional · s m
+      B: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera · s m
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 031 · parecido 0.975
+   A  Azúcar · Bolsa Plástico 2 Kg. Estándar o Morena · Ley
+            347 filas · Wal-mart, Ley
+   B  Azúcar · Bolsa Plástico 2 Kg. Estándar o Morena · Zulka
+         14,985 filas · Ley Express, Aprecio, Alsuper
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 2 kg estandar o morena · ley
+      B: azucar · bolsa plastico 2 kg estandar o morena · zulka
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 032 · parecido 0.974
+   A  Salchicha · 1 Kg. Granel. de Pavo · Kir
+          2,172 filas · H.e.b., Ley, Farmacia Guadalajara
+   B  Salchicha · 1 Kg. Granel. de Pavo · Ros
+            557 filas · Wal-mart, Bodega Aurrera, Soriana Super
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · 1 kg granel de pavo · kir
+      B: salchicha · 1 kg granel de pavo · ros
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 033 · parecido 0.974
+   A  Salchicha · 1 Kg. Granel. de Pavo · Ros
+            557 filas · Wal-mart, Bodega Aurrera, Soriana Super
+   B  Salchicha · 1 Kg. Granel. de Pavo · S/m
+          1,908 filas · Mercado Malibran, Mercado Emilio Sanchez Piedras, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · 1 kg granel de pavo · ros
+      B: salchicha · 1 kg granel de pavo · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 034 · parecido 0.974
+   A  Pasta para Sopa · Paquete 200 Gr. Spaghetti · La Moderna
+         10,590 filas · Fresko la Comer, Minisuper, Mercado J. Jesus Teran
+   B  Pasta para Sopa · Paquete 200 Gr. Spaghetti · La Perla
+          8,943 filas · Neto (super Precio), Alsuper, Ley
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr spaghetti · la moderna
+      B: pasta para sopa · paquete 200 gr spaghetti · la perla
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 035 · parecido 0.973
+   A  Carne Res · 1 Kg. Granel. Panza o Menudo. Cocidos · S/m
+          6,197 filas · Alsuper, Mercado Soriana, H.e.b.
+   B  Carne Res · 1 Kg. Granel. Panza o Menudo. Crudos · S/m
+         15,283 filas · Mercado Emilio Sanchez Piedras, Mercado J. Jesus Teran, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel panza o menudo cocidos · s m
+      B: carne res · 1 kg granel panza o menudo crudos · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 036 · parecido 0.973
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Araceli
+            161 filas · Bodega Aurrera, Wal-mart
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Pradel
+            137 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · araceli
+      B: leche ultrapasteurizada · caja 1 lt entera · pradel
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 037 · parecido 0.973
+   A  Queso Manchego · Paquete 400 Gr. Rebanado · La Villita
+         11,214 filas · Soriana Express, Super Aki Xtra, Bodega Aurrera Express
+   B  Queso Manchego · Paquete 400 Gr. Rebanado · Lala
+         10,922 filas · Bodega Aurrera Express, Sumesa, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso manchego · paquete 400 gr rebanado · la villita
+      B: queso manchego · paquete 400 gr rebanado · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 038 · parecido 0.973
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Borden
+            213 filas · H.e.b.
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Pradel
+            137 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · borden
+      B: leche ultrapasteurizada · caja 1 lt entera · pradel
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 039 · parecido 0.973
+   A  Pasta para Sopa · Paquete 200 Gr. Estrella · Precíssimo
+          6,101 filas · Mega Soriana, Wal-mart Express, Mercado Soriana
+   B  Pasta para Sopa · Paquete 200 Gr. Letras · Precíssimo
+          6,407 filas · Mercado Soriana, Wal-mart Express, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr estrella · precissimo
+      B: pasta para sopa · paquete 200 gr letras · precissimo
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 040 · parecido 0.973
+   A  Yoghurt · Envase 220 Gr. Bebible. Fresa · Alpura
+         15,448 filas · S Mart, Abarrotera Sanchez, Farmacia Guadalajara
+   B  Yoghurt · Envase 220 Gr. Bebible. Fresa · Lala
+         18,373 filas · Abarrotera Sanchez, S Mart, Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: yoghurt · envase 220 gr bebible fresa · alpura
+      B: yoghurt · envase 220 gr bebible fresa · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 041 · parecido 0.973
+   A  Salmón · 1 Kg. Filete con Piel (chileno o Pacífico) Congelado · S/m
+          2,318 filas · City Market, Central de Abasto, Pescaderia el Tejano de Queretaro
+   B  Salmón · 1 Kg. Filete con Piel (chileno o Pacífico) Descongelado · S/m
+          1,028 filas · Pescaderias Tradicionales, Pescaderia Alex, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: salmon · 1 kg filete con piel chileno o pacifico congelado · s m
+      B: salmon · 1 kg filete con piel chileno o pacifico descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 042 · parecido 0.973
+   A  Salmón · 1 Kg. Filete Sin Piel (chileno o Pacífico) Congelado · S/m
+            134 filas · Mercado Soriana, Mercado Publico, Pescaderia Yuridia
+   B  Salmón · 1 Kg. Filete Sin Piel (chileno o Pacífico) Descongelado · S/m
+             80 filas · Sumesa, Pescaderia Cepesmar, Mercado del Mar Zapopan
+   ·  ya normalizados, la diferencia está aquí:
+      A: salmon · 1 kg filete sin piel chileno o pacifico congelado · s m
+      B: salmon · 1 kg filete sin piel chileno o pacifico descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 043 · parecido 0.973
+   A  Pastel Pimiento · 1 Kg. Granel · Duby
+          5,714 filas · Super Aki Xtra, Sumesa, H.e.b.
+   B  Pastel Pimiento · 1 Kg. Granel · Fud
+          9,249 filas · Soriana Express, Mega Soriana, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: pastel pimiento · 1 kg granel · duby
+      B: pastel pimiento · 1 kg granel · fud
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 044 · parecido 0.971
+   A  Huevo · Paquete C/18 Blanco · Sabro
+              5 filas · Wal-mart
+   B  Huevo · Paquete C/18 Blanco · Smart
+            194 filas · S Mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 18 blanco · sabro
+      B: huevo · paquete c 18 blanco · smart
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 045 · parecido 0.971
+   A  Servilletas de Papel Blanco · Paquete 200 Hojas · Aprecio
+             24 filas · Aprecio
+   B  Servilletas de Papel Blanco · Paquete 200 Hojas · Chedraui
+              7 filas · Hipermercado Soriana, Chedraui, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: servilletas de papel blanco · paquete 200 hojas · aprecio
+      B: servilletas de papel blanco · paquete 200 hojas · chedraui
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 046 · parecido 0.971
+   A  Pasta para Sopa · Paquete 200 Gr. Lengüita · Barilla
+         10,833 filas · Soriana Express, Superissste, Mega Soriana
+   B  Pasta para Sopa · Paquete 200 Gr. Letra · Barilla
+          9,805 filas · S Mart, Ley, U.n.a.m.
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr lenguita · barilla
+      B: pasta para sopa · paquete 200 gr letra · barilla
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 047 · parecido 0.971
+   A  Carne Cerdo · 1 Kg. Granel. Pulpa en Trocitos · S/m
+          4,414 filas · Ley, Soriana Super, Super Aki
+   B  Carne Cerdo · 1 Kg. Granel. Pulpa en Trozo · S/m
+          6,100 filas · Wal-mart Express, Chedraui Selecto, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel pulpa en trocitos · s m
+      B: carne cerdo · 1 kg granel pulpa en trozo · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 048 · parecido 0.971
+   A  Galletas Dulces · Caja 268 Gr. Barritas con Relleno con Fresa · Marinela
+         11,395 filas · Super Chedraui, Super Kompras, Neto (Super Precio)
+   B  Galletas Dulces · Caja 268 Gr. Barritas con Relleno con Piña · Marinela
+         11,239 filas · Ley, Soriana Super, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: galletas dulces · caja 268 gr barritas con relleno con fresa · marinela
+      B: galletas dulces · caja 268 gr barritas con relleno con pina · marinela
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 049 · parecido 0.971
+   A  Mantequilla · Barra 90 Gr. Sin Sal · Alpura
+         11,364 filas · S Mart, Wal-mart Express, U.n.a.m.
+   B  Mantequilla · Barra 90 Gr. Sin Sal · Lala
+         16,069 filas · Alsuper, Neto (super Precio), H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: mantequilla · barra 90 gr sin sal · alpura
+      B: mantequilla · barra 90 gr sin sal · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 050 · parecido 0.970
+   A  Atún · Lata 130 Gr. Aleta Amarilla en Hojuelas en Agua · Dolores
+              6 filas · Central de Abastos
+   B  Atún · Lata 130 Gr. Aleta Amarilla en Hojuelas en Agua · Herdez
+         17,074 filas · City Market, Abarrotera Sanchez, Chedraui Selecto
+   ·  ya normalizados, la diferencia está aquí:
+      A: atun · lata 130 gr aleta amarilla en hojuelas en agua · dolores
+      B: atun · lata 130 gr aleta amarilla en hojuelas en agua · herdez
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 051 · parecido 0.970
+   A  Mojarra · 1 Kg. Granel. Entero. Tilapia Grande. Congelado · S/m
+          6,426 filas · La Costa Marisquera, Pescaderia el Tejano de Queretaro, Central de Abasto
+   B  Mojarra · 1 Kg. Granel. Entero. Tilapia Grande. Descongelado · S/m
+          2,962 filas · Central de Abasto, Alsuper, Pescaderias
+   ·  ya normalizados, la diferencia está aquí:
+      A: mojarra · 1 kg granel entero tilapia grande congelado · s m
+      B: mojarra · 1 kg granel entero tilapia grande descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 052 · parecido 0.970
+   A  Mojarra · 1 Kg. Granel. Entero. Tilapia Chica. Congelado · S/m
+          1,375 filas · Soriana Express, Fresko la Comer, Central de Abasto
+   B  Mojarra · 1 Kg. Granel. Entero. Tilapia Chica. Descongelado · S/m
+            674 filas · Mercado del Mar San Felipe, Pescaderia Cepesmar, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: mojarra · 1 kg granel entero tilapia chica congelado · s m
+      B: mojarra · 1 kg granel entero tilapia chica descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 053 · parecido 0.970
+   A  Papel Higiénico · Paquete 4 Rollos. 195 Hojas Dobles · Delsey. Max
+          1,948 filas · Bodega Aurrera, Chedraui Selecto, Super Chedraui
+   B  Papel Higiénico · Paquete 4 Rollos. 195 Hojas Dobles · Lys
+          8,391 filas · Central de Abastos, Central de Abasto, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: papel higienico · paquete 4 rollos 195 hojas dobles · delsey max
+      B: papel higienico · paquete 4 rollos 195 hojas dobles · lys
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 054 · parecido 0.970
+   A  Margarina · Caja Plástico 190 Gr. con Sal · Primavera Chantilly
+         12,636 filas · Dunosusa, Ley Express, S Mart
+   B  Margarina · Caja Plástico 190 Gr. Sin Sal · Primavera Chantilly
+         13,201 filas · H.e.b., Alsuper, Supermercado Gonzalez
+   ·  ya normalizados, la diferencia está aquí:
+      A: margarina · caja plastico 190 gr con sal · primavera chantilly
+      B: margarina · caja plastico 190 gr sin sal · primavera chantilly
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 055 · parecido 0.970
+   A  Jabón de Pasta · Barra 400 Gr. con Envoltura. (rosa) · Zote
+         19,358 filas · Neto (super Precio), Tiendas Garis, Merkabastos
+   B  Jabón de Pasta · Barra 400 Gr. con Envoltura · Roma
+         11,761 filas · Ley, Super Aki Xtra, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de pasta · barra 400 gr con envoltura rosa · zote
+      B: jabon de pasta · barra 400 gr con envoltura · roma
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 056 · parecido 0.970
+   A  Sardina · Lata 425 Gr. en Tomate · Corina
+            190 filas · Central de Abastos, Central de Abasto, Super Aki Xtra
+   B  Sardina · Lata 425 Gr. en Tomate · Marinero
+             81 filas · Central de Abastos, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: sardina · lata 425 gr en tomate · corina
+      B: sardina · lata 425 gr en tomate · marinero
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 057 · parecido 0.969
+   A  Jarabe P/preparar Bebidas · Botella 750 Ml. Horchata · El Yuka
+              4 filas · Hipermercado Soriana, Soriana Super
+   B  Jarabe P/preparar Bebidas · Botella 750 Ml. Horchata · Tucan
+          4,400 filas · Bodega Aurrera, Wal-mart, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: jarabe p preparar bebidas · botella 750 ml horchata · el yuka
+      B: jarabe p preparar bebidas · botella 750 ml horchata · tucan
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 058 · parecido 0.969
+   A  Jabón de Tocador · Barra 135 Gr. Neutro · Caricia
+          6,224 filas · Superissste, Soriana Super, Hipermercado Soriana
+   B  Jabón de Tocador · Barra 135 Gr. Neutro · Ibarra
+          1,365 filas · Fresko la Comer, Ley, City Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 135 gr neutro · caricia
+      B: jabon de tocador · barra 135 gr neutro · ibarra
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 059 · parecido 0.969
+   A  Margarina · Caja Plástico 400 Gr. Sin Sal · Primavera Chantilly
+         12,658 filas · Soriana Express, Mega Soriana, Mi Tienda del Ahorro
+   B  Margarina · Caja Plástico 400 Gr. Sin Sal · Primavera Light
+          7,854 filas · Mi Tienda del Ahorro, H.e.b., Sumesa
+   ·  ya normalizados, la diferencia está aquí:
+      A: margarina · caja plastico 400 gr sin sal · primavera chantilly
+      B: margarina · caja plastico 400 gr sin sal · primavera light
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 060 · parecido 0.969
+   A  Sardina · Lata 425 Gr. en Tomate · Calmex
+          7,603 filas · Superissste, Super Aki Xtra, Wal-mart
+   B  Sardina · Lata 425 Gr. en Tomate · Guaymex
+         27,577 filas · La Comer, Alsuper Fresh Market, Ley Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: sardina · lata 425 gr en tomate · calmex
+      B: sardina · lata 425 gr en tomate · guaymex
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 061 · parecido 0.969
+   A  Pilas Eléctricas · Paquete con 6. Aaa · Energizer Max
+          3,880 filas · Minisuper, H.e.b., Mega Soriana
+   B  Pilas Eléctricas · Paquete con 6. Aa · Energizer Max
+          4,934 filas · H.e.b., Tortillerias Tradicionales, Farmacia Guadalajara
+   ·  ya normalizados, la diferencia está aquí:
+      A: pilas electricas · paquete con 6 aaa · energizer max
+      B: pilas electricas · paquete con 6 aa · energizer max
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 062 · parecido 0.969
+   A  Yoghurt · Vaso 120 Gr. Natural Endulzado. Griego · Lala
+          8,228 filas · Ley, U.n.a.m., Neto (super Precio)
+   B  Yoghurt · Vaso 120 Gr. Natural. Endulzado · Lala
+          1,195 filas · Ley, Super Kompras, Alsuper
+   ·  ya normalizados, la diferencia está aquí:
+      A: yoghurt · vaso 120 gr natural endulzado griego · lala
+      B: yoghurt · vaso 120 gr natural endulzado · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 063 · parecido 0.969
+   A  Sardina · Lata 425 Gr. en Tomate · Aprecio
+            113 filas · Aprecio
+   B  Sardina · Lata 425 Gr. en Tomate · Corina
+            190 filas · Central de Abastos, Central de Abasto, Super Aki Xtra
+   ·  ya normalizados, la diferencia está aquí:
+      A: sardina · lata 425 gr en tomate · aprecio
+      B: sardina · lata 425 gr en tomate · corina
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 064 · parecido 0.969
+   A  Detergente P/trastes · Botella 750 Ml. Liquido. Limon · Axion
+         13,635 filas · Alsuper, H.e.b., Operadora Merco
+   B  Detergente P/trastes · Botella 750 Ml. Liquido. Limón · Eficaz
+          4,914 filas · City Market, Bodega Aurrera, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: detergente p trastes · botella 750 ml liquido limon · axion
+      B: detergente p trastes · botella 750 ml liquido limon · eficaz
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 065 · parecido 0.969
+   A  Azúcar · Bolsa Plástico 900 Gr. Estándar · Ley
+            281 filas · Ley Express, Ley, Wal-mart
+   B  Azúcar · Bolsa Plástico 900 Gr. Estándar · Zulka
+         23,246 filas · Minisuper, Mega Soriana, Neto (Super Precio)
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 900 gr estandar · ley
+      B: azucar · bolsa plastico 900 gr estandar · zulka
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 066 · parecido 0.969
+   A  Queso Americano · Paquete 140 Gr. 8 Rebanadas. Imitación Queso Americano · El Ciervo
+          2,066 filas · Mega Soriana, Hipermercado Soriana, Chedraui
+   B  Queso Americano · Paquete 140 Gr. 8 Rebanadas. Imitación Queso Americano · Nutri
+          6,654 filas · Ley Express, Aprecio, Neto (super Precio)
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso americano · paquete 140 gr 8 rebanadas imitacion queso americano · el ciervo
+      B: queso americano · paquete 140 gr 8 rebanadas imitacion queso americano · nutri
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 067 · parecido 0.969
+   A  Servilletas de Papel Blanco · Paquete 125 Hojas · Delsey. Max
+             50 filas · Mercado Publico, Central de Abastos
+   B  Servilletas de Papel Blanco · Paquete 125 Hojas · Lys
+            331 filas · Central de Abastos, Mercado Publico, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: servilletas de papel blanco · paquete 125 hojas · delsey max
+      B: servilletas de papel blanco · paquete 125 hojas · lys
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 068 · parecido 0.969
+   A  Carne Pollo · 1 Kg. Granel. Pierna Corta · S/m
+            107 filas · Chedraui, Aprecio
+   B  Carne Pollo · 1 Kg. Granel. Pierna Entera · S/m
+            111 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel pierna corta · s m
+      B: carne pollo · 1 kg granel pierna entera · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 069 · parecido 0.968
+   A  Tortilla de Maíz · 1 Kg. Granel. Amarilla. Chica · S/m
+          4,469 filas · Wal-mart Express, Wal-mart, Chedraui Selecto
+   B  Tortilla de Maíz · 1 Kg. Granel. Amarilla · S/m
+          8,525 filas · Wal-mart Express, Sumesa, Super Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: tortilla de maiz · 1 kg granel amarilla chica · s m
+      B: tortilla de maiz · 1 kg granel amarilla · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 070 · parecido 0.968
+   A  Cerveza · Canasta con 6 Botellas de 355 Ml. No Retornable · Heineken
+         14,529 filas · Chedraui Selecto, Bodega Aurrera, Ley
+   B  Cerveza · Canasta con 6 Botellas de 355 Ml. No Retornable · Indio
+         13,210 filas · Chedraui Selecto, Bodega Aurrera, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: cerveza · canasta con 6 botellas de 355 ml no retornable · heineken
+      B: cerveza · canasta con 6 botellas de 355 ml no retornable · indio
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 071 · parecido 0.968
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Bafar
+          7,576 filas · Sumesa, Elektra, Mi Tienda del Ahorro
+   B  Jamón · 1 Kg. Granel. de Pavo. Virginia · Fud
+         14,371 filas · Super Kompras, U.n.a.m., Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · bafar
+      B: jamon · 1 kg granel de pavo virginia · fud
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 072 · parecido 0.968
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Bafar
+          7,576 filas · Sumesa, Elektra, Mi Tienda del Ahorro
+   B  Jamón · 1 Kg. Granel. de Pavo. Virginia · Kir
+          9,609 filas · Elektra, Wal-mart, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · bafar
+      B: jamon · 1 kg granel de pavo virginia · kir
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 073 · parecido 0.968
+   A  Detergente P/ropa · Bolsa 850 Gr. Polvo · Ariel
+          1,172 filas · Central de Abasto, Mercado Publico, Mercado Adolfo Lopez Mateos
+   B  Detergente P/ropa · Bolsa 850 Gr. Polvo · Viva
+          9,146 filas · Minisuper, U.n.a.m., Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: detergente p ropa · bolsa 850 gr polvo · ariel
+      B: detergente p ropa · bolsa 850 gr polvo · viva
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 074 · parecido 0.968
+   A  Detergente P/ropa · Bolsa 500 Gr. Polvo · Ariel
+          1,151 filas · Mercado J. Jesus Teran, Mercado Adolfo Lopez Mateos, Mercado el Meson Estrella
+   B  Detergente P/ropa · Bolsa 500 Gr. Polvo · Viva
+             47 filas · Mercado Publico, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: detergente p ropa · bolsa 500 gr polvo · ariel
+      B: detergente p ropa · bolsa 500 gr polvo · viva
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 075 · parecido 0.968
+   A  Detergente P/ropa · Bolsa 500 Gr. Polvo · Foca
+          1,954 filas · Mercado el Meson Estrella, Mercado J. Jesus Teran, Mercado Publico
+   B  Detergente P/ropa · Bolsa 500 Gr. Polvo · Viva
+             47 filas · Mercado Publico, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: detergente p ropa · bolsa 500 gr polvo · foca
+      B: detergente p ropa · bolsa 500 gr polvo · viva
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 076 · parecido 0.968
+   A  Azúcar · Bolsa Plástico 900 Gr. Estándar · Precíssimo
+         11,877 filas · Mercado Soriana, Mega Soriana, Super Aki
+   B  Azúcar · Bolsa Plástico 900 Gr. Refinada · Precíssimo
+          1,762 filas · Mega Soriana, Mercado Soriana, Soriana Super
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 900 gr estandar · precissimo
+      B: azucar · bolsa plastico 900 gr refinada · precissimo
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 077 · parecido 0.967
+   A  Calamar · 1 Kg. Granel. Tentáculos. Crudo. Congelado · S/M
+            122 filas · Mercado del Mar Zapopan, Pescaderias, Mega Soriana
+   B  Calamar · 1 Kg. Granel. Tentáculos. Crudo. Descongelado · S/M
+             43 filas · Wal-mart Express, Pescaderia Liz del Mar, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: calamar · 1 kg granel tentaculos crudo congelado · s m
+      B: calamar · 1 kg granel tentaculos crudo descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 078 · parecido 0.967
+   A  Puré de Tomate · Caja 1 Kg. Tomates Molidos Condimentados · Del Fuerte
+         18,900 filas · Mercado Emilio Sanchez Piedras, City Market, S Mart
+   B  Puré de Tomate · Caja 1 Kg. Tomates Molidos Condimentados · Herdez
+          1,277 filas · Soriana Super, Wal-mart Express, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: pure de tomate · caja 1 kg tomates molidos condimentados · del fuerte
+      B: pure de tomate · caja 1 kg tomates molidos condimentados · herdez
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 079 · parecido 0.967
+   A  Agua Sin Gas · Garrafón 20 Lt. (sólo Líquido) · Ciel
+          6,343 filas · Merkabastos, Elektra, Sumesa
+   B  Agua Sin Gas · Garrafón 20 Lt. (sólo Líquido) · Epura
+          7,395 filas · Super Aki Xtra, Neto (super Precio), Sumesa
+   ·  ya normalizados, la diferencia está aquí:
+      A: agua sin gas · garrafon 20 lt solo liquido · ciel
+      B: agua sin gas · garrafon 20 lt solo liquido · epura
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 080 · parecido 0.967
+   A  Harina de Trigo · Paquete 1 Kg. · La Moderna
+          6,012 filas · Fresko la Comer, Neto (super Precio), Farmacia San Pablo
+   B  Harina de Trigo · Paquete 1 Kg. · La Perla
+             52 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: harina de trigo · paquete 1 kg · la moderna
+      B: harina de trigo · paquete 1 kg · la perla
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 081 · parecido 0.967
+   A  Talco · Botella 200 Gr. (azul). para Bebé · Baby Magic. Mennen
+              2 filas · Bodega Aurrera, Wal-mart
+   B  Talco · Botella 200 Gr. Rosa. para Bebé · Baby Magic. Mennen
+              2 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: talco · botella 200 gr azul para bebe · baby magic mennen
+      B: talco · botella 200 gr rosa para bebe · baby magic mennen
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 082 · parecido 0.967
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Fud
+         14,371 filas · Super Kompras, U.n.a.m., Central de Abasto
+   B  Jamón · 1 Kg. Granel. de Pavo. Virginia · Kir
+          9,609 filas · Elektra, Wal-mart, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · fud
+      B: jamon · 1 kg granel de pavo virginia · kir
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 083 · parecido 0.967
+   A  Polvo P/preparar Bebidas · Sobre 7 Gr. Naranja · Clight
+         13,272 filas · Chedraui, H.e.b., Tortillerias Tradicionales
+   B  Polvo P/preparar Bebidas · Sobre 7 Gr. Naranja · Livean
+            493 filas · Mercado Soriana, Oxxo, Alsuper
+   ·  ya normalizados, la diferencia está aquí:
+      A: polvo p preparar bebidas · sobre 7 gr naranja · clight
+      B: polvo p preparar bebidas · sobre 7 gr naranja · livean
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 084 · parecido 0.966
+   A  Camarón · 1 Kg. Granel. Macuil o Camarón para Pelar Macuil. Congelado · S/M
+             90 filas · Mega Soriana, S Mart, Mercado Soriana
+   B  Camarón · 1 Kg. Granel. Macuil o Camarón para Pelar Macuil · S/m
+            948 filas · Pescaderia Yuridia, Pescaderias, Soriana Super
+   ·  ya normalizados, la diferencia está aquí:
+      A: camaron · 1 kg granel macuil o camaron para pelar macuil congelado · s m
+      B: camaron · 1 kg granel macuil o camaron para pelar macuil · s m
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 085 · parecido 0.966
+   A  Queso de Puerco · 1 Kg. Granel · Alpino
+          7,921 filas · Hipermercado Soriana, Chedraui Selecto, Super Chedraui
+   B  Queso de Puerco · 1 Kg. Granel · Capistrano
+            228 filas · Chedraui, Bodega Aurrera, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso de puerco · 1 kg granel · alpino
+      B: queso de puerco · 1 kg granel · capistrano
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 086 · parecido 0.965
+   A  Leche Pasteurizada · Caja 1 Lt. Entera · Lala
+         11,607 filas · Soriana Super, H.e.b., City Market
+   B  Leche Pasteurizada · Caja 1 Lt. Entera · Monarca
+            179 filas · Hipermercado Soriana, Soriana Super, Farmacia Guadalajara
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche pasteurizada · caja 1 lt entera · lala
+      B: leche pasteurizada · caja 1 lt entera · monarca
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 087 · parecido 0.965
+   A  Mantequilla · Barra 90 Gr. Sin Sal · Gloria
+         15,558 filas · Fresko la Comer, Chedraui, H.e.b.
+   B  Mantequilla · Barra 90 Gr. Sin Sal · Lala
+         16,069 filas · Alsuper, Neto (super Precio), H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: mantequilla · barra 90 gr sin sal · gloria
+      B: mantequilla · barra 90 gr sin sal · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 088 · parecido 0.965
+   A  Queso Oaxaca · Paquete 400 Gr. · La Villita
+         11,766 filas · U.n.a.m., Super Kompras, Ley Express
+   B  Queso Oaxaca · Paquete 400 Gr. · Lala
+         13,792 filas · Alsuper Fresh Market, La Comer, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso oaxaca · paquete 400 gr · la villita
+      B: queso oaxaca · paquete 400 gr · lala
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 089 · parecido 0.965
+   A  Tinte para el Cabello · Caja · Wella Koleston. 40
+         16,223 filas · Bodega Aurrera Express, Chedraui Selecto, Bodega Aurrera
+   B  Tinte para el Cabello · Caja · Wella. Soft. 40
+          9,173 filas · Sumesa, H.e.b., Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: tinte para el cabello · caja · wella koleston 40
+      B: tinte para el cabello · caja · wella soft 40
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 090 · parecido 0.964
+   A  Tortilla de Maíz · 1 Kg. Granel. Amarilla · Max Select
+            130 filas · Mega Soriana, Aprecio, Hipermercado Soriana
+   B  Tortilla de Maíz · 1 Kg. Granel. Amarilla · S/m
+          8,525 filas · Wal-mart Express, Sumesa, Super Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: tortilla de maiz · 1 kg granel amarilla · max select
+      B: tortilla de maiz · 1 kg granel amarilla · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 091 · parecido 0.964
+   A  Harina de Trigo · Paquete 1 Kg. a 1.1 Kg. · San Blas
+            278 filas · Super Aki, Chedraui, Abarrotera Sanchez
+   B  Harina de Trigo · Paquete 1 Kg. Ó 1.1 Kg. · San Blas
+          5,072 filas · Mi Tienda del Ahorro, Farmacia Guadalajara, Wal-mart Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: harina de trigo · paquete 1 kg a 1 1 kg · san blas
+      B: harina de trigo · paquete 1 kg o 1 1 kg · san blas
+   ¿son el MISMO artículo?  [X] sí   [ ] no
+
+par 092 · parecido 0.964
+   A  Alimentos Preparados · Vaso 64 Gr. Sopa Instantánea. Sabor a Pollo · Maruchan
+         14,117 filas · Dunosusa, Chedraui, Tiendas Garis
+   B  Alimentos Preparados · Vaso 64 Gr. Sopa Instantánea Sabor a Pollo · Nissin
+         15,777 filas · Dunosusa, Wal-mart, Operadora Merco
+   ·  ya normalizados, la diferencia está aquí:
+      A: alimentos preparados · vaso 64 gr sopa instantanea sabor a pollo · maruchan
+      B: alimentos preparados · vaso 64 gr sopa instantanea sabor a pollo · nissin
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 093 · parecido 0.964
+   A  Servilletas de Papel Blanco · Paquete 200 Hojas · Chedraui
+              7 filas · Hipermercado Soriana, Chedraui, Bodega Aurrera
+   B  Servilletas de Papel Blanco · Paquete 200 Hojas · Hortensia
+             24 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: servilletas de papel blanco · paquete 200 hojas · chedraui
+      B: servilletas de papel blanco · paquete 200 hojas · hortensia
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 094 · parecido 0.964
+   A  Grasa Comestible · Paquete 1 Kg. · Lirio
+            610 filas · Operadora Merco, Hipermercado Soriana, Mi Tienda del Ahorro
+   B  Grasa Comestible · Paquete 1 Kg. · Primor
+            479 filas · Superissste, Fresko la Comer, Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: grasa comestible · paquete 1 kg · lirio
+      B: grasa comestible · paquete 1 kg · primor
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 095 · parecido 0.964
+   A  Huevo · Paquete C/18 Blanco · Crío
+          1,287 filas · Hipermercado Soriana, Chedraui, Super Aki
+   B  Huevo · Paquete C/18 Blanco · Sabro
+              5 filas · Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 18 blanco · crio
+      B: huevo · paquete c 18 blanco · sabro
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 096 · parecido 0.964
+   A  Salchicha · Paquete 500 Gr. con Pavo · Fud
+         15,257 filas · Wal-mart, Super Kompras, Operadora Merco
+   B  Salchicha · Paquete 500 Gr. con Pavo · Kir
+          8,856 filas · Super Aki Xtra, Farmacia Guadalajara, Mi Tienda del Ahorro
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · paquete 500 gr con pavo · fud
+      B: salchicha · paquete 500 gr con pavo · kir
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 097 · parecido 0.963
+   A  Mantequilla · Barra 90 Gr. con Sal · Precíssimo
+          3,504 filas · Mercado Soriana, Wal-mart Express, Chedraui
+   B  Mantequilla · Barra 90 Gr. Sin Sal · Precíssimo
+          3,710 filas · Mega Soriana, Mercado Soriana, Wal-mart Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: mantequilla · barra 90 gr con sal · precissimo
+      B: mantequilla · barra 90 gr sin sal · precissimo
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 098 · parecido 0.963
+   A  Limpiador Líquido P/piso · Botella 1 Lt. Multiusos. Pino · Chedraui
+            919 filas · Chedraui, Super Chedraui, Chedraui Selecto
+   B  Limpiador Líquido P/piso · Botella 1 Lt. Multiusos. Pino · Precíssimo
+          2,566 filas · Bodega Aurrera, Mercado Soriana, Soriana Super
+   ·  ya normalizados, la diferencia está aquí:
+      A: limpiador liquido p piso · botella 1 lt multiusos pino · chedraui
+      B: limpiador liquido p piso · botella 1 lt multiusos pino · precissimo
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 099 · parecido 0.963
+   A  Frijol · 1 Kg. Granel. Negro · S/m
+          3,602 filas · Mercado J. Jesus Teran, Abarrotes Super Cabrera Class, Mercado Miguel Hidalgo
+   B  Frijol · 1 Kg. Granel. Peruano · S/m
+          2,840 filas · Mercado J. Jesus Teran, Mercado Adolfo Lopez Mateos, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · 1 kg granel negro · s m
+      B: frijol · 1 kg granel peruano · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 100 · parecido 0.963
+   A  Basa · 1 Kg. Granel. Filete. Blanco. Congelado · S/m
+          9,941 filas · Sumesa, Chedraui, Alsuper
+   B  Basa · 1 Kg. Granel. Filete. Blanco. Descongelado · S/m
+          5,343 filas · Pescaderia Alex, Pescaderia Gambero, La Costa Marisquera
+   ·  ya normalizados, la diferencia está aquí:
+      A: basa · 1 kg granel filete blanco congelado · s m
+      B: basa · 1 kg granel filete blanco descongelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [X] no
+
+par 101 · parecido 0.865
+   A  Leche Pasteurizada · Caja 1 Lt. Semidescremada. Deslactosada · Lala
+          3,877 filas · Superissste, Mega Soriana, Alsuper Fresh Market
+   B  Leche Pasteurizada · Envase 1 Lt. Entera · Chilchota
+             76 filas · Central de Abastos, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche pasteurizada · caja 1 lt semidescremada deslactosada · lala
+      B: leche pasteurizada · envase 1 lt entera · chilchota
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 102 · parecido 0.891
+   A  Frijol · Bolsa 900 Gr. Negro. Querétaro · Aurrera
+          6,038 filas · Wal-mart Express, Soriana Super, Bodega Aurrera Express
+   B  Frijol · Bolsa 900 Gr. Negro · Chedraui
+          4,367 filas · Super Chedraui, La Comer, Benavides
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro queretaro · aurrera
+      B: frijol · bolsa 900 gr negro · chedraui
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 103 · parecido 0.965
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Araceli
+            161 filas · Bodega Aurrera, Wal-mart
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Kirkland
+             42 filas · Central de Abasto, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · araceli
+      B: leche ultrapasteurizada · caja 1 lt entera · kirkland
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 104 · parecido 0.859
+   A  Camarón · 1 Kg. Granel. Macuil o Camarón para Pelar Macuil. Congelado · S/M
+             90 filas · Mega Soriana, S Mart, Mercado Soriana
+   B  Camarón · 1 Kg. Granel. Mediano. con Cabeza · S/m
+            717 filas · Mariscos Papillon, Fresko la Comer, Wal-mart Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: camaron · 1 kg granel macuil o camaron para pelar macuil congelado · s m
+      B: camaron · 1 kg granel mediano con cabeza · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 105 · parecido 0.851
+   A  Carne Pollo · 1 Kg. Granel. Muslo (con Piel) · S/m
+         13,038 filas · Tortillerias Tradicionales, Wal-mart, Sumesa
+   B  Carne Pollo · 1 Kg. Granel. Pechuga con Hueso o Anatómica o Sin Rabadilla (con Piel) · S/m
+         13,505 filas · Supermercado Gonzalez, Mercado J. Jesus Teran, Merkabastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel muslo con piel · s m
+      B: carne pollo · 1 kg granel pechuga con hueso o anatomica o sin rabadilla con piel · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 106 · parecido 0.872
+   A  Manzana · 1 Kg. Granel. Golden. Primera · S/M
+             62 filas · Central de Abasto, Mercado Adolfo Lopez Mateos
+   B  Manzana · 1 Kg. Granel. Manzana Roja de Chihuahua · S/M
+             44 filas · S Mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: manzana · 1 kg granel golden primera · s m
+      B: manzana · 1 kg granel manzana roja de chihuahua · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 107 · parecido 0.881
+   A  Jamón · 1 Kg. Granel. de Pavo. Tradicional · Chimex
+             21 filas · Mega Soriana, Aprecio, Hipermercado Soriana
+   B  Jamón · 1 Kg. Granel. de Pierna · Zwan. Premium
+          9,651 filas · Alsuper Fresh Market, Sumesa, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo tradicional · chimex
+      B: jamon · 1 kg granel de pierna · zwan premium
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 108 · parecido 0.928
+   A  Papel Higiénico · Paquete 4 Rollos. 300 Hojas Dobles. Jumbo · Delsey. Max
+            750 filas · Chedraui Selecto, Super Chedraui, Chedraui
+   B  Papel Higiénico · Paquete 4 Rollos. 300 Hojas Dobles · Great Value. Original
+          2,028 filas · Bodega Aurrera Express, Bodega Aurrera, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: papel higienico · paquete 4 rollos 300 hojas dobles jumbo · delsey max
+      B: papel higienico · paquete 4 rollos 300 hojas dobles · great value original
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 109 · parecido 0.896
+   A  Jabón de Tocador · Barra 135 Gr. Neutro · Caricia
+          6,224 filas · Superissste, Soriana Super, Hipermercado Soriana
+   B  Jabón de Tocador · Caja con Barra 135 Gr. Original · Dove
+         18,587 filas · Ley, Soriana Super, Super Kompras
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 135 gr neutro · caricia
+      B: jabon de tocador · caja con barra 135 gr original · dove
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 110 · parecido 0.872
+   A  Leche Pasteurizada · Caja 1 Lt. Entera · Monarca
+            179 filas · Hipermercado Soriana, Soriana Super, Farmacia Guadalajara
+   B  Leche Pasteurizada · Caja 1 Lt. Parcialmente Descremada. Baja en Grasa. Light · Lala
+          4,323 filas · Bodega Aurrera Express, Bodega Aurrera, Mi Tienda del Ahorro
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche pasteurizada · caja 1 lt entera · monarca
+      B: leche pasteurizada · caja 1 lt parcialmente descremada baja en grasa light · lala
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 111 · parecido 0.882
+   A  Atún · Lata 140 Gr. Aleta Amarilla en Hojuelas en Agua · Dolores
+         15,094 filas · Ley Express, Chedraui Selecto, Mercado Adolfo Lopez Mateos
+   B  Atún · Lata 140 Gr. en Hojuelas en Agua · Valley Foods
+          2,965 filas · Ley, Bodega Aurrera, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: atun · lata 140 gr aleta amarilla en hojuelas en agua · dolores
+      B: atun · lata 140 gr en hojuelas en agua · valley foods
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 112 · parecido 0.923
+   A  Azúcar · Bolsa Plástico 1 Kg. Estándar · Aurrera
+              4 filas · Wal-mart, Bodega Aurrera
+   B  Azúcar · Bolsa Plástico 1 Kg. Refinada · Zulka
+            676 filas · Ley, S Mart, Neto (super Precio)
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 1 kg estandar · aurrera
+      B: azucar · bolsa plastico 1 kg refinada · zulka
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 113 · parecido 0.883
+   A  Frijol · Bolsa 907 Gr. Negro. Querétaro · La Merced
+          6,001 filas · Chedraui, Mega Soriana, Wal-mart Express
+   B  Frijol · Bolsa 907 Gr. Pinto · De la Olla
+             53 filas · Operadora Merco
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 907 gr negro queretaro · la merced
+      B: frijol · bolsa 907 gr pinto · de la olla
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 114 · parecido 0.885
+   A  Aceite · Botella 840 Ml. Canola · Capullo
+          3,950 filas · Chedraui, City Market, Soriana Super
+   B  Aceite · Botella 840 Ml. Soya · Sarita
+              1 filas · Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: aceite · botella 840 ml canola · capullo
+      B: aceite · botella 840 ml soya · sarita
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 115 · parecido 0.960
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · León
+            423 filas · Hipermercado Soriana, Mega Soriana, Super Kompras
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Liconsa. Plus
+            141 filas · Superissste
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · leon
+      B: leche ultrapasteurizada · caja 1 lt entera · liconsa plus
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 116 · parecido 0.949
+   A  Huevo · Paquete C/18 Blanco · Crío
+          1,287 filas · Hipermercado Soriana, Chedraui, Super Aki
+   B  Huevo · Paquete C/18 Blanco · Smart
+            194 filas · S Mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 18 blanco · crio
+      B: huevo · paquete c 18 blanco · smart
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 117 · parecido 0.880
+   A  Jamón · 1 Kg. Granel. con Pavo y Cerdo · Ibero. Barcelona
+          6,179 filas · Sumesa, Mercado Soriana, Bodega Aurrera
+   B  Jamón · 1 Kg. Granel. de Pavo · Galicia
+            197 filas · Central de Abastos, Mercado Malibran, Mercado Publico
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel con pavo y cerdo · ibero barcelona
+      B: jamon · 1 kg granel de pavo · galicia
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 118 · parecido 0.902
+   A  Carne Res · 1 Kg. Granel. Carne para Asar · S/m
+         23,488 filas · Super Kompras, Merkabastos, Sumesa
+   B  Carne Res · 1 Kg. Granel. Panza o Menudo. Crudos · S/m
+         15,283 filas · Mercado Emilio Sanchez Piedras, Mercado J. Jesus Teran, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel carne para asar · s m
+      B: carne res · 1 kg granel panza o menudo crudos · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 119 · parecido 0.927
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta Arriera o Chuleta Mixta · S/m
+          6,176 filas · Ley Express, Mega Soriana, Chedraui
+   B  Carne Cerdo · 1 Kg. Granel. Chuleta Mixta con Hueso · S/m
+            170 filas · Wal-mart Express, Mi Tienda del Ahorro, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta arriera o chuleta mixta · s m
+      B: carne cerdo · 1 kg granel chuleta mixta con hueso · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 120 · parecido 0.893
+   A  Jabón de Tocador · Barra 150 Gr. Hidratación Natural · Great Day
+            240 filas · H.e.b.
+   B  Jabón de Tocador · Barra 150 Gr. Neutro · Max Ten
+              4 filas · Super Kompras
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 150 gr hidratacion natural · great day
+      B: jabon de tocador · barra 150 gr neutro · max ten
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 121 · parecido 0.952
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Parcialmente Descremada. Azul · Alpura. Clásica
+         22,075 filas · Dunosusa, U.n.a.m., Ley Express
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Parcialmente Descremada. Light · Alpura
+         21,043 filas · Abarrotera Sanchez, Fresko la Comer, Farmacia Guadalajara
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt parcialmente descremada azul · alpura clasica
+      B: leche ultrapasteurizada · caja 1 lt parcialmente descremada light · alpura
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 122 · parecido 0.849
+   A  Arroz · Bolsa 900 Gr. Extra · Aprecio
+            139 filas · Aprecio
+   B  Arroz · Bolsa 900 Gr. Super Extra. Grano Grueso · El Clásico de Morelos
+          1,088 filas · Mercado Soriana, Mega Soriana, Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: arroz · bolsa 900 gr extra · aprecio
+      B: arroz · bolsa 900 gr super extra grano grueso · el clasico de morelos
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 123 · parecido 0.896
+   A  Frijol · Bolsa 900 Gr. Negro. Querétaro · Schettino
+         10,814 filas · Wal-mart Express, Soriana Express, Abarrotera Sanchez
+   B  Frijol · Bolsa 900 Gr. Negro · Grano de Oro
+             61 filas · Super Aki Xtra, Central de Abastos, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro queretaro · schettino
+      B: frijol · bolsa 900 gr negro · grano de oro
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 124 · parecido 0.951
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Gota Blanca
+            194 filas · Bodega Aurrera, Wal-mart, Wal-mart Express
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Grand Brand
+            568 filas · Ley Express, Ley
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · gota blanca
+      B: leche ultrapasteurizada · caja 1 lt entera · grand brand
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 125 · parecido 0.838
+   A  Atún · Lata 140 Gr. Desmenuzado en Agua · Valley Foods
+          5,606 filas · Soriana Super, Mercado Soriana, Mega Soriana
+   B  Atún · Lata 140 Gr. en Hojuelas en Agua con Aceite · Max Select
+            125 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: atun · lata 140 gr desmenuzado en agua · valley foods
+      B: atun · lata 140 gr en hojuelas en agua con aceite · max select
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 126 · parecido 0.822
+   A  Carne Res · 1 Kg. Granel. Bistec para Asar Rebanado · S/m
+             79 filas · Central de Abasto, Central de Abastos
+   B  Carne Res · 1 Kg. Granel. Milanesa de Bola o Auténtica de Bola o de Bola Corte Delgado o de Pulpa Bola · S/m
+         14,000 filas · Super Kompras, Operadora Merco, City Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel bistec para asar rebanado · s m
+      B: carne res · 1 kg granel milanesa de bola o autentica de bola o de bola corte delgado o de pulpa bola · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 127 · parecido 0.922
+   A  Frijol · Bolsa 900 Gr. Negro · Lluvia de Oro
+            155 filas · Soriana Super, Super Aki, Super Aki Xtra
+   B  Frijol · Bolsa 900 Gr. Negro · Paco
+             42 filas · Superissste
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro · lluvia de oro
+      B: frijol · bolsa 900 gr negro · paco
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 128 · parecido 0.919
+   A  Crema Líquida · Botella 400 Ml. Express Hidration. Piel Normal · Nivea
+         13,531 filas · Sumesa, Soriana Super, Bodega Aurrera
+   B  Crema Líquida · Botella 400 Ml. Pro-ceramidas. Piel Seca · Dove
+          8,535 filas · Benavides, Chedraui Selecto, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: crema liquida · botella 400 ml express hidration piel normal · nivea
+      B: crema liquida · botella 400 ml pro ceramidas piel seca · dove
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 129 · parecido 0.928
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Araceli
+            161 filas · Bodega Aurrera, Wal-mart
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Semidescremada · San Marcos
+         10,057 filas · Soriana Express, Mega Soriana, Alsuper Fresh Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · araceli
+      B: leche ultrapasteurizada · caja 1 lt semidescremada · san marcos
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 130 · parecido 0.930
+   A  Queso Oaxaca · 1 Kg. Granel · Norteño
+            286 filas · S Mart, Wal-mart, Ley
+   B  Queso Oaxaca · 1 Kg. Granel · S/m
+          2,339 filas · Mercado Central de Acapulco, Mercado Malibran, Mercado Emilio Sanchez Piedras
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso oaxaca · 1 kg granel · norteno
+      B: queso oaxaca · 1 kg granel · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 131 · parecido 0.945
+   A  Aceite · Botella 800 Ml. Vegetal · Aurrera
+          4,087 filas · Wal-mart Express, Chedraui, Oxxo
+   B  Aceite · Botella 800 Ml. Vegetal · Chedraui
+          2,026 filas · Bodega Aurrera, Chedraui Selecto, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: aceite · botella 800 ml vegetal · aurrera
+      B: aceite · botella 800 ml vegetal · chedraui
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 132 · parecido 0.906
+   A  Queso Americano · Paquete 140 Gr. 8 Rebanadas. Imitación Queso Americano · El Ciervo
+          2,066 filas · Mega Soriana, Hipermercado Soriana, Chedraui
+   B  Queso Americano · Paquete 140 Gr. 8 Rebanadas · Caperucita
+          3,936 filas · H.e.b., Super Chedraui, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso americano · paquete 140 gr 8 rebanadas imitacion queso americano · el ciervo
+      B: queso americano · paquete 140 gr 8 rebanadas · caperucita
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 133 · parecido 0.911
+   A  Manzana · 1 Kg. Granel. Golden. Escolar · S/m
+            184 filas · Hipermercado Soriana, Mercado Soriana, Super Aki Xtra
+   B  Manzana · 1 Kg. Granel. Roja. en Bolsa · S/m
+            116 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: manzana · 1 kg granel golden escolar · s m
+      B: manzana · 1 kg granel roja en bolsa · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 134 · parecido 0.937
+   A  Manzana · 1 Kg. Granel. Golden. Mediana · S/m
+             72 filas · Central de Abasto, Central de Abastos
+   B  Manzana · 1 Kg. Granel. Golden Nacional · S/m
+             94 filas · H.e.b., Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: manzana · 1 kg granel golden mediana · s m
+      B: manzana · 1 kg granel golden nacional · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 135 · parecido 0.866
+   A  Salchicha · 1 Kg. Granel. de Pavo. Hot Dog · Fud
+          4,824 filas · Fresko la Comer, Sumesa, Mercado Soriana
+   B  Salchicha · 1 Kg. Granel. Frankfurt · Alpino
+          2,320 filas · Central de Abastos, Alsuper Fresh Market, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · 1 kg granel de pavo hot dog · fud
+      B: salchicha · 1 kg granel frankfurt · alpino
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 136 · parecido 0.871
+   A  Calamar · 1 Kg. Granel. Americano. Congelado · S/m
+            541 filas · Pescaderia Mari-mich, S Mart, Wal-mart
+   B  Calamar · 1 Kg. Granel. Filete. Crudo. Congelado o Desocngelado · S/m
+          2,165 filas · Pescaderia el Tejano de Queretaro, La Costa Marisquera, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: calamar · 1 kg granel americano congelado · s m
+      B: calamar · 1 kg granel filete crudo congelado o desocngelado · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 137 · parecido 0.903
+   A  Carne Res · 1 Kg. Granel. Costilla para Cocer · S/m
+          2,748 filas · Super Aki, Ley Express, Wal-mart Express
+   B  Carne Res · 1 Kg. Granel. Molida · S/m
+          6,126 filas · Fresko la Comer, City Market, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel costilla para cocer · s m
+      B: carne res · 1 kg granel molida · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 138 · parecido 0.930
+   A  Queso Panela · 1 Kg. Granel · Caperucita
+          5,316 filas · Mercado Soriana, Soriana Super, City Market
+   B  Queso Panela · 1 Kg. Granel · Fud
+          7,799 filas · Wal-mart Express, Mercado Emilio Sanchez Piedras, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso panela · 1 kg granel · caperucita
+      B: queso panela · 1 kg granel · fud
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 139 · parecido 0.917
+   A  Ropa Interior Desechable y Similares · Paquete 10 Piezas. Pants Discret Beige. Ch/m. Pañal para Adulto · Tena
+          5,693 filas · Aprecio, Soriana Express, Superissste
+   B  Ropa Interior Desechable y Similares · Paquete 10 Piezas. Predoblado. Unitalla. Pañal para Adulto · Tena
+          1,272 filas · Alsuper, Mercado Soriana, Farmacia San Pablo
+   ·  ya normalizados, la diferencia está aquí:
+      A: ropa interior desechable y similares · paquete 10 piezas pants discret beige ch m panal para adulto · tena
+      B: ropa interior desechable y similares · paquete 10 piezas predoblado unitalla panal para adulto · tena
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 140 · parecido 0.909
+   A  Carne Res · 1 Kg. Granel. Bistec Pulpa Blanca · S/m
+          1,983 filas · Wal-mart, Chedraui Selecto, Super Chedraui
+   B  Carne Res · 1 Kg. Granel. Molida. Popular/comercial · S/m
+          1,367 filas · Chedraui, Mercado Emilio Sanchez Piedras, Mercado Central de Acapulco
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel bistec pulpa blanca · s m
+      B: carne res · 1 kg granel molida popular comercial · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 141 · parecido 0.889
+   A  Carne Res · 1 Kg. Granel. Chambarete con Hueso · S/M
+          5,859 filas · Bodega Aurrera, Wal-mart, Ley
+   B  Carne Res · 1 Kg. Granel. Panza o Menudo. Crudos · S/m
+         15,283 filas · Mercado Emilio Sanchez Piedras, Mercado J. Jesus Teran, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel chambarete con hueso · s m
+      B: carne res · 1 kg granel panza o menudo crudos · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 142 · parecido 0.878
+   A  Crema Líquida · Botella 400 Ml. Celulas Madre. Humectante · Teatrical
+          3,870 filas · Mi Tienda del Ahorro, S Mart, Soriana Super
+   B  Crema Líquida · Botella 400 Ml. Piel Normal · Palmolive. Neutro Balance
+         11,554 filas · Soriana Express, Mi Tienda del Ahorro, S Mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: crema liquida · botella 400 ml celulas madre humectante · teatrical
+      B: crema liquida · botella 400 ml piel normal · palmolive neutro balance
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 143 · parecido 0.931
+   A  Salchicha · 1 Kg. Granel. Viena · San Antonio
+            123 filas · Chedraui, Bodega Aurrera
+   B  Salchicha · 1 Kg. Granel. Viena · Viva
+            256 filas · Mercado Emilio Sanchez Piedras, Central de Abastos, Mercado J. Jesus Teran
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · 1 kg granel viena · san antonio
+      B: salchicha · 1 kg granel viena · viva
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 144 · parecido 0.879
+   A  Frijol · Bolsa 900 Gr. Negro · El Fresno
+             64 filas · Central de Abastos
+   B  Frijol · Bolsa 900 Gr. Pinto · Schettino
+          5,163 filas · Soriana Super, Fresko la Comer, City Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro · el fresno
+      B: frijol · bolsa 900 gr pinto · schettino
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 145 · parecido 0.898
+   A  Carne Res · 1 Kg. Granel. Costilla Simple C/h · Heb. Supreme
+            180 filas · H.e.b.
+   B  Carne Res · 1 Kg. Granel. Filete Limpio · S/m
+          5,587 filas · Super Kompras, Sumesa, Mercado Adolfo Lopez Mateos
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel costilla simple c h · heb supreme
+      B: carne res · 1 kg granel filete limpio · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 146 · parecido 0.897
+   A  Margarina · Barra 90 Gr. con Sal · Norteñita
+            369 filas · Hipermercado Soriana, Mi Tienda del Ahorro, H.e.b.
+   B  Margarina · Barra 90 Gr. Sin Sal · Aurrera
+            882 filas · Bodega Aurrera Express, Chedraui, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: margarina · barra 90 gr con sal · nortenita
+      B: margarina · barra 90 gr sin sal · aurrera
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 147 · parecido 0.868
+   A  Jabón de Tocador · Barra 135 Gr. Aqua · Zest
+         18,181 filas · Fresko la Comer, Minisuper, Chedraui Selecto
+   B  Jabón de Tocador · Barra 135 Gr. Extracto de Sábila y Aceite de Aguacate · Savilé
+             12 filas · Chedraui, Chedraui Selecto
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 135 gr aqua · zest
+      B: jabon de tocador · barra 135 gr extracto de sabila y aceite de aguacate · savile
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 148 · parecido 0.891
+   A  Carne Pollo · 1 Kg. Granel. Entero Supermercado · Hill Country Fare
+            157 filas · H.e.b., Mega Soriana
+   B  Carne Pollo · 1 Kg. Granel. Pierna Entera · S/m
+            111 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel entero supermercado · hill country fare
+      B: carne pollo · 1 kg granel pierna entera · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 149 · parecido 0.860
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta Natural · Bachoco
+          2,311 filas · Supermercado Gonzalez, Ley, Hipermercado Soriana
+   B  Carne Cerdo · 1 Kg. Granel. Molida o Pulpa Molida · S/m
+         17,051 filas · Central de Abasto, Super Kompras, Operadora Merco
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta natural · bachoco
+      B: carne cerdo · 1 kg granel molida o pulpa molida · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 150 · parecido 0.910
+   A  Carne Res · 1 Kg. Granel. Bistec para el Asador · S/m
+          2,666 filas · Soriana Super, Super Aki, Mercado Adolfo Lopez Mateos
+   B  Carne Res · 1 Kg. Granel. Milanesa de Bola para el Sartén · S/m
+          2,489 filas · Bodega Aurrera, Hipermercado Soriana, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel bistec para el asador · s m
+      B: carne res · 1 kg granel milanesa de bola para el sarten · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 151 · parecido 0.908
+   A  Salchicha · Paquete 500 Gr. con Pavo · Kir
+          8,856 filas · Super Aki Xtra, Farmacia Guadalajara, Mi Tienda del Ahorro
+   B  Salchicha · Paquete 500 Gr. Frankfurt · Alpino. Pavino
+         10,332 filas · Wal-mart, Central de Abasto, Bodega Aurrera Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: salchicha · paquete 500 gr con pavo · kir
+      B: salchicha · paquete 500 gr frankfurt · alpino pavino
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 152 · parecido 0.880
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Kir
+          9,609 filas · Elektra, Wal-mart, Chedraui
+   B  Jamón · 1 Kg. Granel. de Pavo y Cerdo. California · Capistrano
+          5,772 filas · Alsuper Fresh Market, Mega Soriana, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · kir
+      B: jamon · 1 kg granel de pavo y cerdo california · capistrano
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 153 · parecido 0.904
+   A  Azúcar · Bolsa Plástico 1 Kg. Estándar o Morena · Progreso
+            571 filas · Farmacia Guadalajara, Merkabastos
+   B  Azúcar · Bolsa Plástico 1 Kg. Refinada · Soriana
+              5 filas · Hipermercado Soriana, Mega Soriana, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 1 kg estandar o morena · progreso
+      B: azucar · bolsa plastico 1 kg refinada · soriana
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 154 · parecido 0.932
+   A  Queso Doble Crema · 1 Kg. Granel · Chilchota
+            499 filas · Mercado Publico, Central de Abasto, Central de Abastos
+   B  Queso Doble Crema · 1 Kg. Granel · S/M
+          1,763 filas · Central de Abasto, Mercado Publico, Mercado Publico 5 de Mayo
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso doble crema · 1 kg granel · chilchota
+      B: queso doble crema · 1 kg granel · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 155 · parecido 0.914
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta Ahumada o Entrecot Ahumado · S/m
+         21,587 filas · Super Kompras, Central de Abasto, S Mart
+   B  Carne Cerdo · 1 Kg. Granel. Chuleta Arriera o Chuleta Mixta · S/m
+          6,176 filas · Ley Express, Mega Soriana, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta ahumada o entrecot ahumado · s m
+      B: carne cerdo · 1 kg granel chuleta arriera o chuleta mixta · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 156 · parecido 0.929
+   A  Tampones · Caja 12 Piezas. Unika. Súper. Flujo Abundante · Kotex
+         14,349 filas · S Mart, Aprecio, Wal-mart
+   B  Tampones · Caja 12 Piezas. Unika. Súper Plus. Flujo Súper Abundante · Kotex
+         14,528 filas · Neto (super Precio), Alsuper, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: tampones · caja 12 piezas unika super flujo abundante · kotex
+      B: tampones · caja 12 piezas unika super plus flujo super abundante · kotex
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 157 · parecido 0.890
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Parma. Sabori
+          8,637 filas · Mercado Soriana, Elektra, Fresko la Comer
+   B  Jamón · 1 Kg. Granel. de Pavo y Cerdo. Virginia · Fud
+          2,559 filas · Mi Tienda del Ahorro, S Mart, Mercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · parma sabori
+      B: jamon · 1 kg granel de pavo y cerdo virginia · fud
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 158 · parecido 0.933
+   A  Azúcar · Bolsa Plástico 2 Kg. Estándar o Morena · Great Value
+              8 filas · Bodega Aurrera, Wal-mart, Wal-mart Express
+   B  Azúcar · Bolsa Plástico 2 Kg. Estándar · Aurrera
+          5,410 filas · Bodega Aurrera Express, Soriana Express, Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 2 kg estandar o morena · great value
+      B: azucar · bolsa plastico 2 kg estandar · aurrera
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 159 · parecido 0.876
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Capistrano
+          7,594 filas · Wal-mart Express, Bodega Aurrera, Super Chedraui
+   B  Jamón · 1 Kg. Granel. de Pierna. Horneado Especial · Fud
+          8,027 filas · U.n.a.m., Farmacia Guadalajara, Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · capistrano
+      B: jamon · 1 kg granel de pierna horneado especial · fud
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 160 · parecido 0.933
+   A  Carne Pollo · 1 Kg. Granel. Pechuga. Filete · S/m
+          7,056 filas · Super Kompras, H.e.b., Super Aki
+   B  Carne Pollo · 1 Kg. Granel. Pierna Entera · S/m
+            111 filas · Aprecio
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel pechuga filete · s m
+      B: carne pollo · 1 kg granel pierna entera · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 161 · parecido 0.827
+   A  Desodorante · Barra 50 Gr. Fresh. para Caballero · Old Spice
+         17,151 filas · Chedraui, U.n.a.m., S Mart
+   B  Desodorante · Roll On 50 Ml. Tono Natural. para Dama · Nivea
+          3,395 filas · Benavides, Supermercado Gonzalez, Chedraui Selecto
+   ·  ya normalizados, la diferencia está aquí:
+      A: desodorante · barra 50 gr fresh para caballero · old spice
+      B: desodorante · roll on 50 ml tono natural para dama · nivea
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 162 · parecido 0.880
+   A  Carne Res · 1 Kg. Granel. Bistec de Res · S/M
+             94 filas · Wal-mart, Hipermercado Soriana, S Mart
+   B  Carne Res · 1 Kg. Granel. Panza o Menudo. Crudos · S/m
+         15,283 filas · Mercado Emilio Sanchez Piedras, Mercado J. Jesus Teran, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel bistec de res · s m
+      B: carne res · 1 kg granel panza o menudo crudos · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 163 · parecido 0.943
+   A  Arroz · Bolsa 1 Kg. Super Extra · Diamcers
+            120 filas · Aprecio
+   B  Arroz · Bolsa 1 Kg. Super Extra · Schettino
+             79 filas · Central de Abasto, Central de Abastos, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: arroz · bolsa 1 kg super extra · diamcers
+      B: arroz · bolsa 1 kg super extra · schettino
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 164 · parecido 0.851
+   A  Carne Pollo · 1 Kg. Granel. Entero. con Vísceras. Amarillo. Fresco · Hill Country Fare
+            156 filas · H.e.b.
+   B  Carne Pollo · 1 Kg. Granel. Pechuga. Filete · S/m
+          7,056 filas · Super Kompras, H.e.b., Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel entero con visceras amarillo fresco · hill country fare
+      B: carne pollo · 1 kg granel pechuga filete · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 165 · parecido 0.911
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Araceli
+            161 filas · Bodega Aurrera, Wal-mart
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Parcialmente Descremada. Semi · Alpura
+         20,014 filas · Ley Express, Tiendas Garis, Sumesa
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · araceli
+      B: leche ultrapasteurizada · caja 1 lt parcialmente descremada semi · alpura
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 166 · parecido 0.931
+   A  Pasta para Sopa · Paquete 200 Gr. Fideo Corto · Mi Marca
+            131 filas · Super Aki, Super Aki Xtra
+   B  Pasta para Sopa · Paquete 200 Gr. Fideo Mediano · Aurrera
+          8,144 filas · Wal-mart Express, Chedraui, Mega Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr fideo corto · mi marca
+      B: pasta para sopa · paquete 200 gr fideo mediano · aurrera
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 167 · parecido 0.881
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Grand Brand
+            568 filas · Ley Express, Ley
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Parcialmente Descremada. Azul · Alpura. Clásica
+         22,075 filas · Dunosusa, U.n.a.m., Ley Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · grand brand
+      B: leche ultrapasteurizada · caja 1 lt parcialmente descremada azul · alpura clasica
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 168 · parecido 0.847
+   A  Arroz · Bolsa 900 Gr. Super Extra. Grano Largo · El Clásico de Morelos
+          1,175 filas · Soriana Super, Mega Soriana, Super Aki
+   B  Arroz · Bolsa 900 Gr. · El Milagro
+             78 filas · Central de Abasto, Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: arroz · bolsa 900 gr super extra grano largo · el clasico de morelos
+      B: arroz · bolsa 900 gr · el milagro
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 169 · parecido 0.850
+   A  Camarón · 1 Kg. Granel. Coctelero. Grande. Congelado o Descongelado · S/m
+          1,194 filas · Pescaderia Lindo Sinaloa, Mercado del Mar Zapopan, Mercado del Mar Felipe Angeles Higueril
+   B  Camarón · 1 Kg. Granel. Macuil. Especial · S/m
+             37 filas · Mega Soriana, S Mart, Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: camaron · 1 kg granel coctelero grande congelado o descongelado · s m
+      B: camaron · 1 kg granel macuil especial · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 170 · parecido 0.934
+   A  Arroz · Bolsa 1 Kg. Super Extra. Grano Largo · Sos
+            153 filas · Central de Abasto, Wal-mart Express, Wal-mart
+   B  Arroz · Bolsa 1 Kg. Super Extra · Progreso
+            398 filas · Merkabastos, Farmacia Guadalajara, Wal-mart
+   ·  ya normalizados, la diferencia está aquí:
+      A: arroz · bolsa 1 kg super extra grano largo · sos
+      B: arroz · bolsa 1 kg super extra · progreso
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 171 · parecido 0.929
+   A  Carne Pollo · 1 Kg. Granel. Pechuga. Corte Americano · S/m
+         12,649 filas · Mercado Soriana, Tortillerias Tradicionales, Wal-mart Express
+   B  Carne Pollo · 1 Kg. Granel. Pechuga. Filete · S/m
+          7,056 filas · Super Kompras, H.e.b., Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel pechuga corte americano · s m
+      B: carne pollo · 1 kg granel pechuga filete · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 172 · parecido 0.946
+   A  Salsa Picante y Similares · Botella 220 Gr. Chipotles Adobados Molidos · Clemente Jacques
+         13,487 filas · Ley Express, Sumesa, Alsuper Fresh Market
+   B  Salsa Picante y Similares · Botella 220 Gr. Chipotles Dulces. Adobados Molidos · Clemente Jacques
+         13,348 filas · Sumesa, Ley Express, Wal-mart Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: salsa picante y similares · botella 220 gr chipotles adobados molidos · clemente jacques
+      B: salsa picante y similares · botella 220 gr chipotles dulces adobados molidos · clemente jacques
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 173 · parecido 0.867
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta Arriera o Chuleta Mixta · S/m
+          6,176 filas · Ley Express, Mega Soriana, Chedraui
+   B  Carne Cerdo · 1 Kg. Granel. Longaniza · S/m
+         15,454 filas · Central de Abasto, Super Kompras, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta arriera o chuleta mixta · s m
+      B: carne cerdo · 1 kg granel longaniza · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 174 · parecido 0.909
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta de Sirloin · S/m
+            242 filas · H.e.b., S Mart
+   B  Carne Cerdo · 1 Kg. Granel. Chuleta Natural · Bachoco
+          2,311 filas · Supermercado Gonzalez, Ley, Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta de sirloin · s m
+      B: carne cerdo · 1 kg granel chuleta natural · bachoco
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 175 · parecido 0.942
+   A  Cerveza · Canasta con 6 Botellas de 355 Ml. No Retornable (clara) · Bohemia. Pilsner
+         11,707 filas · Chedraui, Wal-mart, S Mart
+   B  Cerveza · Canasta con 6 Botellas de 355 Ml. No Retornable · Negra Modelo
+         12,318 filas · City Market, Fresko la Comer, Minisuper
+   ·  ya normalizados, la diferencia está aquí:
+      A: cerveza · canasta con 6 botellas de 355 ml no retornable clara · bohemia pilsner
+      B: cerveza · canasta con 6 botellas de 355 ml no retornable · negra modelo
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 176 · parecido 0.889
+   A  Jamón · 1 Kg. Granel. de Pavo y Cerdo · Kir. Lunch
+             67 filas · Central de Abastos, Mercado Emilio Sanchez Piedras, Central de Abasto
+   B  Jamón · 1 Kg. Granel. de Pierna (mandolina) · Kir
+          4,643 filas · Wal-mart Express, Alsuper, Soriana Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo y cerdo · kir lunch
+      B: jamon · 1 kg granel de pierna mandolina · kir
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 177 · parecido 0.887
+   A  Pasta para Sopa · Paquete 200 Gr. Munición · Precíssimo
+          6,089 filas · Soriana Super, Mercado Soriana, Wal-mart Express
+   B  Pasta para Sopa · Paquete 200 Gr. Spaghetti · La Moderna
+         10,590 filas · Fresko la Comer, Minisuper, Mercado J. Jesus Teran
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr municion · precissimo
+      B: pasta para sopa · paquete 200 gr spaghetti · la moderna
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 178 · parecido 0.901
+   A  Mojarra · 1 Kg. Granel. Filete. de Tilapia · S/m
+            331 filas · Hipermercado Soriana, Soriana Super, Mercado Soriana
+   B  Mojarra · 1 Kg. Granel. Tilapia Chica. Fresco · S/m
+          1,813 filas · Super Chedraui, Mercado Emilio Sanchez Piedras, Pescaderias
+   ·  ya normalizados, la diferencia está aquí:
+      A: mojarra · 1 kg granel filete de tilapia · s m
+      B: mojarra · 1 kg granel tilapia chica fresco · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 179 · parecido 0.908
+   A  Lenteja · Bolsa 500 Gr. · Cazerola
+             15 filas · Hipermercado Soriana, Fresko la Comer
+   B  Lenteja · Bolsa 500 Gr. · Verde Valle
+         15,705 filas · H.e.b., Super Chedraui, Oxxo
+   ·  ya normalizados, la diferencia está aquí:
+      A: lenteja · bolsa 500 gr · cazerola
+      B: lenteja · bolsa 500 gr · verde valle
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 180 · parecido 0.917
+   A  Queso Panela · Paquete 400 Gr. · Lala
+          7,401 filas · Operadora Merco, Ley Express, Bodega Aurrera Express
+   B  Queso Panela · Paquete 400 Gr. · Zwan. Premium
+         10,838 filas · Sumesa, Super Aki Xtra, H.e.b.
+   ·  ya normalizados, la diferencia está aquí:
+      A: queso panela · paquete 400 gr · lala
+      B: queso panela · paquete 400 gr · zwan premium
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 181 · parecido 0.873
+   A  Carne Res · 1 Kg. Granel. Flecha con Hueso para Asar · S/m
+            137 filas · H.e.b., Mega Soriana, Mi Tienda del Ahorro
+   B  Carne Res · 1 Kg. Granel. Hígado · S/m
+          4,411 filas · Tortillerias Tradicionales, Central de Abasto, Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne res · 1 kg granel flecha con hueso para asar · s m
+      B: carne res · 1 kg granel higado · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 182 · parecido 0.933
+   A  Azúcar · Bolsa Plástico 2 Kg. Estándar o Morena · Progreso
+            513 filas · Farmacia Guadalajara, Merkabastos
+   B  Azúcar · Bolsa Plástico 2 Kg. Estándar · Aurrera
+          5,410 filas · Bodega Aurrera Express, Soriana Express, Super Aki
+   ·  ya normalizados, la diferencia está aquí:
+      A: azucar · bolsa plastico 2 kg estandar o morena · progreso
+      B: azucar · bolsa plastico 2 kg estandar · aurrera
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 183 · parecido 0.897
+   A  Huevo · Paquete C/18 Blanco · Crío
+          1,287 filas · Hipermercado Soriana, Chedraui, Super Aki
+   B  Huevo · Paquete C/18 Rojo · San Juan
+             59 filas · Wal-mart Express, Sumesa, Ley
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 18 blanco · crio
+      B: huevo · paquete c 18 rojo · san juan
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 184 · parecido 0.884
+   A  Jamón · 1 Kg. Granel. de Pavo. Clásico · Chimex
+         11,108 filas · Mercado Soriana, Alsuper Fresh Market, Farmacia Guadalajara
+   B  Jamón · 1 Kg. Granel. de Pavo y Cerdo. Virginia · D´héctor
+             45 filas · Central de Abastos
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo clasico · chimex
+      B: jamon · 1 kg granel de pavo y cerdo virginia · d hector
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 185 · parecido 0.930
+   A  Jamón · 1 Kg. Granel. de Pavo. Virginia · Fud
+         14,371 filas · Super Kompras, U.n.a.m., Central de Abasto
+   B  Jamón · 1 Kg. Granel. de Pavo · Kir. Lunch
+            171 filas · Mercado Emilio Sanchez Piedras, Mercado Publico, Central de Abasto
+   ·  ya normalizados, la diferencia está aquí:
+      A: jamon · 1 kg granel de pavo virginia · fud
+      B: jamon · 1 kg granel de pavo · kir lunch
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 186 · parecido 0.904
+   A  Agua Sin Gas · Botella 1.5 Lt. Limon · Be-light
+         16,994 filas · Wal-mart, S Mart, U.n.a.m.
+   B  Agua Sin Gas · Botella 1.5 Lt. · Epura
+         11,269 filas · Aprecio, S Mart, Minisuper
+   ·  ya normalizados, la diferencia está aquí:
+      A: agua sin gas · botella 1 5 lt limon · be light
+      B: agua sin gas · botella 1 5 lt · epura
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 187 · parecido 0.884
+   A  Carne Pollo · 1 Kg. Granel. Entero. con Vísceras. Amarillo. Fresco · Hill Country Fare
+            156 filas · H.e.b.
+   B  Carne Pollo · 1 Kg. Granel. Entero. con Vísceras o Tipo Super o Entero Supermercado o Canal Entera · S/m
+         27,691 filas · Minisuper, Super Kompras, Tortillerias Tradicionales
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne pollo · 1 kg granel entero con visceras amarillo fresco · hill country fare
+      B: carne pollo · 1 kg granel entero con visceras o tipo super o entero supermercado o canal entera · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 188 · parecido 0.900
+   A  Huevo · Paquete C/12 Blanco · Precíssimo
+          3,119 filas · Mega Soriana, Mercado Soriana, Soriana Super
+   B  Huevo · Paquete C/12 Blanco · San Juan
+         13,820 filas · Neto (super Precio), Alsuper, U.n.a.m.
+   ·  ya normalizados, la diferencia está aquí:
+      A: huevo · paquete c 12 blanco · precissimo
+      B: huevo · paquete c 12 blanco · san juan
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 189 · parecido 0.869
+   A  Frijol · Bolsa 900 Gr. Negro. Querétaro · La Merced
+          6,851 filas · U.n.a.m., Super Chedraui, Bodega Aurrera
+   B  Frijol · Bolsa 900 Gr. Pinto · Chedraui
+          1,498 filas · Chedraui, Hipermercado Soriana, Super Chedraui
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro queretaro · la merced
+      B: frijol · bolsa 900 gr pinto · chedraui
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 190 · parecido 0.877
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Semidescremada. Reducida en Grasa · Lala
+         19,745 filas · Fresko la Comer, Aprecio, Ley Express
+   B  Leche Ultrapasteurizada · Envase o Caja 1 Lt. Entera · Great Value
+          8,341 filas · Ley, Bodega Aurrera Express, Wal-mart Express
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt semidescremada reducida en grasa · lala
+      B: leche ultrapasteurizada · envase o caja 1 lt entera · great value
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 191 · parecido 0.855
+   A  Carne Cerdo · 1 Kg. Granel. Longaniza · Alpino
+          2,358 filas · Mega Soriana, U.n.a.m., Mercado Publico
+   B  Carne Cerdo · 1 Kg. Granel. Pierna Entera Sin Hueso o Pernil Sin Hueso · S/m
+         16,692 filas · Mercado J. Jesus Teran, Tortillerias Tradicionales, Chedraui Selecto
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel longaniza · alpino
+      B: carne cerdo · 1 kg granel pierna entera sin hueso o pernil sin hueso · s m
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 192 · parecido 0.916
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Lala
+         24,923 filas · Dunosusa, Tiendas Garis, Merkabastos
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Semidescremada · San Marcos
+         10,057 filas · Soriana Express, Mega Soriana, Alsuper Fresh Market
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · lala
+      B: leche ultrapasteurizada · caja 1 lt semidescremada · san marcos
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 193 · parecido 0.906
+   A  Pasta para Sopa · Paquete 200 Gr. Estrella · Precíssimo
+          6,101 filas · Mega Soriana, Wal-mart Express, Mercado Soriana
+   B  Pasta para Sopa · Paquete 200 Gr. Fideo Corto · Mi Marca
+            131 filas · Super Aki, Super Aki Xtra
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr estrella · precissimo
+      B: pasta para sopa · paquete 200 gr fideo corto · mi marca
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 194 · parecido 0.897
+   A  Carne Cerdo · 1 Kg. Granel. Chuleta de Sirloin con Hueso · S/m
+            252 filas · H.e.b.
+   B  Carne Cerdo · 1 Kg. Granel. Chuleta Natural · Bachoco
+          2,311 filas · Supermercado Gonzalez, Ley, Hipermercado Soriana
+   ·  ya normalizados, la diferencia está aquí:
+      A: carne cerdo · 1 kg granel chuleta de sirloin con hueso · s m
+      B: carne cerdo · 1 kg granel chuleta natural · bachoco
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 195 · parecido 0.928
+   A  Frijol · Bolsa 900 Gr. Negro · Grano de Oro
+             61 filas · Super Aki Xtra, Central de Abastos, Central de Abasto
+   B  Frijol · Bolsa 900 Gr. Negro · Lluvia de Oro
+            155 filas · Soriana Super, Super Aki, Super Aki Xtra
+   ·  ya normalizados, la diferencia está aquí:
+      A: frijol · bolsa 900 gr negro · grano de oro
+      B: frijol · bolsa 900 gr negro · lluvia de oro
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 196 · parecido 0.889
+   A  Harina Hot Cakes · Caja 800 Gr. Tradicionales · Tres Estrellas
+          7,255 filas · Chedraui Selecto, Hipermercado Soriana, Bodega Aurrera
+   B  Harina Hot Cakes · Caja 800 Gr. · Pronto Ligeros
+          3,392 filas · Super Aki Xtra, Mega Soriana, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: harina hot cakes · caja 800 gr tradicionales · tres estrellas
+      B: harina hot cakes · caja 800 gr · pronto ligeros
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 197 · parecido 0.897
+   A  Pasta para Sopa · Paquete 200 Gr. Fideo Corto · Mi Marca
+            131 filas · Super Aki, Super Aki Xtra
+   B  Pasta para Sopa · Paquete 200 Gr. Spaghetti · Aurrera
+          1,777 filas · Bodega Aurrera Express, Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: pasta para sopa · paquete 200 gr fideo corto · mi marca
+      B: pasta para sopa · paquete 200 gr spaghetti · aurrera
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 198 · parecido 0.873
+   A  Jabón de Tocador · Barra 135 Gr. Neutro · Ke Precio
+            134 filas · Sumesa, La Comer, Fresko la Comer
+   B  Jabón de Tocador · Caja con Barra 135 Gr. Original · Dove
+         18,587 filas · Ley, Soriana Super, Super Kompras
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 135 gr neutro · ke precio
+      B: jabon de tocador · caja con barra 135 gr original · dove
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 199 · parecido 0.855
+   A  Jabón de Tocador · Barra 135 Gr. Extracto de Sábila y Aceite de Aguacate · Savilé
+             12 filas · Chedraui, Chedraui Selecto
+   B  Jabón de Tocador · Barra 135 Gr. Menta & Hierbabuena · Fresh-co
+            487 filas · Chedraui, Super Chedraui, Super Aki Xtra
+   ·  ya normalizados, la diferencia está aquí:
+      A: jabon de tocador · barra 135 gr extracto de sabila y aceite de aguacate · savile
+      B: jabon de tocador · barra 135 gr menta hierbabuena · fresh co
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
+
+par 200 · parecido 0.935
+   A  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Hill Country Fare
+            367 filas · Ley, Mi Tienda del Ahorro, H.e.b.
+   B  Leche Ultrapasteurizada · Caja 1 Lt. Entera · Pradel
+            137 filas · Wal-mart, Bodega Aurrera
+   ·  ya normalizados, la diferencia está aquí:
+      A: leche ultrapasteurizada · caja 1 lt entera · hill country fare
+      B: leche ultrapasteurizada · caja 1 lt entera · pradel
+   ¿son el MISMO artículo?  [ ] sí   [ ] no
