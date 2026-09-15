@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "CanastaMX",
+    "slug": "canastamx-mobile",
+    "version": "0.1.0",
+    "scheme": "canastamx",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
