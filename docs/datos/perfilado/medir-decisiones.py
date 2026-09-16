@@ -208,6 +208,43 @@ def clave_de_unicidad(con, donde, etiqueta):
         salida.append((etiqueta, nombre, total, distintas, total - distintas))
     return salida
 
+def siguen_chocando(con):
+    """De las filas que comparten la clave de fila completa, ¿de cuánto es
+    la diferencia de precio?
+
+    T019 lo necesita para decidir qué hacer con las filas que ni siquiera
+    la clave de seis columnas separa: si la diferencia es de centavos
+    (captura doble), de $1 a $50 (dos capturas legítimas del mismo día) o
+    de más de $50 (otra cosa). Sin esto, ese campo del contrato se llena
+    inventando, no midiendo.
+    """
+    return con.sql(f"""
+        WITH grupos AS (
+            SELECT producto, presentacion, marca, nombre_comercial, direccion,
+                   fecha_registro,
+                   count(*)                  AS filas,
+                   max(precio) - min(precio) AS diferencia
+            FROM q
+            WHERE ({FILTRO_SIETE}) AND {FILTRO_ANIO}
+            GROUP BY 1, 2, 3, 4, 5, 6
+            HAVING count(*) > 1
+        )
+        SELECT
+            CASE WHEN diferencia < 1   THEN 'de centavos'
+                 WHEN diferencia <= 50 THEN 'de $1 a $50'
+                 ELSE                        'de más de $50'
+            END                        AS clase,
+            count(*)                   AS grupos,
+            sum(filas - 1)             AS filas_sobrantes,
+            round(avg(diferencia), 2)  AS diferencia_promedio,
+            round(max(diferencia), 2)  AS diferencia_maxima
+        FROM grupos
+        GROUP BY 1
+        ORDER BY CASE clase WHEN 'de centavos' THEN 1
+                             WHEN 'de $1 a $50' THEN 2
+                             ELSE 3 END
+    """).df()
+
 
 def catalogos(con):
     """Los valores de `catalogo`: la clasificación propia de la fuente.
@@ -395,6 +432,8 @@ if __name__ == "__main__":
     print(f"\n  `sobran` = filas que la compuerta de calidad RECHAZARÍA por creerlas")
     print(f"  duplicadas si el contrato declara esa combinación como única.")
 
+    # Si agregar `marca` a la clave reduce el número de filas sobrantes, eso
+    # confirma que son dos claves distintas: la del artículo y la de la fila.
     del_recorte = tabla[tabla.ambito == "recorte"]
     con_marca = del_recorte.iloc[2]
     sin_marca_fila = del_recorte.iloc[1]
@@ -404,6 +443,14 @@ if __name__ == "__main__":
         print("    · identidad del artículo (lo que ve el usuario) : producto + presentacion")
         print("    · clave de fila del contrato                    : + marca + establecimiento + fecha")
         print("  El ADR 002 tiene que decir las dos, o el contrato sale mal.")
+
+        print("\n" + "=" * 78)
+    print("Las filas que siguen chocando · de cuánto es la diferencia de precio")
+    print("=" * 78)
+    choca = siguen_chocando(con)
+    print(choca.to_string(index=False))
+    print(f"\n  Suma de filas_sobrantes: {choca.filas_sobrantes.sum():,} "
+          f"(debe cuadrar con las {con_marca.sobran:,} de arriba)")
 
     # ── 7 · el recorte de productos que el protocolo pide y nadie decidió
     cat = catalogos(con)

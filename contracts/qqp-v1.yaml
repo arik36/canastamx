@@ -1,0 +1,200 @@
+contrato: qqp
+version: 1.1.0
+fuente: "PROFECO · Quién es Quién en los Precios"
+fecha: 2026-09-15
+autor: alm
+
+alcance:
+  entidades: [Aguascalientes, Guanajuato, Jalisco, Michoacán,
+              Querétaro, San Luis Potosí, Zacatecas]         # ADR 001
+  ventana: {desde: "2025-01-01", hasta: null}                 # ADR 001 — ventana abierta, la fuente sigue publicando
+  catalogos: [Basicos, Pacic, "Frutas y Legumbres",
+              Mercados, "Pescados y Mariscos"]                # ADR 005 — propuesta, por ratificar el 16/sep
+
+# ── Sobre qué está medido todo lo que sigue (nuevo en 1.1.0) ────────────────
+#
+# La versión 1.0.0 traía cifras del recorte TERRITORIAL (4,384,962 filas, 16
+# catálogos) en campos que describen lo que el contrato INGIERE (2,658,906
+# filas, 5 catálogos). Las dos poblaciones no son intercambiables y la
+# diferencia no es menor: el 39.36% de lo que se midió no entra al contrato.
+
+medicion:
+  poblacion: "entidades del alcance ∩ ventana ∩ catálogos del ADR 005"
+  filas: 2658906
+  recorte_territorial: 4384962      # 60.64% de éste
+  guion: docs/datos/perfilado/verificar-precios.py
+  fecha: 2026-09-15
+  advertencia: >
+    Toda cifra de este contrato está medida sobre esas 2,658,906 filas.
+    Las de medir-decisiones.py están medidas sobre las 4,384,962 del
+    recorte territorial y sirven para el ADR 001 y el ADR 002, no aquí.
+    Si el ADR 005 cambia la lista de catálogos el 16/sep, todo este
+    bloque y las cifras de `clave_de_fila` y `precio` se vuelven a medir.
+
+frescura:
+  maximo_dias_sin_dato_nuevo: 20
+  razon: "QQP se publica por quincena (~15 días); más de 20 días sin dato nuevo es incidente de fuente, no dato viejo"
+
+# ── Las dos claves (ADR 002, punto 4). No son intercambiables. ──────────────
+
+clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app y mide H3
+  - producto
+  - presentacion
+
+clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
+  columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
+  colisiones_conocidas: 74992  # medido sobre el alcance del contrato (ver `medicion`)
+  desempate: min_precio        # ver nota en `que_se_hace`
+  que_se_hace: >
+    Medido con verificar-precios.py (15-sep-2026) sobre las 2,658,906 filas
+    del alcance, hay 74,992 filas sobrantes: 72,631 (96.85%) tienen
+    diferencia de precio menor a $1 (promedio $0.00, máximo $0.95) ->
+    captura doble; se deduplica. 2,105 (2.81%) tienen diferencia de $1 a
+    $50 (promedio $17.68) -> se aceptan ambas como observaciones múltiples
+    del mismo lote. 256 (0.34%) tienen diferencia mayor a $50 (promedio
+    $72.25, máximo $200.00) -> se rechazan a cuarentena con motivo
+    colision_precio_alta.
+
+    Desempate del primer grupo: `fecha_registro` ya es parte de la clave de
+    fila, así que dentro de un grupo todas las filas traen la misma fecha y
+    "la más reciente" no desempata nada. Se conserva la de menor precio.
+    Con una diferencia máxima de $0.95 la elección es inmaterial; lo que
+    importa es que sea determinista y esté escrita.
+
+    El caso de $15,100 que traía la versión 1.0.0 queda cerrado: era un
+    Centro de Lavado Whirlpool del catálogo `electrodomesticos`, que este
+    contrato no ingiere. Razón max/min 1.56 (26,999 contra 42,099):
+    dispersión de precio real, no error de captura. Dentro del alcance el
+    bucket alto no pasa de $200 y ninguna de las veinte colisiones mayores
+    del recorte tiene razón cercana a 10, 100 o 1000.
+
+normalizacion:
+  marca:
+    a: mayusculas_sin_acentos
+    colapsa: {"S/m": "S/M"}        # ADR 002 punto 3 -- S/m es categoría propia, no nulo
+  catalogo:
+    a: mayusculas_sin_acentos      # sin esto se pierden 121,491 filas de `Básicos` y 8,704 de `PACIC`
+  estado:
+    a: mayusculas_sin_acentos      # 37 literales -> 30 entidades; el alcance ya lo acota a 7
+
+columnas:
+  producto:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+  presentacion:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 180
+  marca:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+  categoria:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+  catalogo:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+    valores_aceptados: [BASICOS, PACIC, "FRUTAS Y LEGUMBRES",
+                         MERCADOS, "PESCADOS Y MARISCOS"]     # ya normalizados
+  precio:
+    tipo: decimal
+    escala: 2                  # se compara y se resta como DECIMAL(12,2), no como flotante:
+                               # con flotante la frontera de $1.00 del bucket de colisiones
+                               # cae del lado equivocado y decide mal si la fila se deduplica
+    obligatoria: true
+    nulos_permitidos: false    # 0 nulos medidos en el alcance
+    minimo: 0.01               # 0 violaciones; el mínimo real observado es 1.50 (BASICOS)
+    maximo_por_catalogo:       # techo = máximo observado +25%, redondeado hacia arriba
+      "PESCADOS Y MARISCOS": 2250    # observado 1775.00 · p999 1300.00 · mediano 153.00
+      MERCADOS: 1100                 # observado  850.00 · p999  650.00 · mediano  50.00
+      BASICOS: 1000                  # observado  769.90 · p999  584.00 · mediano  44.90
+      "FRUTAS Y LEGUMBRES": 650      # observado  498.00 · p999  399.90 · mediano  38.00
+      PACIC: 400                     # observado  299.00 · p999  252.90 · mediano  26.50
+    al_exceder: cuarentena     # motivo precio_fuera_de_rango; nunca rechazo silencioso
+    razon_del_techo: >
+      El máximo observado no es un caso aislado que se pueda ignorar: 1775.00
+      es el máximo de PESCADOS Y MARISCOS en los siete meses de 2026, y
+      1690.00 lo fue en todo 2025 (+5.03% de un año al otro). Con la ventana
+      abierta (`hasta: null`), un techo clavado en lo observado empieza a
+      rechazar dato bueno en la siguiente revisión de precios de la fuente.
+
+      El techo va por catálogo y no global porque los cinco difieren 6x entre
+      sí (PACIC llega a 299, PESCADOS Y MARISCOS a 1775). Un techo global que
+      cubra al más caro deja a PACIC con 569% de holgura: deja de ser una
+      compuerta y pasa a ser decoración.
+
+      Se revisa cuando el máximo observado de cualquier catálogo llegue al
+      90% de su techo. A +5% anual eso son ~2.5 años para PESCADOS Y
+      MARISCOS, que es el que primero lo va a tocar.
+  fecha_registro:
+    tipo: fecha
+    obligatoria: true
+    nulos_permitidos: false
+    formatos_aceptados: ["YYYY/MM/DD", "DD/MM/YYYY"]   # perfilado.md §1: 36 archivos vs. mayo 2026
+  cadena_comercial:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+  giro:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 65
+  nombre_comercial:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 120
+  direccion:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 255
+  estado:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 120
+  municipio:
+    tipo: texto
+    obligatoria: true
+    nulos_permitidos: false
+    largo_maximo: 120
+  latitud:
+    tipo: decimal
+    obligatoria: true
+    nulos_permitidos: true    # 0.0086% vacío, medido (perfilado.md §1)
+  longitud:
+    tipo: decimal
+    obligatoria: true
+    nulos_permitidos: true    # 0.0086% vacío, medido (perfilado.md §1)
+
+columnas_extra:
+  politica: no_ingerir
+  conocidas: [folio, cv_producto, cv_marca]   # ADR 001 -- 94.12% ausentes, sin diccionario oficial
+
+# ── Lo que sigue abierto ───────────────────────────────────────────────────
+pendientes:
+  - id: interrogantes
+    que: >
+      `producto` y `presentacion` traen el sentinela `?` donde la fuente se
+      comió una letra (`Bocinas Port?tiles`). Rompe la clave de artículo:
+      `Art?culos` cuenta como artículo distinto de `Artículos`. Está medido
+      fuera del alcance; falta medirlo dentro y decidir si se rechaza, se
+      repara o se ingiere tal cual.
+  - id: conteo_de_articulos
+    que: >
+      `clave_de_articulo` es lo que mide H3, pero no dice sobre qué población
+      ni con qué normalización se cuenta. Hoy hay dos números circulando
+      (5,015 y 6,172) y ninguno está mal: miden cosas distintas. El contrato
+      tiene que fijar una.

@@ -599,7 +599,7 @@ depende el número de H3:
 | unidad de emparejamiento | artículos | qué le responde al usuario | costo |
 |---|---:|---|---|
 | `producto` | 891 | «la leche cuesta entre $22 y $45» | trivial de alcanzar, respuesta vaga |
-| `producto` + `presentacion` | ~6,000 | «leche entera 1 L: $28 aquí, $31 allá» | el usuario elige entre 13 opciones |
+| `producto` + `presentacion` | 5,015 | «leche entera 1 L: $28 aquí, $31 allá» | el usuario elige entre 13 opciones |
 | `producto` + `presentacion` + `marca` | 5,750 | el artículo exacto | preciso, pero pide mucho al usuario |
 
 **Propuesta para la reunión:** emparejar en `producto` + `presentacion` y tratar
