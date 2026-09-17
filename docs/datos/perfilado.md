@@ -5,7 +5,15 @@
      "88 nulos, 0.02%" sí. -->
 
 **Archivos perfilados:** QQP_2025 + QQP_2026 (38 archivos, ene 2025 – jul 2026) ·
-**Filas totales:** 21,357,873 · **Última medición:** 11/SEP/2026
+**Filas totales:** 21,357,873 · **Última medición:** 17/SEP/2026
+
+> **Cómo leer las cifras de este documento.** Todo lo de aquí está medido
+> sobre el **corpus completo** (21,357,873 filas). El ADR 001 y el ADR 002
+> miden sobre el **recorte territorial** (4,384,962) y el contrato de datos
+> sobre el **alcance del contrato** (2,658,906). Las tres poblaciones son
+> distintas y sus cifras **no son intercambiables**: copiar una de un
+> documento a otro ya costó tres campos mal puestos en el contrato. Cuando
+> una cifra de aquí se cite en otro lado, va con su población.
 
 ---
 
@@ -41,7 +49,7 @@ explicado bloque por bloque, está en `recapitulado-perfilado.md`.
 
 | Columna | Tipo declarado | % ausente | % vacío | Valores distintos | Ejemplo |
 |---|---|---:|---:|---:|---|
-| producto | Carácter (65) | 0% | 0% | 896 | Acelga |
+| producto | Carácter (65) | 0% | 0% | 896 | Acelga |   <!-- literales crudos; ver nota -->
 | presentacion | Carácter (180) | 0% | 0% | 5,961 | Manojo |
 | marca | Carácter (65) | 0% | 0% | 1,439 | S/m |
 | categoria | Carácter (65) | 0% | 0% | 59 | Hortalizas Frescas |
@@ -59,6 +67,20 @@ explicado bloque por bloque, está en `recapitulado-perfilado.md`.
 | **folio** | *(no está en el diccionario)* | **94.12%** | 0% | 1,853 | 20160 |
 | **cv_producto** | *(no está en el diccionario)* | **94.12%** | 0% | 812 | 869 |
 | **cv_marca** | *(no está en el diccionario)* | **94.12%** | 0% | 486 | 5 |
+
+> **Tres cifras de `producto` conviven en este documento y las tres son
+> correctas.** Se anotan juntas para que nadie las confunda:
+>
+> | cuenta | valor | definición |
+> |---|---:|---|
+> | literales, corpus completo | **896** | tal como vienen, incluidas las filas con `?` |
+> | literales, corpus sin `?` | **891** | tal como vienen, sin texto corrompido |
+> | claves normalizadas, corpus sin `?` | **816** | tras la normalización canónica |
+>
+> Cinco de los 896 son artículos fantasma que crea el `?`, y otros 75
+> literales se colapsan al normalizar. La diferencia entre 896 y 816 no es
+> ruido de medición: **son dos preguntas distintas**, «cuántas formas de
+> escribir hay» y «cuántos productos hay».
 
 **«Ausente» y «vacío» no son lo mismo, y por eso van en columnas separadas.**
 «Ausente» quiere decir que el archivo **no trae esa columna**: es una estructura
@@ -154,6 +176,29 @@ coincida en todo salvo donde está el `?`:
 Los 25 «sin gemelo», revisados uno a uno, son en su mayoría **signos de
 interrogación legítimos** (`Adivina Quién?`, `néctar de Miel?`) o cadenas únicas
 de especificaciones de teléfono, no daño nuevo.
+
+> **Confirmado dentro del alcance del contrato · 17 de septiembre.** Hasta el
+> 15 de septiembre todos los casos conocidos de `?` caían en catálogos que el
+> ADR 005 deja fuera, así que el problema se podía posponer.
+> `revisar-techos-y-marca.py` lo encontró **dentro de `Basicos`**, que es el
+> 79% de lo que el contrato ingiere: `Camarón` (857 filas) y `Camar?n` (19)
+> conviven y llegan al mismo precio máximo, $769.00, como si fueran dos
+> productos distintos.
+>
+> Medido sobre el alcance del contrato (`medir-para-contrato.py`,
+> 17 de septiembre): **495 valores rotos distintos**, de los cuales 455
+> (91.92%) tienen gemelo único, 38 son ambiguos y **sólo 2 quedan sin
+> gemelo**. Ponderado por filas la reparación llega al **96.63%**, casi
+> idéntico al 96.82% del corpus: lo que no se repara son valores raros.
+>
+> La ambigüedad se concentra en `marca`, que repara sólo el 55.4% de sus
+> ocurrencias —las marcas son cortas y arbitrarias, así que varias limpias
+> empatan con el mismo patrón—. **No es grave: `marca` no forma parte de la
+> clave de artículo**, así que una ambigüedad ahí no parte un artículo en
+> dos. Lo que sí forma la clave repara al 97.38%.
+>
+> Y el caso más rentable: `municipio` tiene 61,026 filas afectadas que salen
+> de **tres** valores rotos, los tres con gemelo único.
 
 **Ambos hallazgos —las tres columnas extra y el `?`— coinciden en junio de 2026,
 pero son independientes:** el `?` existe desde enero de 2025 en pequeña escala,
@@ -468,9 +513,16 @@ reportan aparte en vez de desaparecer en silencio.
    anómalo contra su producto y 1.00x contra su presentación.
 4. **Duplicados exactos:** rechazar, con motivo `duplicado_exacto`. Son 301 y
    todos dentro de un mismo archivo.
-5. **Clave de unicidad:** pendiente. La candidata de cuatro campos no aguanta
-   (12.3 millones de filas de más); hay que probar la de seis con `presentacion`
-   y `marca`.
+5. **Clave de unicidad: decidida.** La candidata de cuatro campos no aguantaba
+   (12.3 millones de filas de más). La de seis —`producto`, `presentacion`,
+   `marca`, `nombre_comercial`, `direccion`, `fecha_registro`— es la que
+   quedó, y está en `contracts/qqp-v1.yaml` como `clave_de_fila`. Agregar
+   `marca` salva **286,483 filas legítimas** sólo en el recorte territorial.
+   Sobre el alcance del contrato deja **74,992 colisiones** (2.82%), con su
+   regla de tres ramas escrita: menos de $1 se deduplica, de $1 a $50 se
+   aceptan como observaciones múltiples, más de $50 va a cuarentena.
+   **Ojo con la población:** las 77,670 que circularon antes son del recorte
+   territorial, no del alcance.
 6. **Deriva de esquema:** aceptar las 15 columnas obligatorias y **avisar** de
    las extra sin romperse ni descartarlas en silencio.
 7. **Codificación por archivo, no por corpus**, más una compuerta que detecte
@@ -529,6 +581,29 @@ abreviatura distinta. La variación de escritura de esta fuente es **mecánica**
 y una normalización determinista la resuelve entera. No hace falta comparación
 difusa para esto.
 
+> **Corregido el 17 de septiembre · esta conclusión no se sostiene como está,
+> y el error es de método, no de medición.**
+>
+> Las cifras de arriba se obtuvieron contando cuántos literales crudos caen
+> en la **misma clave normalizada**. Pero dos literales que comparten clave
+> normalizada **sólo pueden diferir en mayúsculas, acentos y puntuación**,
+> porque eso es exactamente lo que la normalización quita. Dicho de otro
+> modo: se midió la variación usando únicamente los casos que la
+> normalización resuelve **por definición**. El razonamiento es circular y no
+> puede concluir nada sobre lo que la normalización NO une.
+>
+> `h3-muestra-para-calificar.py` construyó después la muestra que sí sirve
+> —pares que **no** comparten clave normalizada— y ahí sí aparecen casos que
+> ninguna regla determinista junta: `Mazatán` contra `Mazatún`, `Whirlpool`
+> contra `Whirpool`, `1 L` contra `1 Lt`, `Mh 1536 Gir.` contra
+> `Mh1536 Gir.`. Y el diccionario de reparación del `?` es, en los hechos,
+> otro mecanismo de reconciliación: une `Camar?n` con `Camarón`, cosa que
+> ninguna normalización de mayúsculas y acentos hace.
+>
+> **Conclusión corregida: la comparación difusa sí hace falta**, tal como el
+> protocolo la comprometió desde el principio. La corrección formal va en el
+> **ADR 004**; el ADR 002 no se edita porque está aceptado.
+
 En los diez grupos de control tomados al azar aparecen dos casos de mojibake
 —`Coctel de Frutas en Alm?bar`, `Ma?z Pozolero`— que confirman lo dicho arriba:
 el `?` crea claves separadas, y por eso se mide sin ellas.
@@ -584,8 +659,9 @@ GROUP BY producto ORDER BY n DESC LIMIT 5; -->
      más de 10        → hay que bajar la meta o acotar el recorte -->
 
 **1.29 variantes por artículo cae en la primera banda. En el eje de la
-escritura, H3 está holgada y no hace falta comparación difusa.** La verificación
-manual lo respalda: los cinco grupos revisados difieren sólo en mayúsculas y
+escritura, H3 está holgada y no hace falta comparación difusa.**
+*(Ver la corrección de arriba: esta lectura se apoya en la misma medición
+circular y el ADR 004 la revisa.)* La verificación manual lo respalda: los cinco grupos revisados difieren sólo en mayúsculas y
 acentos, que es exactamente lo que una normalización determinista resuelve al
 100%. La meta del 85% no está en riesgo por este lado.
 
@@ -598,9 +674,27 @@ depende el número de H3:
 
 | unidad de emparejamiento | artículos | qué le responde al usuario | costo |
 |---|---:|---|---|
-| `producto` | 891 | «la leche cuesta entre $22 y $45» | trivial de alcanzar, respuesta vaga |
+| `producto` | 816 | «la leche cuesta entre $22 y $45» | trivial de alcanzar, respuesta vaga |
 | `producto` + `presentacion` | 5,015 | «leche entera 1 L: $28 aquí, $31 allá» | el usuario elige entre 13 opciones |
 | `producto` + `presentacion` + `marca` | 5,750 | el artículo exacto | preciso, pero pide mucho al usuario |
+
+> **Las tres cifras son del CORPUS, no del producto que se va a construir.**
+> Medido sobre el alcance del contrato —siete entidades, 2025-2026 y los
+> cinco catálogos del ADR 005— el catálogo real es mucho más chico:
+>
+> | | corpus sin `?` | alcance del contrato |
+> |---|---:|---:|
+> | `producto` | 816 | **303** |
+> | `producto` + `presentacion` | 5,015 | **1,597** |
+> | `producto` + `presentacion` + `marca` | 5,750 | **1,992** |
+>
+> La razón de la caída es el ADR 005: dejó fuera `Medicamentos` —401
+> productos, cada uno con su propia presentación— y `Electrodomesticos`. **El
+> recorte de catálogos no sólo quitó filas: quitó la parte del catálogo que
+> más artículos distintos aportaba por producto.**
+>
+> Y sin reparar el `?` ese mismo alcance da **1,988** artículos en vez de
+> 1,597: **391 fantasmas, el 24.5%**. El que va al contrato es 1,597.
 
 **Propuesta para la reunión:** emparejar en `producto` + `presentacion` y tratar
 `marca` como filtro opcional, no como parte de la identidad. Razón: la
@@ -621,6 +715,12 @@ costaría el 3.61% del corpus. La regla medida es:
 3. Los 63 ambiguos son casi todos el apóstrofo (`Kellogg's` contra `Kellogg´s`).
    Se resuelven por frecuencia: donde un gemelo domina diez a uno en los datos
    limpios, la fuente ya decidió. Sólo lo que quede parejo es decisión humana.
+
+> **Ya no es una propuesta: está en el contrato.** Las tres ramas viven en
+> `contracts/qqp-v1.yaml` como `normalizacion.reparar_interrogantes`, y con
+> una precisión que faltaba aquí: **se repara ANTES de normalizar**. Al revés,
+> `camar n` y `camaron` siguen siendo dos claves distintas y el arreglo no
+> sirve de nada.
 
 ---
 
