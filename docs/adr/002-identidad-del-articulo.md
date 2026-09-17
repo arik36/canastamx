@@ -3,6 +3,34 @@
 - **Fecha:** 11 de septiembre de 2026
 - **Estado:** aceptada
 - **Participantes:** Ariadne (A), Ari Adair (B), Liseth (C1), Oscar (C2), Karen (D)
+- **Estado posterior:** vigente, **corregido en parte por el ADR 004**
+
+> ## Nota de estado · 17 de septiembre de 2026
+>
+> **Este documento no se edita.** Está aceptado, y la convención del proyecto es
+> que un ADR aceptado se corrige desde el que viene, no reescribiéndolo: si se
+> reescribe, se pierde el rastro de qué se decidió con qué información.
+>
+> Lo que sigue vigente son las cuatro decisiones: el artículo es
+> `producto` + `presentacion`, `marca` no identifica, `S/m` es categoría propia,
+> y las dos claves son distintas. Nada de eso cambia.
+>
+> **Lo que el ADR 004 corrige es una sola línea de «Alternativas descartadas»:
+> la que descarta la comparación difusa.** El argumento que se usó —«toda la
+> variación medida es mecánica»— era circular: la medición contó literales que
+> caían en la misma clave normalizada, y dos literales que comparten clave
+> normalizada sólo pueden diferir en mayúsculas, acentos y puntuación, porque
+> eso es lo que la normalización quita. Se concluyó que no hacía falta
+> comparación difusa mirando exclusivamente los casos que la normalización
+> resuelve por definición.
+>
+> La muestra construida después sobre pares que **no** comparten clave sí trae
+> casos que ninguna regla determinista une (`Mazatán`/`Mazatún`, `1 L`/`1 Lt`),
+> y el diccionario de reparación del `?` es otro mecanismo de reconciliación que
+> ninguna normalización de mayúsculas hace. **La comparación difusa sí hace
+> falta**, como el protocolo la comprometió desde el principio.
+>
+> La corrección formal, con la muestra calificada detrás, va en el **ADR 004**.
 
 ## Contexto
 
@@ -168,3 +196,26 @@ misma normalización. **El número que salga es el que va al ADR, al informe y a
 
 No es un detalle cosmético: es el número de artículos del catálogo sobre el que
 el equipo acaba de decidir construir.
+
+> **Cerrado el 17 de septiembre.** Esto era una acción pendiente de este ADR,
+> no una decisión, así que se completa aquí en vez de abrir otro documento.
+>
+> Los tres niveles, medidos con la misma normalización y en dos poblaciones,
+> porque resultó que la población importaba más que el nivel:
+>
+> | unidad | corpus sin `?` | **alcance del contrato** |
+> |---|---:|---:|
+> | `producto` | 816 | **303** |
+> | `producto` + `presentacion` ← decidido | 5,015 | **1,597** |
+> | `producto` + `presentacion` + `marca` | 5,750 | **1,992** |
+>
+> El «~6,000» era, en efecto, una estimación a ojo: el número bueno para el
+> corpus es **5,015**. Pero el que le importa a este ADR es el otro. **El
+> catálogo sobre el que el equipo decidió construir son 1,597 artículos**, no
+> cinco mil, porque el ADR 005 dejó fuera `Medicamentos` —401 productos, cada
+> uno con su presentación única— y `Electrodomesticos`.
+>
+> Y una advertencia que vale para todo el proyecto: sin reparar el `?`, ese
+> mismo alcance da **1,988** artículos. Son **391 fantasmas (24.5%)**: el mismo
+> artículo contado dos veces porque una de sus escrituras trae `?`. Por eso el
+> contrato declara la reparación **antes** de normalizar.

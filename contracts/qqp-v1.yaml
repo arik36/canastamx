@@ -1,200 +1,533 @@
 contrato: qqp
-version: 1.1.0
+version: 1.2.1
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-09-15
+fecha: 2026-09-17
 autor: alm
+
+# 1.2.1 · los tres campos POR_MEDIR quedan cerrados con cifras propias del
+# alcance (medir-para-contrato.py, 17-sep-2026). Ninguna se copió de otra
+# población. Tres hallazgos de esa medición están anotados donde corresponde:
+# el catálogo real del producto son 1,597 artículos y no ~5,000; el `?` infla
+# ese catálogo un 24.5%; y `catalogo` y `categoria` NO están anidadas.
+
+# ── Qué cambió en 1.2.0 ─────────────────────────────────────────────────────
+#
+# Cuatro decisiones y siete correcciones, todas en docs/datos/validacion-contrato-v1.md.
+#
+#   · El `?` se REPARA antes de validar (perfilado.md §3 ya lo tenía decidido y
+#     nunca se transcribió aquí). Cierra `pendientes.interrogantes`.
+#   · `clave_de_articulo` fija población y normalización. Cierra
+#     `pendientes.conteo_de_articulos`.
+#   · Los techos por catálogo se aceptan con ancla única, y se dice por qué:
+#     fallan hacia permisivo, nunca hacia rechazar dato bueno. PACIC también es
+#     de ancla única, cosa que 1.1.1 no decía. Cierra `pendientes.techo_mercados`.
+#   · `Basicos` se ingiere completo; lo de Ron y alcohol se resuelve en la
+#     presentación, con lista escrita, no sacándolos de la ingesta.
+#
+#   Correcciones: el formato de fecha es POR ARCHIVO, no una lista de formatos
+#   posibles; se declara la codificación; `obligatoria`/`nulos_permitidos` se
+#   separan en `columna_requerida`/`valor_requerido`; el aviso de deriva de
+#   esquema vuelve; la frescura dice qué mide y desde cuándo aplica; `precio`
+#   declara precisión completa; la lista de catálogos deja de estar duplicada.
 
 alcance:
   entidades: [Aguascalientes, Guanajuato, Jalisco, Michoacán,
               Querétaro, San Luis Potosí, Zacatecas]         # ADR 001
-  ventana: {desde: "2025-01-01", hasta: null}                 # ADR 001 — ventana abierta, la fuente sigue publicando
-  catalogos: [Basicos, Pacic, "Frutas y Legumbres",
-              Mercados, "Pescados y Mariscos"]                # ADR 005 — propuesta, por ratificar el 16/sep
-
-# ── Sobre qué está medido todo lo que sigue (nuevo en 1.1.0) ────────────────
-#
-# La versión 1.0.0 traía cifras del recorte TERRITORIAL (4,384,962 filas, 16
-# catálogos) en campos que describen lo que el contrato INGIERE (2,658,906
-# filas, 5 catálogos). Las dos poblaciones no son intercambiables y la
-# diferencia no es menor: el 39.36% de lo que se midió no entra al contrato.
+  ventana: {desde: "2025-01-01", hasta: null}                # ADR 001 — abierta, la fuente sigue publicando
+  catalogos_normalizados: [BASICOS, PACIC, "FRUTAS Y LEGUMBRES",
+                           MERCADOS, "PESCADOS Y MARISCOS"]  # ADR 005
+  # Lista única y canónica, ya normalizada. `columnas.catalogo.valores_aceptados`
+  # la referencia en vez de repetirla: en 1.1.1 estaba escrita dos veces, cruda
+  # en `alcance` y normalizada abajo, y dos copias del mismo dato se
+  # desincronizan.
+  literales_crudos_equivalentes:
+    BASICOS: [Basicos, Básicos]          # 2,105,019 filas juntas; separadas se pierden 121,491
+    PACIC: [Pacic, PACIC]                # 169,083 juntas; separadas se pierden 8,704
+    "FRUTAS Y LEGUMBRES": ["Frutas y Legumbres"]
+    MERCADOS: [Mercados]
+    "PESCADOS Y MARISCOS": ["Pescados y Mariscos"]
 
 medicion:
   poblacion: "entidades del alcance ∩ ventana ∩ catálogos del ADR 005"
   filas: 2658906
   recorte_territorial: 4384962      # 60.64% de éste
+  corpus: 21357873
   guion: docs/datos/perfilado/verificar-precios.py
   fecha: 2026-09-15
   advertencia: >
     Toda cifra de este contrato está medida sobre esas 2,658,906 filas.
-    Las de medir-decisiones.py están medidas sobre las 4,384,962 del
-    recorte territorial y sirven para el ADR 001 y el ADR 002, no aquí.
-    Si el ADR 005 cambia la lista de catálogos el 16/sep, todo este
-    bloque y las cifras de `clave_de_fila` y `precio` se vuelven a medir.
+    Las de medir-decisiones.py están medidas sobre las 4,384,962 del recorte
+    territorial y sirven para el ADR 001 y el ADR 002, no aquí. Las de
+    perfilado.md están medidas sobre las 21,357,873 del corpus y sirven para el
+    informe, tampoco aquí.
+
+    Esto no es celo de notación: ya se coló tres veces. `colisiones_conocidas`
+    decía 77,670 (territorial) cuando es 74,992; el porcentaje de S/M decía
+    37.40% (territorial) cuando es 20.02%; y el caso del $15,100 resultó ser un
+    Centro de Lavado de un catálogo que este contrato no ingiere.
+
+    Si el ADR 005 cambia la lista de catálogos, TODO lo medido aquí se vuelve a
+    medir.
 
 frescura:
+  mide: dias_desde_el_fecha_registro_mas_reciente_ingerido
   maximo_dias_sin_dato_nuevo: 20
-  razon: "QQP se publica por quincena (~15 días); más de 20 días sin dato nuevo es incidente de fuente, no dato viejo"
+  aplica_desde: primera_ingesta_incremental
+  razon: >
+    QQP se publica por quincena (~15 días); más de 20 días sin dato nuevo es
+    incidente de fuente, no dato viejo.
+
+    Dos precisiones que 1.1.1 no tenía y que cambian cuándo dispara la regla.
+    Primera: mide días desde el `fecha_registro` más reciente que se logró
+    ingerir, no días desde la última ejecución del flujo -una ejecución que
+    corre todos los días sobre un archivo que no se actualiza está fresca por el
+    segundo criterio y rancia por el primero, y el que le importa al usuario es
+    el primero-. Segunda: no aplica a la carga histórica, que son 19 meses de
+    una sola vez.
+
+    AVISO: con el corpus descargado hasta 2026-07-31, esta regla marca incidente
+    desde el día uno (48 días al 17/sep). Es correcto que lo haga: o PROFECO
+    publicó agosto y septiembre y no los hemos descargado, o dejó de publicar.
+    Las dos son incidentes reales y las dos se ven en el tablero sin simular nada.
+
+# ── Antes de validar: normalizar y reparar ─────────────────────────────────
+#
+# Estas reglas corren ANTES de las validaciones de `columnas`. Un contrato que
+# valida el texto crudo rechaza filas que el flujo sabe arreglar.
+
+normalizacion:
+  canonica: >
+    trim(regexp_replace(regexp_replace(lower(strip_accents(col)),
+         '[^a-z0-9 ]', ' ', 'g'), '\s+', ' ', 'g'))
+
+    Es la misma de perfilado_nivel3.py, h3-entre-cadenas.py y
+    h3-muestra-para-calificar.py. Se escribe aquí completa a propósito: una
+    normalización PARECIDA no es la misma normalización. La primera versión de
+    h3-muestra-para-calificar.py usó upper(strip_accents(trim(col))) -que quita
+    acentos y mayúsculas pero NO puntuación- y por eso `Kellogg's` y `Kellogg´s`
+    salieron como artículos distintos con parecido 1.000, cuando la
+    normalización real ya los une en `kellogg s`.
+
+  orden: [reparar_interrogantes, canonica]
+  # El orden no es cosmético: si se normaliza antes de reparar, `camar n` y
+  # `camaron` siguen siendo dos claves distintas y el bug sobrevive.
+
+  reparar_interrogantes:
+    que_es: >
+      La fuente sustituye por `?` el carácter que su codificación no pudo
+      escribir (`Camar?n`, `Art?culos`, `Bocinas Port?tiles`). El `?` NO se
+      normaliza a la letra que se comió, así que sin reparación cada valor roto
+      es un artículo aparte.
+    aplica_a: [producto, presentacion, marca, categoria, cadena_comercial,
+               giro, nombre_comercial, direccion, municipio]
+      # Las 8 columnas de texto afectadas más `catalogo`, `estado` y
+      # `cadena_comercial`, que el perfilado midió limpias -se incluyen por si
+      # la fuente vuelve a degradarse, como ya hizo en junio de 2026-.
+    metodo: gemelo_unico_de_igual_longitud
+    diccionario: docs/datos/perfilado/mojibake-diccionario.csv   # 1,650 entradas
+    ambiguo:
+      regla: por_frecuencia
+      umbral: 10          # un gemelo que domina 10:1 en los datos limpios gana
+      empate: revision_humana
+    sin_gemelo:
+      accion: cuarentena
+      motivo: codificacion_irrecuperable
+    medido_en_el_corpus:  # perfilado.md §2 — NO son las cifras del alcance
+      filas_afectadas: 770273        # 3.61% de 21,357,873
+      reparable_pct: 96.82
+      ambiguo_pct: 2.82
+      irrecuperable_pct: 0.36
+
+    medido_en_el_alcance:            # medir-para-contrato.py, 17-sep-2026
+      valores_rotos_distintos: 495
+      con_gemelo_unico: 455          # 91.92% de los VALORES
+      ambiguos: 38
+      sin_gemelo: 2                  # dos valores en todo el alcance
+      ocurrencias_en_columnas: 162079
+      reparable_pct_por_filas: 96.63 # ← ésta es la que importa
+      por_columna:                   # ocurrencias / reparables / %
+        municipio:        {ocurrencias: 61026, reparables: 61026, pct: 100.0}
+        direccion:        {ocurrencias: 32184, reparables: 32184, pct: 100.0}
+        producto:         {ocurrencias: 21451, reparables: 21451, pct: 100.0}
+        nombre_comercial: {ocurrencias: 18091, reparables: 18061, pct:  99.8}
+        presentacion:     {ocurrencias: 18156, reparables: 17120, pct:  94.3}
+        marca:            {ocurrencias:  9838, reparables:  5446, pct:  55.4}
+        giro:             {ocurrencias:  1333, reparables:  1333, pct: 100.0}
+        categoria:        {ocurrencias:     0, reparables:     0, pct: 100.0}
+      lectura: >
+        Dos cifras dicen cosas distintas y conviene no confundirlas. Sobre
+        VALORES distintos la reparación es 91.92%; sobre FILAS es 96.63%, casi
+        idéntica al 96.82% del corpus. La diferencia es que los valores que no
+        se reparan son valores raros: 2 huérfanos en todo el alcance.
+
+        La ambigüedad se concentra en `marca`, que repara sólo el 55.4% de sus
+        ocurrencias: 25 de sus 57 valores rotos tienen más de un gemelo posible.
+        Tiene sentido -las marcas son cortas y arbitrarias, así que varias
+        limpias empatan con el mismo patrón-. **Y no es grave, porque `marca` no
+        forma parte de la clave de artículo**: una ambigüedad ahí no parte un
+        artículo en dos, sólo ensucia el filtro de marca.
+
+        Lo que sí importa para la clave de artículo repara al 97.38%:
+        `producto` al 100% y `presentacion` al 94.3%.
+
+        `municipio` es el caso más rentable de todos: 61,026 filas afectadas que
+        salen de sólo 3 valores rotos, los tres con gemelo único. Un nombre de
+        municipio mal escrito, repetido.
+    caso_confirmado_dentro_del_alcance: >
+      `Camarón` (857 filas) y `Camar?n` (19 filas) conviven en BASICOS y llegan
+      al mismo precio máximo ($769.00) como si fueran dos productos distintos
+      (revisar-techos-y-marca.py, 15-sep-2026). Esto es lo que movió la decisión
+      de reparar: hasta entonces los casos conocidos caían fuera del alcance.
+
+  marca:
+    a: mayusculas_sin_acentos      # ADR 002 punto 3 -- S/m es categoría propia, no nulo
+    # Sin mapa `colapsa`, a propósito. La fuente trae dos literales para "sin
+    # marca", `S/m` y `S/M`, y revisar-techos-y-marca.py (15-sep-2026) confirmó
+    # que sólo difieren en mayúsculas: esta regla ya los une. Un mapa explícito
+    # además sería MENOS robusto -no atraparía `s/m` en minúsculas, que no está
+    # en sus llaves-. Sólo haría falta para una variante que no sea de
+    # mayúsculas (`S/M.` con punto), y en 19 meses no ha aparecido.
+    sin_marca_pct_del_alcance: 20.02   # no 37.40: aquélla era territorial
+  catalogo:
+    a: mayusculas_sin_acentos      # sin esto se pierden 121,491 filas de Básicos y 8,704 de PACIC
+  estado:
+    a: mayusculas_sin_acentos      # 37 literales -> 30 entidades; el alcance ya lo acota a 7
+
+# ── Codificación y formato, POR ARCHIVO ────────────────────────────────────
+#
+# perfilado.md §2, regla 7: «codificación por archivo, no por corpus». Faltaba
+# entera en 1.1.1, y es la causa raíz del `?` que arriba se decide reparar.
+
+archivo:
+  codificacion:
+    por_defecto: utf-8-sig          # 36 de 38 archivos: UTF-8 con BOM
+    excepciones:
+      "05-2026_Q1.csv": latin-1     # ISO-8859-1 sin BOM, comprobado a nivel de bytes
+      "05-2026_Q2.csv": latin-1
+    al_fallar: cuarentena_del_lote  # un lote ilegible no se ingiere a medias
+    compuerta_extra: detectar_controles_C1
+    razon_controles: >
+      Los caracteres de control C1 son la corrupción que no deja rastro visible:
+      no salen como `?` ni rompen el parseo, y contaminan el texto en silencio.
+
+  formato_de_fecha:
+    resolucion: por_archivo         # NO por fila
+    por_defecto: "YYYY/MM/DD"       # 36 de 38 archivos
+    excepciones:
+      "05-2026_Q1.csv": "DD/MM/YYYY"
+      "05-2026_Q2.csv": "DD/MM/YYYY"
+    al_no_parsear: cuarentena       # motivo fecha_ilegible
+    razon: >
+      1.1.1 declaraba `formatos_aceptados: ["YYYY/MM/DD", "DD/MM/YYYY"]` sin
+      decir cuál aplica a cada fila, y eso hace que `03/04/2026` sea ambiguo: 3
+      de abril o 4 de marzo, las dos válidas bajo el contrato. Un validador que
+      pruebe los dos y se quede con el primero que parsee decide al azar.
+
+      La regla real es por archivo y está medida: perfilado.md §1 dice que leer
+      todo con un solo formato intercambiaría día y mes en 1,007,082 filas.
 
 # ── Las dos claves (ADR 002, punto 4). No son intercambiables. ──────────────
 
 clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app y mide H3
-  - producto
-  - presentacion
+  columnas: [producto, presentacion]
+  normalizacion: canonica      # la de arriba, después de reparar el `?`
+  poblacion: alcance_del_contrato
+  articulos: 1597              # medir-para-contrato.py, 17-sep-2026
+  productos: 303
+  articulos_con_marca: 1992    # sólo de referencia; la clave son dos columnas
+  medido_sobre: 2615139        # filas del alcance sin `?` en producto/presentacion/marca
+  inflacion_por_interrogantes:
+    articulos_sin_reparar: 1988
+    fantasmas: 391             # 24.5% del catálogo real
+    que_son: >
+      El mismo artículo contado dos veces porque una de sus escrituras trae `?`:
+      `Camarón` y `Camar?n`. Desaparecen con la reparación que este contrato
+      declara. Si no se repara, el producto le muestra al usuario 1,988
+      renglones para 1,597 artículos.
+  por_que_se_fija_esto: >
+    Circulaban dos cifras y ninguna servía para este campo, porque ninguna está
+    medida sobre lo que el contrato ingiere:
+
+      6,172 · recorte territorial · literales crudos, sin normalizar
+              (`Camarón` y `Camar?n` cuentan dos; `Acido Fólico` y
+               `Ácido Fólico` también). Es un conteo de FORMAS DE ESCRIBIR.
+      5,015 · corpus sin `?` · normalización canónica. Correcto, pero incluye
+              medicamentos, electrodomésticos y juguetes, que el producto no
+              muestra.
+
+    Este campo se mide sobre el alcance, con la normalización canónica y con el
+    `?` ya reparado, y ése es el tamaño del catálogo que el producto expone y
+    sobre el que H3 se califica.
+
+    MEDIDO: 1,597 artículos sobre 303 productos, una media de 5.3
+    presentaciones por producto. Es mucho más chico de lo que cualquiera de las
+    dos cifras anteriores sugería, y la razón es que el ADR 005 dejó fuera
+    Medicamentos -401 productos, cada uno con su propia presentación- y
+    Electrodomésticos. El recorte de catálogos no sólo quitó filas: quitó la
+    parte del catálogo que más artículos distintos aportaba por producto.
+
+    Que sean 1,597 y no 5,015 cambia dos cosas prácticas. Para C1 y C2, el
+    catálogo cabe entero en memoria y la pantalla de búsqueda no necesita
+    paginación agresiva. Para H3, la muestra de 200 pares cubre una fracción
+    mucho mayor del universo de lo que se había supuesto.
 
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
   colisiones_conocidas: 74992  # medido sobre el alcance del contrato (ver `medicion`)
-  desempate: min_precio        # ver nota en `que_se_hace`
+  desempate: min_precio
   que_se_hace: >
-    Medido con verificar-precios.py (15-sep-2026) sobre las 2,658,906 filas
-    del alcance, hay 74,992 filas sobrantes: 72,631 (96.85%) tienen
-    diferencia de precio menor a $1 (promedio $0.00, máximo $0.95) ->
-    captura doble; se deduplica. 2,105 (2.81%) tienen diferencia de $1 a
-    $50 (promedio $17.68) -> se aceptan ambas como observaciones múltiples
-    del mismo lote. 256 (0.34%) tienen diferencia mayor a $50 (promedio
-    $72.25, máximo $200.00) -> se rechazan a cuarentena con motivo
-    colision_precio_alta.
+    Medido con verificar-precios.py (15-sep-2026) sobre las 2,658,906 filas del
+    alcance, hay 74,992 filas sobrantes: 72,631 (96.85%) tienen diferencia de
+    precio menor a $1 (promedio $0.00, máximo $0.95) -> captura doble; se
+    deduplica. 2,105 (2.81%) tienen diferencia de $1 a $50 (promedio $17.68) ->
+    se aceptan ambas como observaciones múltiples del mismo lote. 256 (0.34%)
+    tienen diferencia mayor a $50 (promedio $72.25, máximo $200.00) -> se
+    rechazan a cuarentena con motivo colision_precio_alta.
 
     Desempate del primer grupo: `fecha_registro` ya es parte de la clave de
-    fila, así que dentro de un grupo todas las filas traen la misma fecha y
-    "la más reciente" no desempata nada. Se conserva la de menor precio.
-    Con una diferencia máxima de $0.95 la elección es inmaterial; lo que
-    importa es que sea determinista y esté escrita.
+    fila, así que dentro de un grupo todas las filas traen la misma fecha y "la
+    más reciente" no desempata nada. Se conserva la de menor precio. Con una
+    diferencia máxima de $0.95 la elección es inmaterial; lo que importa es que
+    sea determinista y esté escrita.
 
-    El caso de $15,100 que traía la versión 1.0.0 queda cerrado: era un
-    Centro de Lavado Whirlpool del catálogo `electrodomesticos`, que este
-    contrato no ingiere. Razón max/min 1.56 (26,999 contra 42,099):
-    dispersión de precio real, no error de captura. Dentro del alcance el
-    bucket alto no pasa de $200 y ninguna de las veinte colisiones mayores
-    del recorte tiene razón cercana a 10, 100 o 1000.
+    El caso de $15,100 que traía la versión 1.0.0 queda cerrado: era un Centro
+    de Lavado Whirlpool del catálogo `electrodomesticos`, que este contrato no
+    ingiere. Razón max/min 1.56 (26,999 contra 42,099): dispersión de precio
+    real, no error de captura. Dentro del alcance el bucket alto no pasa de $200
+    y ninguna de las veinte colisiones mayores del recorte tiene razón cercana a
+    10, 100 o 1000.
 
-normalizacion:
-  marca:
-    a: mayusculas_sin_acentos
-    colapsa: {"S/m": "S/M"}        # ADR 002 punto 3 -- S/m es categoría propia, no nulo
-  catalogo:
-    a: mayusculas_sin_acentos      # sin esto se pierden 121,491 filas de `Básicos` y 8,704 de `PACIC`
-  estado:
-    a: mayusculas_sin_acentos      # 37 literales -> 30 entidades; el alcance ya lo acota a 7
+    Nota de proporción: las colisiones se concentran DENTRO del alcance, 2.82%
+    contra 0.15% fuera. Los básicos chocan dieciocho veces más seguido que los
+    electrodomésticos, porque se capturan una y otra vez. La regla de dedup
+    trabaja casi toda aquí.
 
 columnas:
-  producto:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 65
-  presentacion:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 180
-  marca:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 65
-  categoria:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 65
+  # `columna_requerida`  : el archivo tiene que traer la columna. Si no, es
+  #                        deriva de esquema, no un descuido de captura.
+  # `valor_requerido`    : la celda no puede venir vacía.
+  # 1.1.1 los mezclaba en `obligatoria`/`nulos_permitidos`, que para latitud y
+  # longitud se leía como "obligatoria y además admite nulos". perfilado.md §1
+  # ya separaba «ausente» de «vacío» y decía que el contrato tiene que
+  # reaccionar distinto a cada uno.
+
+  producto:         {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 65}
+  presentacion:     {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 180}
+  marca:            {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 65}
+  categoria:        {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 65}
+  cadena_comercial: {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 65}
+  giro:             {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 65}
+  nombre_comercial: {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 120}
+  direccion:        {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 255}
+  estado:           {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 120}
+  municipio:        {tipo: texto, columna_requerida: true, valor_requerido: true, largo_maximo: 120}
+
   catalogo:
     tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
+    columna_requerida: true
+    valor_requerido: true
     largo_maximo: 65
-    valores_aceptados: [BASICOS, PACIC, "FRUTAS Y LEGUMBRES",
-                         MERCADOS, "PESCADOS Y MARISCOS"]     # ya normalizados
-  precio:
-    tipo: decimal
-    escala: 2                  # se compara y se resta como DECIMAL(12,2), no como flotante:
-                               # con flotante la frontera de $1.00 del bucket de colisiones
-                               # cae del lado equivocado y decide mal si la fila se deduplica
-    obligatoria: true
-    nulos_permitidos: false    # 0 nulos medidos en el alcance
-    minimo: 0.01               # 0 violaciones; el mínimo real observado es 1.50 (BASICOS)
-    maximo_por_catalogo:       # techo = máximo observado +25%, redondeado hacia arriba
-      "PESCADOS Y MARISCOS": 2250    # observado 1775.00 · p999 1300.00 · mediano 153.00
-      MERCADOS: 1100                 # observado  850.00 · p999  650.00 · mediano  50.00
-      BASICOS: 1000                  # observado  769.90 · p999  584.00 · mediano  44.90
-      "FRUTAS Y LEGUMBRES": 650      # observado  498.00 · p999  399.90 · mediano  38.00
-      PACIC: 400                     # observado  299.00 · p999  252.90 · mediano  26.50
-    al_exceder: cuarentena     # motivo precio_fuera_de_rango; nunca rechazo silencioso
-    razon_del_techo: >
-      El máximo observado no es un caso aislado que se pueda ignorar: 1775.00
-      es el máximo de PESCADOS Y MARISCOS en los siete meses de 2026, y
-      1690.00 lo fue en todo 2025 (+5.03% de un año al otro). Con la ventana
-      abierta (`hasta: null`), un techo clavado en lo observado empieza a
-      rechazar dato bueno en la siguiente revisión de precios de la fuente.
+    valores_aceptados: ver_alcance.catalogos_normalizados   # una sola lista canónica
+    al_no_estar_en_la_lista: descartar_fila_sin_incidente
+    razon: >
+      Una fila de `MEDICAMENTOS` no es un defecto: es un artículo fuera del
+      alcance de este producto. Se descarta en el filtro de ingesta, no en la
+      compuerta de calidad, y no ensucia la cuarentena.
 
-      El techo va por catálogo y no global porque los cinco difieren 6x entre
-      sí (PACIC llega a 299, PESCADOS Y MARISCOS a 1775). Un techo global que
-      cubra al más caro deja a PACIC con 569% de holgura: deja de ser una
-      compuerta y pasa a ser decoración.
-
-      Se revisa cuando el máximo observado de cualquier catálogo llegue al
-      90% de su techo. A +5% anual eso son ~2.5 años para PESCADOS Y
-      MARISCOS, que es el que primero lo va a tocar.
   fecha_registro:
     tipo: fecha
-    obligatoria: true
-    nulos_permitidos: false
-    formatos_aceptados: ["YYYY/MM/DD", "DD/MM/YYYY"]   # perfilado.md §1: 36 archivos vs. mayo 2026
-  cadena_comercial:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 65
-  giro:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 65
-  nombre_comercial:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 120
-  direccion:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 255
-  estado:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 120
-  municipio:
-    tipo: texto
-    obligatoria: true
-    nulos_permitidos: false
-    largo_maximo: 120
+    columna_requerida: true
+    valor_requerido: true
+    formato: ver_archivo.formato_de_fecha   # POR ARCHIVO, no lista de formatos
+    rango_aceptado: {desde: "2025-01-01", hasta: hoy}
+    al_estar_fuera_de_rango: cuarentena     # motivo fecha_fuera_de_ventana
+
   latitud:
     tipo: decimal
-    obligatoria: true
-    nulos_permitidos: true    # 0.0086% vacío, medido (perfilado.md §1)
+    columna_requerida: true
+    valor_requerido: false     # 0.0086% vacío, medido (perfilado.md §1)
   longitud:
     tipo: decimal
-    obligatoria: true
-    nulos_permitidos: true    # 0.0086% vacío, medido (perfilado.md §1)
+    columna_requerida: true
+    valor_requerido: false     # 0.0086% vacío, medido (perfilado.md §1)
+
+  precio:
+    tipo: decimal(12,2)        # precisión completa, no sólo `escala: 2`
+    columna_requerida: true
+    valor_requerido: true
+    minimo: 0.01               # 0 violaciones; el mínimo real observado es 1.50 (BASICOS)
+    razon_del_minimo: >
+      Se escribe aunque hoy no lo viole nadie, por la misma razón que
+      perfilado.md §2 regla 1: el contrato describe lo que se acepta, no lo que
+      pasó. El error espejo del "cero de más" es el punto decimal corrido al
+      otro lado, y cae aquí.
+    se_compara_como: DECIMAL(12,2)
+    razon_del_casteo: >
+      No es un detalle de implementación. Con `precio` en flotante, una
+      diferencia real de $1.00 sale 0.99999... y cae del lado equivocado de la
+      frontera del bucket de colisiones -y ese bucket decide si la fila se
+      deduplica o se conserva-. Al castear, el máximo del bucket de centavos
+      pasó de 1.00 a 0.95: la frontera era flotante.
+
+    maximo_por_catalogo:       # techo = máximo observado +25%, redondeado hacia arriba
+      "PESCADOS Y MARISCOS": 2250   # obs. 1775.00 · ancla: Langosta (45) y Callo de Hacha (350)
+      MERCADOS: 1100                # obs.  850.00 · ancla ÚNICA: Canela (932 filas)
+      BASICOS: 1000                 # obs.  769.90 · ancla: Tocino Ahumado, Camarón, Carne Res,
+                                    #                        Copa Menstrual, Ron  (5 productos)
+      "FRUTAS Y LEGUMBRES": 650     # obs.  498.00 · ancla: Castañas (45) y Jamaica (2,284)
+      PACIC: 400                    # obs.  299.00 · ancla ÚNICA: Carne Res (8,630 filas)
+    al_exceder: cuarentena     # motivo precio_fuera_de_rango; nunca rechazo silencioso
+
+    razon_del_techo: >
+      POR QUÉ NO EL MÁXIMO EXACTO. 1775.00 es el máximo de PESCADOS Y MARISCOS
+      en los siete meses de 2026, y 1690.00 lo fue en todo 2025: +5.03% de un
+      año al otro. No es una cola rara, es un artículo estable con inflación
+      normal. Con la ventana abierta, un techo clavado en lo observado rechaza
+      dato bueno en el siguiente ajuste de la fuente.
+
+      POR QUÉ POR CATÁLOGO Y NO GLOBAL. Los cinco difieren 6x (PACIC llega a
+      299, PESCADOS Y MARISCOS a 1775). Un techo global que cubra al más caro le
+      deja a PACIC 569% de holgura: deja de ser compuerta y pasa a ser
+      decoración. Si alguna vez hace falta un solo número, que sea 2250 y no
+      2000 -2000 le deja a pescados y mariscos 12.7%, como dos años y medio-.
+
+      QUÉ ATRAPA Y QUÉ NO, que es lo que 1.1.1 no decía. Este techo es la
+      compuerta GRUESA: atrapa la fila absurda, la que llegaría si la fuente
+      reclasifica un refrigerador dentro de BASICOS -y esta fuente ya demostró
+      que se degrada: 18 columnas en junio de 2026, acentos que van y vienen-.
+      NO atrapa el error de captura típico: un artículo de MERCADOS con mediana
+      de $50 capturado con un cero de más da $500 y pasa el techo de 1,100 sin
+      despeinarse. Eso lo atrapa la compuerta FINA, comparando contra el propio
+      artículo, que es la regla 3 de perfilado.md §2 -la del termómetro que
+      parecía 10.4x anómalo contra su producto y valía 1.00x contra su
+      presentación-. Esa compuerta todavía no existe y es el siguiente paso.
+
+      ANCLA ÚNICA: MERCADOS Y PACIC. Los dos techos dependen de un solo producto
+      (Canela y Carne Res). Se aceptan así, y la razón es la DIRECCIÓN del
+      fallo: si el ancla desaparece de la fuente, el techo no se rompe -se queda
+      quieto y pasa a ser más holgado de lo necesario-. Un techo de ancla única
+      falla hacia "demasiado permisivo", nunca hacia "rechaza dato bueno", y
+      para una compuerta ése es el lado seguro. Buscar un segundo ancla no
+      compraría nada medible, y pasar el catálogo a revisión manual costaría
+      trabajo humano sobre 104,409 filas para encontrar cero hallazgos.
+
+      Los dos no corren el mismo riesgo, aunque los dos sean de ancla única: la
+      Carne Res de PACIC tiene 8,630 filas y es un artículo central del Paquete
+      Contra la Inflación y la Carestía; la Canela de MERCADOS tiene 932 y es
+      una especia a granel de mercado público.
+
+    cuando_se_revisa:
+      - "el máximo observado de un catálogo llega al 90% de su techo"
+      - "el producto que ancla un techo desaparece de la fuente dos quincenas seguidas"
+    razon_del_segundo_disparador: >
+      El primero solo no basta para un techo de ancla única: si el ancla se va,
+      el máximo observado BAJA, así que nunca llega al 90% y la revisión nunca
+      se dispara. El segundo disparador es de observabilidad, no de umbral, y es
+      el que cubre ese caso. A +5% anual el primero son ~2.5 años para PESCADOS
+      Y MARISCOS, que es el que lo va a tocar primero.
 
 columnas_extra:
-  politica: no_ingerir
-  conocidas: [folio, cv_producto, cv_marca]   # ADR 001 -- 94.12% ausentes, sin diccionario oficial
+  politica: no_ingerir_con_aviso    # ADR 001 + enmienda del 16/sep — CONFIRMAR QUÉ SE RATIFICÓ
+  conocidas: [folio, cv_producto, cv_marca]   # 94.12% ausentes, sin diccionario oficial
+  aviso:
+    severidad: advertencia          # el lote entra completo; nadie se bloquea
+    mensaje: "el archivo trae {n} columnas; se ignoraron: {lista}"
+    va_a: consola_de_observabilidad
+  razon: >
+    No ingerirlas no está en discusión: no están en el diccionario oficial de
+    PROFECO, no hay documentación de qué significan, y el 94.12% de las filas no
+    las trae.
+
+    Lo que cambia respecto de 1.1.1 es el AVISO. Una columna que aparece en
+    junio y desaparece en julio es deriva de esquema, uno de los tres incidentes
+    que este proyecto existe para detectar, y es el único episodio real que
+    tiene. Descartarla en silencio deja ese indicador de la consola sin nada que
+    mostrar, y habría que simularlo. perfilado.md §2 regla 6 ya decía «avisar de
+    las extra sin romperse ni descartarlas en silencio».
+
+    CONFIRMAR: la enmienda se ratificaba en la reunión del 16 de septiembre. Si
+    no pasó, este campo vuelve a `no_ingerir` y hay que escribir por qué el
+    contrato contradice a perfilado.md.
+
+# ── Presentación · no es ingesta, pero se escribe aquí para que no se pierda ─
+
+presentacion:
+  ocultar_por_defecto_en_canasta_basica:
+    por_columna: categoria
+    valores: ["vinos y licores", cerveza, cigarrillos]   # verificados dentro de BASICOS
+    reversible_por_el_usuario: true
+    filas_afectadas: 64991       # 2.44% del alcance · medir-para-contrato.py, 17-sep-2026
+    detalle:
+      cerveza:           {filas: 35000, productos: 1, mediana: 137.00, maximo: 302.50}
+      "vinos y licores": {filas: 26197, productos: 4, mediana: 349.00, maximo: 635.00}
+      cigarrillos:       {filas:  3794, productos: 1, mediana:  27.00, maximo:  30.00}
+    a_decidir_por_el_equipo: >
+      Un cuarto candidato que la medición destapó y que NO está en la lista
+      todavía: `productos de temporada (navidenos)`, 16,723 filas dentro de
+      BASICOS. El ADR 005 ya dejó fuera el CATÁLOGO `Navideños`, así que
+      ocultar también estas filas sería coherente -pero es la misma clase de
+      decisión de mensaje y la toma el equipo, no el contrato-.
+    razon: >
+      `Basicos` es la clasificación de PROFECO y este contrato la respeta
+      completa: el protocolo compromete un recorte «conforme a la clasificación
+      de productos de consumo generalizado DE LA FUENTE», y en el momento en que
+      el equipo saca artículos porque le parecen poco básicos, sustituye esa
+      clasificación por un criterio propio que habría que defender caso por
+      caso. Copa Menstrual ($734, 1,429 filas) es el ejemplo de por qué ese
+      camino es malo: es higiene duradera, cara por unidad y baratísima por uso,
+      y excluirla de la canasta básica de un hogar sería mucho más difícil de
+      defender que incluirla.
+
+      Pero una app que dice «arma tu despensa» y muestra Ron ($635, 4,787 filas)
+      entre el tocino y la carne le va a llamar la atención a cualquiera. Eso se
+      resuelve donde vive el problema, que es el mensaje: la vista por omisión
+      oculta esas categorías -que son valores reales de la fuente, no una lista
+      inventada-, el dato entra igual, y el usuario puede verlo.
+
+      Beneficio para H4: la canasta básica alimentaria de CONEVAL no incluye
+      bebidas alcohólicas. Con esta lista escrita, el índice se puede reportar
+      con y sin ellas y decir cuál es cuál al compararlo contra el INPC.
+
+      DECIDE EL EQUIPO, no el frente de datos: lo implementan C2 y D en las
+      pantallas de búsqueda. Lo que el contrato aporta es la lista y el volumen.
 
 # ── Lo que sigue abierto ───────────────────────────────────────────────────
 pendientes:
-  - id: interrogantes
+  - id: catalogo_y_categoria_no_estan_anidadas
     que: >
-      `producto` y `presentacion` traen el sentinela `?` donde la fuente se
-      comió una letra (`Bocinas Port?tiles`). Rompe la clave de artículo:
-      `Art?culos` cuenta como artículo distinto de `Artículos`. Está medido
-      fuera del alcance; falta medirlo dentro y decidir si se rechaza, se
-      repara o se ingiere tal cual.
-  - id: conteo_de_articulos
+      Hallazgo de medir-para-contrato.py (17-sep-2026), y cambia cómo se lee el
+      ADR 005: `catalogo` y `categoria` son dos clasificaciones INDEPENDIENTES
+      de la fuente, no una dentro de otra. Dentro de BASICOS conviven 37
+      categorías, y varias son de catálogos que el ADR 005 dejó fuera.
+
+      El caso más claro: el ADR 005 excluyó el catálogo `Medicamentos`, y aun
+      así entran 8,212 filas de `categoria = medicamentos` por la puerta de
+      BASICOS. Lo mismo con 2,217 de `pescados y mariscos`, 16,723 de
+      `productos de temporada (navidenos)`, 8,194 de `accesorios domesticos` y
+      2,618 de `utensilios domesticos`.
+
+      NO ES UN DEFECTO, Y CONVIENE DECIR POR QUÉ. Los medicamentos que entran
+      por BASICOS son 3 productos con mediana de $30 y máximo de $134 -analgésico
+      de mostrador-, mientras que el catálogo `Medicamentos` que quedó fuera son
+      401 productos con mediana de $245 y máximo de $5,891. El recorte por
+      catálogo hizo exactamente lo correcto: se quedó con el medicamento básico
+      de una despensa y dejó fuera el de receta. Anotarlo es lo que falta, para
+      que nadie lea el ADR 005 como «no hay medicamentos» y se sorprenda.
+
+      Y una consecuencia de fondo: la categoría más grande de BASICOS es
+      `arts. para el cuidado personal` con 290,136 filas, el 10.9% de TODO el
+      alcance. `Basicos` no es «la despensa»: es la despensa más higiene,
+      limpieza, bebidas, tabaco y temporada. Eso es lo que la vista por omisión
+      tiene que administrar, y por eso la decisión de presentación importa más
+      de lo que parecía.
+  - id: compuerta_fina_de_precio
     que: >
-      `clave_de_articulo` es lo que mide H3, pero no dice sobre qué población
-      ni con qué normalización se cuenta. Hoy hay dos números circulando
-      (5,015 y 6,172) y ninguno está mal: miden cosas distintas. El contrato
-      tiene que fijar una.
+      El techo por catálogo no atrapa el error de captura típico (ver
+      `razon_del_techo`). Falta la compuerta que compara cada precio contra la
+      distribución de SU artículo -producto + presentacion-, que es la regla 3 de
+      perfilado.md §2. Es el siguiente paso del contrato, no de esta versión.
+  - id: ratificacion_adr_005
+    que: >
+      Los cinco catálogos son propuesta del ADR 005, a ratificar el 16/sep. Si
+      la lista cambia, se vuelven a medir `medicion`, `clave_de_fila`,
+      `maximo_por_catalogo` y el porcentaje de S/M. Confirmar y fechar.
