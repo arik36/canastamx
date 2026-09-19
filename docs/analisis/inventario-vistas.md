@@ -4,7 +4,8 @@
      LAS OCHO VISTAS YA ESTÁN DEFINIDAS EN EL PROTOCOLO. No las inventes: si propones otras, el prototipo del 18 de septiembre no va a corresponder al documento entregado el mismo día.
      Tu trabajo es decidir QUÉ CONTIENE CADA UNA Y EN QUÉ ORDEN, que es donde está el diseño de verdad. -->
 
-**Archivo de Figma:**  [Inserta aquí tu enlace actualizado de Figma] <!-- compartido con permiso de lectura para cualquiera con el enlace; pruébalo en incógnito -->
+**Archivo de Figma:**  [Inserta aquí tu enlace actualizado de Figma] <!-- compartido con permiso de lectura para cualquiera con el enlace; pruébalo en incógnito --> 
+https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=683ef0vKAnPmN7j4-1
 **Autora:** D · **Fecha:** 18 de septiembre de 2026
 
 ---
