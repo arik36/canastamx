@@ -1,9 +1,8 @@
 # Modelo de dominio
 
-<!-- Lo escribe C1 (Liseth) en T022 · viernes 18  de septiembre.-->
+<!-- Lo escribe C1 (Liseth) en T022 y T030 · viernes 18 de septiembre. -->
 
-
-**Autora:** C1 · **Fecha:** 18 Sep 2026 · **Estado:** borrador
+**Autora:** C1 · **Fecha:** 19 Sep 2026 · **Estado:** borrador
 
 ---
 
@@ -34,18 +33,18 @@
 | Elemento | Tipo | Por qué |
 |---|---|---|
 | Canasta | Entidad | Tiene identidad propia y es la raíz del agregado. |
-| ItemDeCanasta | Entidad local | Identidad solo dentro de la canasta; no se accede desde afuera. |
+| LineaDeCanasta | Entidad local | Representa un artículo y su cantidad dentro de la canasta; no se accede desde afuera. |
 | Cantidad | Objeto de valor | Representa la cantidad de unidades de un artículo, se valida por su valor y no tiene identidad propia. |
 | UsuarioId | Referencia | Se referencia por identificador, no por objeto. |
-| ArtículoId | Referencia | Identifica un artículo mediante producto + presentación, sin incluir la marca ni el objeto completo del catálogo. |
+| ReferenciaDeArticulo | Referencia | Identifica un artículo mediante producto + presentación, sin incluir la marca ni el objeto completo del catálogo. |
 
 **Reglas dentro del agregado:**
 
 - La canasta pertenece a exactamente un usuario y no puede cambiar de dueño.
-- No puede haber dos ítems del mismo artículo; al agregar un artículo existente se suma la cantidad.
-- La cantidad de cada ítem debe ser un número entero mayor que cero.
+- No puede haber dos líneas del mismo artículo; al agregar un artículo existente se suma la cantidad.
+- La cantidad de cada línea debe ser un número entero mayor que cero.
 - El costo estimado de la canasta se calcula y no se almacena.
-- Los ítems de la canasta solo pueden modificarse a través de la raíz Canasta.
+- Las líneas de la canasta solo pueden modificarse a través de la raíz Canasta.
 
 ---
 
@@ -57,7 +56,7 @@
 |---|---|---|
 | Alerta | Entidad | Tiene identidad propia porque representa una alerta específica que puede mantenerse y cambiar de estado. |
 | UmbralDePrecio | Objeto de valor | Representa el precio límite que debe cumplirse para activar la alerta y no tiene identidad propia. |
-| ArtículoId | Referencia | Identifica el artículo al que pertenece la alerta mediante producto + presentación, sin incluir la marca ni el objeto completo del catálogo. |
+| ReferenciaDeArticulo | Referencia | Identifica el artículo al que pertenece la alerta mediante producto + presentación, sin incluir la marca ni el objeto completo del catálogo. |
 | UsuarioId | Referencia | Identifica al usuario que configuró la alerta sin incluir el objeto Usuario completo. |
 
 **Reglas dentro del agregado:**
@@ -86,7 +85,7 @@
 - Entre agregados se referencia mediante identificadores, no mediante objetos completos.
 - La identidad de un artículo está determinada por **producto + presentación**.
 - Dos presentaciones diferentes del mismo producto corresponden a artículos diferentes.
-- La referencia `ArtículoId` representa esa identidad de producto + presentación, sin incluir la marca.
+- La `ReferenciaDeArticulo` representa esa identidad de producto + presentación, sin incluir la marca.
 - El catálogo de productos y artículos vive fuera de estos tres agregados.
 
 ---
@@ -106,8 +105,6 @@
 
 ---
 
----
-
 ## Lo que C2 necesita saber de esto
 
 <!-- Lo que decidas aquí es lo que la app móvil va a consumir. Si defines que
@@ -115,12 +112,78 @@
      Coméntaselo antes del lunes. -->
 
 - Los agregados Usuario, Canasta y Alerta son independientes entre sí.
-- Las referencias entre agregados se realizan mediante identificadores (`UsuarioId` y `ArtículoId`), no mediante objetos completos.
-- Un `ArtículoId` representa un artículo identificado por producto + presentación, sin incluir la marca.
+- Las referencias entre agregados se realizan mediante identificadores (`UsuarioId` y `ReferenciaDeArticulo`), no mediante objetos completos.
+- Una `ReferenciaDeArticulo` representa un artículo identificado por producto + presentación, sin incluir la marca.
 - El catálogo de productos y artículos se encuentra fuera de estos tres agregados.
-- La cantidad de cada ítem debe ser un número entero mayor que cero.
+- La cantidad de cada línea debe ser un número entero mayor que cero.
 - No se permiten artículos duplicados dentro de una canasta; al agregar un artículo existente se suma su cantidad.
 - Una canasta pertenece a exactamente un usuario y no puede cambiar de dueño.
 - El costo estimado de la canasta se calcula y no se almacena.
 - La condición exacta para activar una alerta está pendiente de acordar entre `<` y `<=`.
-**---**
+
+## Diagrama de clases
+
+```mermaid
+classDiagram
+
+    class Usuario {
+        -String id
+        -CorreoElectronico correo
+        -Instant fechaDeRegistro
+        -String contrasenaCifrada
+        -String nombre
+        +Usuario(String id, CorreoElectronico correo, String contrasenaCifrada, String nombre, Instant fechaDeRegistro)
+        +cambiarContrasena(String yaCifrada) void
+        +renombrar(String nuevo) void
+        +id() String
+        +correo() CorreoElectronico
+        +nombre() String
+        +fechaDeRegistro() Instant
+        +contrasenaCifrada() String
+    }
+
+    class CorreoElectronico {
+        <<record>>
+        +String valor
+    }
+
+    class Canasta {
+        -String id
+        -String usuarioId
+        -List~LineaDeCanasta~ lineas
+        -String nombre
+        +Canasta(String id, String usuarioId, String nombre)
+        +renombrar(String nuevo) void
+        +agregar(ReferenciaDeArticulo articulo, Cantidad cantidad) void
+        +quitar(ReferenciaDeArticulo articulo) void
+        +lineas() List~LineaDeCanasta~
+        +id() String
+        +usuarioId() String
+        +nombre() String
+    }
+
+    class LineaDeCanasta {
+        <<record>>S
+        +ReferenciaDeArticulo articulo
+        +Cantidad cantidad
+        +sumar(Cantidad extra) LineaDeCanasta
+    }
+
+    class ReferenciaDeArticulo {
+        <<record>>
+        +String producto
+        +String presentacion
+    }
+
+    class Cantidad {
+        <<record>>
+        +int unidades
+        +mas(Cantidad otra) Cantidad
+    }
+
+    Usuario --> CorreoElectronico
+    Canasta "1" --> "*" LineaDeCanasta
+    LineaDeCanasta --> ReferenciaDeArticulo
+    LineaDeCanasta --> Cantidad
+    Canasta --> Usuario : usuarioId
+  ```
