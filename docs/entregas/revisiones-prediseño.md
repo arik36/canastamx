@@ -4,6 +4,17 @@
 - **Revisado:** `docs/analisis/inventario-vistas.md` y el PDF de Figma con 13 pantallas  
 - **Tarea:** *«Llenar el inventario de las ocho vistas y hacer sus wireframes. El sistema de diseño, si sobra tiempo. Empezar por la consola de observabilidad, que ya tiene sus seis indicadores definidos.»*
 
+## Diseño Seleccionado
+- Paleta de colores
+turquesa #23BBB7, 
+crema #F0EADF,
+tinta #2F2F2F, 
+verde éxito #00A859, 
+
+tipografía Inter, y  rojo sólo para incidentes del sistema, 
+naranja para anomalías de mercado. 
+Estan declarados en index.css.
+
 ## Veredicto
 
 | Parte | Estado |
