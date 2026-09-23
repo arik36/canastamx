@@ -25,7 +25,7 @@ A continuación se muestran las ofertas del plan gratuito.
 
 Se ha seleccionado Oracle CLoud VM en su plan gratuito como plataforma a utilizar para alojar los servicios requeridos por el proyecto. El plan gratuito cubre las necesidades planteadas para el desarrollo del proyecto, además de contar con la flexibilidad de restricción de uso mencionadas anteriormente. Para esto, se trabajará con la Instancia de Cómputo Ampere A1, 12 GB RAM asignadas, 150GB de espacio en disco, 1 OCPU, y un sistema Operativo Ubuntu 26.04.
 
-En conjunto, se ha seleccionado PostegreSQL como el administrador de base de datos en sustitución de Supabase, que se había planteado en el protocolo, debido a sus restricciones de uso en un plan gratuito. De está manera, evitamos perder tiempo migrando la arquitectura planteada a un nuevo sistema, así manteniendo el plan original sin sacrificar funcionalidades.
+En conjunto, se ha seleccionado PostegreSQL como sustito de Supabase, que se había planteado en el protocolo, debido a las restricciones de Supabse en su uso en un plan gratuito. De está manera, evitamos perder tiempo migrando la arquitectura planteada a un nuevo sistema, así manteniendo el plan original sin sacrificar funcionalidades.
 
 
 ## Alternativas descartadas
