@@ -27,14 +27,16 @@ Se ha seleccionado Oracle CLoud VM en su plan gratuito como plataforma a utiliza
 
 En conjunto, se ha seleccionado PostegreSQL como sustito de Supabase, que se había planteado en el protocolo, debido a las restricciones de Supabse en su uso en un plan gratuito. De está manera, evitamos perder tiempo migrando la arquitectura planteada a un nuevo sistema, así manteniendo el plan original sin sacrificar funcionalidades.
 
+PostgreSQL vivirá en la VM a través de un contenedor de docker, tal que sea posible manejar su configuración de manera paralela a los demás servicios de docker. 
+
 
 ## Alternativas descartadas
 
 | Alternativa | Por qué no |
 |---|---|
-| Supabase, plan gratuito | 500 MB contra ~1,373 MB que pesa el recorte. Y no está en el protocolo |
+| Supabase, plan gratuito | 500 MB disponibles contra ~1,476 MB que pesa el recorte. Y no está en el protocolo |
 | Oracle Autonomous Database | Caben los 20 GB, pero no es PostgreSQL: habría que cambiar el adaptador de dbt y el protocolo lo especifica |
-| Microinstancia AMD | Está más restringida en cuánto a configuración de la VM, se le permite menos potencia a comparación de la Ampere A1 | 
+| Microinstancia AMD + PostgreSQL | Está más restringida en cuánto a configuración de la VM, se le permite menos potencia a comparación de la Ampere A1 | 
 
 ## Consecuencias
 
@@ -42,3 +44,4 @@ En conjunto, se ha seleccionado PostegreSQL como sustito de Supabase, que se hab
   responsable B · se verifica en la semana 9
 - El laboratorio nacional de A deja de ser un punto único de falla · B · semana 9
 - Si la VM deja de estar disponible por motivos de mantenimiento o algún error en la plataforma de Oracle, todo el sistema dejará de estar disponible. (fallo fatal de QoS)
+- La VM se elimina si Oracle no detecta actividad significativa en la máquina en un periodo de 7 días. Se planea la implementación de un script que permita automatizar ciertos procesos para generar actividad y evitar la eliminación.
