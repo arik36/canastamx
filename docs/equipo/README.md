@@ -87,7 +87,6 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 | [`docs/equipo/entorno/PLANTILLA.md`](./entorno/PLANTILLA.md) | Los cinco | lun 7, en la reunión |
 | `docker-compose.yml` · `.env.example` · `.gitignore` | B | lun 7 y mar 8 |
 | `.github/workflows/ci.yml` | B | mié 9 |
-| `contracts/qqp.contrato.yml` | A | semana 2 |
 | `README.md` | A, y lo verifica B | semana 3 |
 
 ---

@@ -6,9 +6,8 @@
   Liseth (C1), Oscar (C2), Karen (D).
 
 > **Nota de archivo.** El issue sembrado en el tablero cita la ruta
-> `docs/adr/005-recorte-de-productos.md` y el archivo vive en
-> `docs/adr/005-recorte-de-catalogos.md`. Iguala una de las dos antes de
-> entregar; da lo mismo cuál, pero que no queden dos.
+> `docs/adr/005-recorte-de-catalogos.md`. Iguala 
+> una de las dos antes de entregar; da lo mismo cuál, pero que no queden dos.
 
 ## Contexto
 
