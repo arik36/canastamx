@@ -92,6 +92,10 @@ PARECIDO_MINIMO = 0.82
 # que el producto no va a vender infla o desinfla el resultado sin que
 # corresponda a nada.
 CATALOGOS = ["Basicos", "Pacic", "Frutas y Legumbres", "Mercados", "Pescados y Mariscos"]
+# ↑ Recorte provisional de la ADR 005 (se ratifica el lunes 14). Se excluyen
+# Medicamentos, Electrodomesticos, Utiles Escolares, Juguetes, Navideños y
+# Tenis: la mediana/máximo se disparan (ver docs/adr/001) y el problema de
+# reconciliación en esos catálogos no se parece al de la canasta básica.
 
 # Cuántos pares de un mismo producto pueden entrar a la mitad «más parecidos».
 # Sin esto, cinco playeras de la misma marca que sólo cambian de talla se
@@ -132,17 +136,44 @@ def conectar():
     """)
     # Una fila por (clave normalizada, escritura literal), con las cadenas
     # donde aparece. Son unos miles de filas: todo lo demás sale de aquí.
+    # Las DOS claves del ADR 002 §4, que hacen dos trabajos distintos:
+    #
+    #   clave           = producto + presentacion + marca  → forma de ESCRIBIR.
+    #                     Sólo la usa `donde_esta_la_diferencia`, que pregunta
+    #                     en qué columna cae la variación de escritura.
+    #   clave_articulo  = producto + presentacion          → IDENTIDAD.
+    #                     Es la que mide H3, tal como lo dice la tabla del
+    #                     ADR 002 §4. `marca` se guarda y se muestra, pero no
+    #                     identifica (§2), e «identificar por el trío, con
+    #                     `marca` dentro» es una alternativa DESCARTADA.
+    #
+    # La primera versión de este guión usaba la clave con `marca` para buscar
+    # candidatos, y por eso ofrecía pares como `… · Nutri` contra
+    # `… · Tamariz`: mismo producto, misma presentación, otra marca. Eso no es
+    # un caso difícil de reconciliación — es UN artículo con dos marcas, y por
+    # el ADR 002 ni siquiera es un par. Calificarlo obliga a contradecir el ADR
+    # (si se marca «no») o a anotar como fallo de cobertura algo que la
+    # reconciliación nunca tuvo que resolver (si se marca «sí»).
     con.sql("""
         CREATE TABLE art AS
         SELECT prod_n, pres_n, marca_n,
                prod_n || '§' || pres_n || '§' || marca_n          AS clave,
+               prod_n || '§' || pres_n                            AS clave_articulo,
                producto || ' · ' || presentacion || ' · ' || marca AS literal,
+               producto || ' · ' || presentacion                  AS literal_articulo,
                producto, presentacion, marca,
                -- Los NÚMEROS aparte de las LETRAS. Ver `candidatos_para_calificar`:
                -- en esta fuente los números son los que cambian el artículo.
-               regexp_replace(prod_n || pres_n || marca_n, '[^0-9]', '', 'g') AS digitos,
+               --
+               -- Los dos se calculan sobre producto + presentacion, sin `marca`.
+               -- Antes incluían `marca_n`, y eso tenía dos efectos: inflaba el
+               -- parecido de cualquier par que compartiera producto y
+               -- presentación, y hacía que `any_value(digitos)` de abajo fuera
+               -- no determinista, porque unas marcas traen dígitos (`7 Leguas`)
+               -- y otras no.
+               regexp_replace(prod_n || pres_n, '[^0-9]', '', 'g') AS digitos,
                trim(regexp_replace(regexp_replace(
-                    prod_n || ' ' || pres_n || ' ' || marca_n,
+                    prod_n || ' ' || pres_n,
                     '[0-9]', ' ', 'g'), '\\s+', ' ', 'g'))         AS letras,
                count(*)                            AS filas,
                list(DISTINCT cadena_comercial)     AS cadenas
@@ -164,16 +195,22 @@ def conectar():
     # candidatos con parecido 1.000 cuando la normalización real ya los une en
     # `kellogg s`. Ofrecer como «casos difíciles» cosas que el sistema ya
     # resuelve es justo el error que este guión existe para no cometer.
+    #
+    # Se agrupa por `clave_articulo` —producto + presentación—, que es la
+    # identidad del ADR 002. Las marcas se conservan en una lista aparte: el
+    # ADR 002 §2 dice que `marca` «se guarda y se muestra, pero no identifica»,
+    # y mostrársela a quien califica es útil como contexto sin que sea criterio.
     con.sql("""
         CREATE TABLE art_contrato AS
-        SELECT prod_n, clave,
-               arg_max(literal, filas)               AS literal,
+        SELECT prod_n, clave_articulo                AS clave,
+               arg_max(literal_articulo, filas)      AS literal,
                any_value(digitos)                    AS digitos,
                any_value(letras)                     AS letras,
                sum(filas)                            AS filas,
-               list_distinct(flatten(list(cadenas))) AS cadenas
+               list_distinct(flatten(list(cadenas))) AS cadenas,
+               list_distinct(list(marca))            AS marcas
         FROM art
-        GROUP BY prod_n, clave
+        GROUP BY prod_n, clave_articulo
     """)
     return con
 
@@ -275,6 +312,7 @@ def candidatos_para_calificar(con, exigir_mismos_digitos=True):
             SELECT a.prod_n,
                    a.literal AS literal_a, a.filas AS filas_a, a.cadenas AS cadenas_a,
                    b.literal AS literal_b, b.filas AS filas_b, b.cadenas AS cadenas_b,
+                   a.marcas AS marcas_a, b.marcas AS marcas_b,
                    replace(a.clave, '§', ' · ') AS clave_a,
                    replace(b.clave, '§', ' · ') AS clave_b,
                    jaro_winkler_similarity(a.letras, b.letras) AS parecido,
@@ -318,6 +356,11 @@ def escribir_para_marcar(muestra, destino):
         "en los literales de arriba puede haber diferencias que el sistema ya",
         "resuelve —un apóstrofo, una mayúscula— y que no son la que importa.",
         "",
+        "LA MARCA NO CUENTA. El artículo es `producto` + `presentacion` (ADR 002",
+        "§1 y §2). Las marcas se listan sólo como contexto. Si al leer un par lo",
+        "único distinto que ves es la marca, el par está mal construido: avísalo",
+        "en vez de calificarlo.",
+        "",
         "Cobertura = (pares que son el mismo y el sistema SÍ unió)",
         "            ────────────────────────────────────────────",
         "            (todos los pares que son el mismo)",
@@ -337,6 +380,8 @@ def escribir_para_marcar(muestra, destino):
             f"      {int(f.filas_a):>9,} filas · {ca}",
             f"   B  {f.literal_b}",
             f"      {int(f.filas_b):>9,} filas · {cb}",
+            f"   ·  marcas (contexto, NO identifican) · "
+            f"A: {', '.join(list(f.marcas_a)[:4])} · B: {', '.join(list(f.marcas_b)[:4])}",
             f"   ·  ya normalizados, la diferencia está aquí:",
             f"      A: {f.clave_a}",
             f"      B: {f.clave_b}",

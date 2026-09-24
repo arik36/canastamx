@@ -1,7 +1,7 @@
 # ADR 009 · Qué hacemos con el almacenamiento de objetos
 
 - **Fecha:** 19 de septiembre de 2026
-- **Estado:** propuesta · se decide en la reunión de la semana 3
+- **Estado:** aceptada · se decidio en la reunión de la semana 2
 - **Lo descubrió:** Ari Adair (B), levantando la máquina virtual
 - **Escribe la propuesta:** Ariadne (A), porque la capa bronze es del frente de datos
 - **Decide:** el equipo
