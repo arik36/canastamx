@@ -1,4 +1,4 @@
-package mx.tecnm.canastamx.domain_service.domain;
+package mx.tecnm.canastamx.domain_service.domain.usuario;
 
 import java.time.Instant;
 
