@@ -1,9 +1,7 @@
 # ADR 005 · Recorte de productos por catálogo
 
 - **Fecha:** 14 de septiembre de 2026 · **actualizado el 17 de septiembre**
-- **Estado:** **aceptada** en la reunión del miércoles 16 — ⚠ **CONFIRMAR ANTES
-  DE ENTREGAR**: si la reunión se movió o la lista cambió, este encabezado y
-  todas las cifras medidas sobre los cinco catálogos se vuelven a tocar.
+- **Estado:** **aceptada** en la reunión del miércoles 16 —
 - **Participantes:** Ariadne (A) — autora de la propuesta. Ari Adair (B),
   Liseth (C1), Oscar (C2), Karen (D).
 
