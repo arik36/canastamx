@@ -48,7 +48,7 @@ Revisando el repositorio archivo por archivo, MinIO aparece en 14 archivos y
 | `docker-compose.yml` | 23 | el servicio, hoy con `image: minio/minio:latest` |
 | `.env.example` | 6 | credenciales, puertos, `MINIO_BUCKET=canastamx-bronze` |
 | `bootstrap.sh` · `infra/scripts/sembrar-tablero.sh` | 7 | arranque y siembra |
-| `fichas/semana-01.md` · `README.md` · 4 docs de equipo | 12 | la URL de la consola y cómo entrar |
+| `docs/equipo/fichas/planeacion-semana-01.md` · `docs/equipo/README.md` · 4 docs de equipo | 12 | la URL de la consola y cómo entrar |
 | `cronograma.md` | 2 | T007 y T020 |
 
 **No aparece ni una sola vez** en `contracts/qqp-v1.yaml`, en `perfilado.md`, en
