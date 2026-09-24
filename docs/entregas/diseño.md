@@ -16,3 +16,6 @@ Están declarados como variables en `index.css`:
 ## 3. Radios y Espaciado
 - **Radios:** Tarjetas a `16px`, modales a `24px`, botones a `12px` o totalmente redondos (píldoras).
 - **Espaciado:** Escala basada en múltiplos de `4px` (ej. padding de `16px` o `20px`).
+
+## ENLACE A FIGMA: 
+https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=5QeO3L2hmrAGrZqX-1
