@@ -2,7 +2,7 @@
 
 <!-- Lo escribe C1 (Liseth) en T022 y T030 · viernes 18 de septiembre. -->
 
-**Autora:** C1 · **Fecha:** 19 Sep 2026 · **Estado:** borrador
+**Autora:** C1 · **Fecha:** 24 Sep 2026 · **Estado:** vigente
 
 ---
 
@@ -22,7 +22,7 @@
      levantar Spring. Si no, está en el lugar equivocado. -->
 
 - El correo electrónico debe tener un formato válido.
-- La contraseña debe cumplir las condiciones de seguridad definidas por el sistema. **Pendiente de acordar las condiciones específicas.**
+- La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número (ADR 010).
 
 ---
 
@@ -61,11 +61,9 @@
 
 **Reglas dentro del agregado:**
 
-<!-- La condición exacta de activación todavía está pendiente de acordar:
-     si se dispara cuando el precio es menor (<) o menor o igual (<=) al umbral. -->
 
-- El umbral de precio debe ser un valor válido. **Pendiente de acordar las condiciones específicas de validez.**
-- La alerta se dispara cuando el precio observado del artículo cumple la condición de activación acordada: **menor (<) o menor o igual (<=) al umbral establecido.**
+- El umbral de precio debe definirse dentro del rango histórico del artículo (ADR 010).
+- La alerta se dispara cuando el precio observado del artículo es menor o igual (<=) al umbral establecido (ADR 010).
 
 ---
 
@@ -163,7 +161,7 @@ classDiagram
     }
 
     class LineaDeCanasta {
-        <<record>>S
+        <<record>>
         +ReferenciaDeArticulo articulo
         +Cantidad cantidad
         +sumar(Cantidad extra) LineaDeCanasta
