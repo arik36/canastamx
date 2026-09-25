@@ -12,6 +12,7 @@
     "node": ">=20.19.4 <21"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "expo": "~55.0.0",
     "expo-constants": "~55.0.17",
     "expo-font": "~55.0.8",
