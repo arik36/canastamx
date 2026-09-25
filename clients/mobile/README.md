@@ -1,6 +1,6 @@
 # CanastaMX · Cliente móvil
 
-Navegación de la semana 2 sobre la base de T014: **Búsqueda de artículos**,
+Prototipo de T028 con el sistema de diseño de D sobre la navegación de T023: **Búsqueda de artículos**,
 **Detalle de artículo**, **Mi canasta** y **Alertas**. Se usa el vocabulario del
 [ADR 002](../../docs/adr/002-identidad-del-articulo.md).
 
@@ -59,12 +59,12 @@ Recorrido manual requerido en un **teléfono real**:
 5. Pulsa la pestaña **Mi canasta** y después **Alertas**.
 6. Vuelve a la pestaña **Búsqueda** y comprueba que puedes abrir el detalle de nuevo.
 7. Graba unos quince segundos del recorrido Búsqueda → detalle → regresar →
-   Mi canasta → Alertas, o toma cuatro capturas, y adjunta la evidencia al
-   issue de navegación de la semana 2.
+   Mi canasta → Alertas, mostrando la paleta y tipografía, y adjunta el video al
+   issue de T028 (sistema de diseño móvil).
 
 BlueStacks sirve como comprobación adicional. El criterio de esta tarea pide
 evidencia en teléfono real. El video se adjunta al issue, no al repositorio.
-Al terminar, avisa al equipo: «Navegación lista, cuatro pantallas.»
+La prueba debe mostrar las cuatro pantallas con el sistema de diseño aplicado.
 
 La comprobación de TypeScript y el empaquetado no sustituyen la prueba en el
 teléfono. El cierre requiere evidencia, revisión e incorporación a `main`.
@@ -91,7 +91,26 @@ el contrato de datos futuro. El detalle contiene únicamente su título.
 La organización se documenta en el
 [ADR 007](../../docs/adr/007-navegacion-mobile.md).
 No hay datos de ejemplo, consultas de precios, filtros, persistencia ni
-llamadas al servicio. El sistema de diseño corresponde a T028.
+llamadas al servicio. T028 aplica únicamente estilos y carga de fuentes.
 
 `node_modules/`, `.expo/`, archivos de entorno y salidas de compilación están
 ignorados. Se versionan el código, la configuración y `package-lock.json`.
+
+## Sistema de diseño de D (T028)
+
+Fuente: [especificación del equipo](../../docs/entregas/diseño.md).
+La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-mobile.md).
+
+- `theme/design-system.ts`: valores compartidos de color, fuente, tamaño, radio y espaciado.
+- `components/PantallaVacia.tsx`: presentación común de las cuatro pantallas.
+- Fondo crema `#F0EADF`, texto tinta `#2F2F2F` y turquesa `#23BBB7` en el botón y la pestaña activa.
+- Inter Regular y SemiBold incluidas como archivos estáticos por `@expo-google-fonts/inter`, cargadas con `expo-font` antes de mostrar las pantallas; funcionan en Expo Go.
+- Títulos de 24, etiquetas de navegación y botón de 14, botón con radio de 12 y espaciados en múltiplos de cuatro. Se conserva el escalado de texto del sistema.
+- Verde reservado para éxito. No se usan rojo ni naranja en pantallas vacías.
+
+Al revisar en el teléfono, comprueba los cuatro títulos con Inter, el fondo crema,
+la pestaña activa turquesa y el botón redondeado. Verifica que la barra de pestañas
+no se superponga con la navegación de Android y que el texto siga legible al
+ampliar el tamaño de fuente del sistema. Recorre búsqueda, detalle, regreso,
+canasta y alertas antes de grabar la evidencia. Estas verificaciones visuales
+requieren ejecución en el dispositivo; compilar no las sustituye.

@@ -1,15 +1,16 @@
 import { useRouter } from "expo-router";
-import { Button, StyleSheet, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, StyleSheet, Text } from "react-native";
+import { PantallaVacia } from "../../components/PantallaVacia";
+import { colors, fonts, fontSizes, radii, spacing } from "../../theme/design-system";
 
 export default function BusquedaDeArticulos() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <Text style={styles.title}>Búsqueda de artículos</Text>
-      <Button
-        title="Probar detalle de artículo"
+    <PantallaVacia title="Búsqueda de artículos">
+      <Pressable
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.button, pressed && styles.pressed]}
         onPress={() =>
           router.push({
             pathname: "/articulo/[id]",
@@ -17,19 +18,30 @@ export default function BusquedaDeArticulos() {
             params: { id: "prueba" },
           })
         }
-      />
-    </SafeAreaView>
+      >
+        <Text style={styles.buttonLabel}>Probar detalle de artículo</Text>
+      </Pressable>
+    </PantallaVacia>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.button,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    minHeight: 48,
+    maxWidth: "100%",
     justifyContent: "center",
     alignItems: "center",
-    gap: 16,
-    padding: 24,
-    backgroundColor: "#ffffff",
   },
-  title: { fontSize: 24, fontWeight: "600", textAlign: "center" },
+  pressed: { opacity: 0.8 },
+  buttonLabel: {
+    fontFamily: fonts.semibold,
+    fontSize: fontSizes.body,
+    lineHeight: 20,
+    color: colors.text,
+    textAlign: "center",
+  },
 });
