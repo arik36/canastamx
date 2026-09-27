@@ -62,15 +62,15 @@ services:
   # ── Almacenamiento de objetos · capa bronze en Parquet ────────────────────
   # 9000 es la API compatible con S3; 9001 es la consola web.
   minio:
-    image: minio/minio:latest
+    image: canastamx/minio:RELEASE.2025-09-07T16-13-09Z
     container_name: cmx-minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER:     ${S3_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${S3_ROOT_PASSWORD}
     ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "${S3_PORT:-9000}:9000"
+      - "${S3_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio-data:/data
     healthcheck:
@@ -87,20 +87,20 @@ services:
   # ── Crea el bucket bronze y se apaga ──────────────────────────────────────
   # Sin esto hay que crear el bucket a mano desde la consola, y se olvida.
   minio-init:
-    image: minio/mc:latest
+    image: canastamx/mc:RELEASE.2025-08-13T08-35-41Z
     container_name: cmx-minio-init
     depends_on:
       minio:
         condition: service_healthy
     environment:
-      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET:        ${MINIO_BUCKET}
+      MINIO_ROOT_USER:     ${S3_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${S3_ROOT_PASSWORD}
+      MINIO_BUCKET:        ${S3_BUCKET}
     entrypoint: >
       /bin/sh -c "
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      mc mb --ignore-existing local/$$MINIO_BUCKET &&
-      echo 'Bucket'  $$MINIO_BUCKET 'listo.'
+      mc alias set local http://minio:9000 $$S3_ROOT_USER $$S3_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/$$S3_BUCKET &&
+      echo 'Bucket'  $$S3_BUCKET 'listo.'
       "
     networks: [canastamx]
 
