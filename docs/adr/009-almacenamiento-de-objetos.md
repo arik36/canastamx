@@ -1,10 +1,18 @@
 # ADR 009 · Qué hacemos con el almacenamiento de objetos
 
 - **Fecha:** 19 de septiembre de 2026
-- **Estado:** aceptada · se decidio en la reunión de la semana 2
+- **Estado:** aceptada · se decidió en la reunión de la semana 2
 - **Lo descubrió:** Ari Adair (B), levantando la máquina virtual
 - **Escribe la propuesta:** Ariadne (A), porque la capa bronze es del frente de datos
 - **Decide:** el equipo
+- **Modificada por el [ADR 012](./012-de-donde-salen-las-imagenes.md)**, el 26 de
+  septiembre, en dos puntos: **de dónde salen las imágenes** y **si se fija el
+  digest**. Lo demás sigue vigente.
+
+> **Este documento no se reescribe.** La convención del proyecto es corregir
+> desde el ADR que viene, para que quede el rastro de qué se decidió con qué
+> información y por qué dejó de servir. Lo que cambió va marcado abajo con
+> **«→ ADR 012»**.
 
 > **Numeración.** 006 y 007 ya están ocupados por los ADR de móvil, y 008 es el
 > de dónde vive la base desplegada. A éste le toca 009.
@@ -125,6 +133,16 @@ Quay.io es un **snapshot congelado** —no habrá más versiones ahí—, así q
 `latest` en Quay tampoco significa nada. B confirma el digest y el manifiesto
 `arm64` antes de subirlo.
 
+> **→ ADR 012 · ni el registro ni el digest quedaron así.** quay.io retiró las
+> imágenes el 26 de septiembre, siete días después de escribirse esto, y el
+> equipo montó un espejo propio: `canastamx/minio` y `canastamx/mc` en Docker
+> Hub, con la versión `RELEASE.2025-09-07T16-13-09Z`. **El digest no se fijó**;
+> la razón está en el ADR 012.
+>
+> **Lo que sí sobrevivió intacto es el fondo de este párrafo:** que `latest` fue
+> la causa raíz y que la versión tiene que quedar fija. Eso se cumple, sólo que
+> la fijeza la da otra cosa.
+
 **Renombrar las variables a algo neutral.** `MINIO_ROOT_USER` y `MINIO_BUCKET`
 amarran el nombre del proveedor a la configuración de todo el proyecto. Con
 nombres neutrales, cambiar de producto es una línea del compose en vez de una
@@ -147,6 +165,15 @@ falta.
 
 - Si Quay.io también retira las imágenes → se pasa a **B**, no a C. Con 127 MB,
   el sistema de archivos hace lo mismo y no hay que aprender nada.
+
+> **→ ADR 012 · este disparador se activó y no se siguió.** quay.io retiró las
+> imágenes el 26 de septiembre. El equipo **no** se pasó a la opción B: montó un
+> espejo propio de las mismas imágenes, que es un camino que este documento no
+> había contemplado. La justificación está en el ADR 012.
+>
+> Queda anotado aquí a propósito. **Una regla escrita de antemano que luego no
+> se sigue se registra, no se borra** — es la misma disciplina que el ADR 004
+> aplica del lado de los datos, y perderla aquí sería incoherente.
 - Si aparece una necesidad real de la API S3 —varias máquinas escribiendo, o un
   consumidor externo— → se reabre con **C**.
 - **Antes de que arranque T020**, que es el punto de no retorno barato.
@@ -197,7 +224,9 @@ de nada si la plataforma que las ejecuta se construye sobre etiquetas móviles.
 
 ### Lo que queda abierto
 
-- Confirmar el digest exacto y el manifiesto `arm64` del tag elegido · **B**
+- ~~Confirmar el digest exacto y el manifiesto `arm64` del tag elegido · **B**~~
+  → **cerrado por el ADR 012.** El manifiesto trae `amd64` y `arm64`,
+  comprobado el 26 de septiembre; el digest se decidió no fijarlo.
 - Si el equipo elige B o C en vez de A, este documento se reescribe antes de
   T020, no después.
 
