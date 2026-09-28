@@ -355,8 +355,10 @@ par 026 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera
       B: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera nacional
-   ¿son el MISMO artículo?  [x] sí   [ ] no
-   ·  EXCEPCIÓN · «nacional» aparece en 1 de cada 142 filas: anotación esporádica, no línea
+   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ·  CORREGIDO · P3 · «nacional» es ORIGEN, y la P3 manda origen a NO. La
+      justificación anterior usaba conteo de filas, criterio que el ADR 004
+      descarta por escrito. Ver ADR 013
 
 par 027 · parecido 0.976
    A  Jabón de Pasta · Barra 400 Gr. con Envoltura
@@ -389,8 +391,10 @@ par 029 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: jitomate · 1 kg granel saladette huaje o tomate saladette huaje
       B: jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera
-   ¿son el MISMO artículo?  [x] sí   [ ] no
-   ·  EXCEPCIÓN · «primera» aparece en 283 filas contra 45,076: anotación, no grado del producto
+   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ·  CORREGIDO · P3 · «primera» es GRADO, y así se calificó el par 016 sobre
+      este mismo literal. La justificación anterior usaba conteo de filas.
+      Ver ADR 013
 
 par 030 · parecido 0.976
    A  Producto Lácteo · Caja 1 Lt. Ultrapasteurizada. con Grasa Vegetal
