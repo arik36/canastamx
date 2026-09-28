@@ -4,7 +4,7 @@
      LAS OCHO VISTAS YA ESTÁN DEFINIDAS EN EL PROTOCOLO. No las inventes: si propones otras, el prototipo del 18 de septiembre no va a corresponder al documento entregado el mismo día.
      Tu trabajo es decidir QUÉ CONTIENE CADA UNA Y EN QUÉ ORDEN, que es donde está el diseño de verdad. -->
 
-**Archivo de Figma:**  [Inserta aquí tu enlace actualizado de Figma] <!-- compartido con permiso de lectura para cualquiera con el enlace; pruébalo en incógnito --> 
+**Archivo de Figma:**  [https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=RWusj9jmZZL9svlM-1] <!-- compartido con permiso de lectura para cualquiera con el enlace; pruébalo en incógnito --> 
 https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=RWusj9jmZZL9svlM-1
 **Autora:** D · **Fecha:** 20 de septiembre de 2026
 
@@ -27,6 +27,7 @@ https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=RWusj9jmZZL9sv
 - **Qué contiene:** Versión Web dividida con carrusel fotográfico. Versión Móvil en capas con fondo de mercado. Ambos utilizan la paleta Turquesa/Crema. Botones de "Explorar artículos" (modo invitado) e "Iniciar sesión".
 - **Qué puede hacer el usuario:** Entrar a navegar directamente o iniciar sesión. NO hay selectores de rol de usuario visibles.
 - **Qué necesita del sistema:** Conexión a la base transaccional para validación de credenciales.
+- **Nota legal:** No somos PROFECO.
 
 ## 2 · Tablero analítico
 - **Qué contiene:** Filtros superiores separados (Desde/Hasta, Categoría por 5 catálogos oficiales, Entidad Federativa indicando que Colima/Nayarit no tienen datos en fuente, y Cadena). Gráficos de líneas y dispersión.
@@ -69,7 +70,7 @@ https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=RWusj9jmZZL9sv
 
 1. Puesto que vamos a mostrar fotos en los resultados de búsqueda (Vista 6), ¿cómo se manejará si en los datos abiertos de la fuente algún artículo no trae fotografía oficial asociada? ¿Tendremos algún icono por defecto o conectaremos un banco de imágenes externo?
 
-NA para productos que no tienen foto oficial
+NA para artìculos que no tienen foto oficial
 
 2. Al integrar el modo "Explorar artículos" sin inicio de sesión en la vista de Acceso, ¿en qué momento exacto le pediremos al usuario que se registre? ¿Al darle "+ Agregar" a la canasta, o al intentar "Guardar canasta"?
 
