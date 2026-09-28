@@ -8,6 +8,14 @@
 `informe-perfilado-v0.md`, que se conserva sin editar porque documenta lo que se
 sabía el 11 de septiembre y qué se recomendó con esa información.
 
+> **Este documento sigue fechado el 18 de septiembre y su cuerpo no se reescribe.**
+> Después de esa fecha pasaron tres cosas que lo afectan: se calificó la muestra
+> de H3 y **H3 no resultó contrastable** (ADR 013), el contrato subió a 1.3.0, y
+> se descubrió que dos casillas de la conclusión 2 afirmaban una corrección del
+> protocolo que **nunca se aplicó**. Lo falso se corrige en el lugar donde
+> estaba; lo nuevo se agrega fechado. El recuento completo está al final, en
+> [**Qué cambió después del 18 de septiembre**](#qué-cambió-después-del-18-de-septiembre).
+
 Las decisiones en firme viven en los ADR: [001 · fuente y
 recorte](../adr/001-fuente-de-datos.md), [002 · identidad del
 artículo](../adr/002-identidad-del-articulo.md), [005 · recorte de
@@ -239,8 +247,8 @@ sí lo es.
 
 | | El protocolo comprometió | Lo que hay | Cómo se resolvió |
 |---|---|---|---|
-| Territorio | Guanajuato + 3 vecinas (4 entidades) | 30 entidades, sin Colima ni Nayarit | **7 entidades** de centro-occidente · ADR 001 · **corregido en el protocolo** |
-| Ventana | 2024 – 2026 | enero 2025 – julio 2026 | **2025 – 2026** · ADR 001 · **corregido en el protocolo** |
+| Territorio | Guanajuato + 3 vecinas (4 entidades) | 30 entidades, sin Colima ni Nayarit | **7 entidades** de centro-occidente · ADR 001 · **decidido; pendiente de aplicar al protocolo** |
+| Ventana | 2024 – 2026 | enero 2025 – julio 2026 | **2025 – 2026** · ADR 001 · **decidido; pendiente de aplicar al protocolo** |
 | Volumen | 2 a 4 millones | 21,357,873 | **2,658,906** tras los dos recortes · **no hace falta corregir** |
 | Productos | «canasta básica según la fuente» | sin decidir | **5 catálogos** · ADR 005 |
 
@@ -256,9 +264,18 @@ conviene aplicar todas las decisiones antes de declarar que un compromiso se
 rompió: por poco corregimos un número que estaba bien.
 
 > **La ampliación de cuatro a siete entidades sí hubo que justificarla**, porque
-> es una ampliación y no un recorte. La justificación está en el ADR 001 y ya se
-> aplicó al protocolo, junto con la mención de que Colima y Nayarit quedan fuera
-> por no existir en la fuente.
+> es una ampliación y no un recorte. La justificación está en el ADR 001, junto
+> con la mención de que Colima y Nayarit quedan fuera por no existir en la
+> fuente.
+>
+> **Corrección del 28 de septiembre:** esta versión decía *«y ya se aplicó al
+> protocolo»*, y la tabla de arriba decía *«corregido en el protocolo»* en
+> territorio y en ventana. **No era cierto: la decisión se tomó, el documento
+> del protocolo nunca se editó.** El texto entregado sigue diciendo «Guanajuato
+> y tres entidades vecinas» y «2024 a 2026». Las dos correcciones están en el
+> [pliego de correcciones](../entregas/pliego-correcciones-protocolo.md), que se
+> aplica en una sola pasada antes del 9 de octubre. Era lo único que este
+> informe afirmaba en falso.
 
 ### 3 · ¿H3 al 85% de cobertura es realista?
 
@@ -309,6 +326,35 @@ investigación.
 **Ajustar o reenunciar una hipótesis en septiembre, con datos, es método.
 Hacerlo en noviembre porque no salió es otra cosa.**
 
+> ### Resultado · 28 de septiembre de 2026
+>
+> **Los dos párrafos de arriba se conservan palabra por palabra, y ésa es la
+> razón por la que importan.** Fueron escritos el 18 de septiembre, antes de
+> calificar un solo par, y dejaron apuntada la alternativa con nombre. Lo que
+> sigue es lo que pasó después, y no cambia una coma de lo anterior.
+>
+> **La muestra se calificó y la regla del ADR 004 se activó en contra del
+> resultado que convenía: 18 «sí» en la mitad por parecido, con el umbral en
+> 20.** Dos calificaciones propias —los pares 026 y 029— estaban mal hechas y se
+> corrigieron a «no»; se habían justificado por frecuencia de filas, que es
+> exactamente el criterio que el ADR 004 había rechazado por escrito. La muestra
+> no se regeneró y ningún otro par se tocó.
+>
+> **H3 no resultó contrastable sobre esta fuente**, por dos razones medidas e
+> independientes: el fenómeno que nombra casi no está (1.29 formas por artículo,
+> mediana 1), y su métrica de cobertura no puede fallar —lo dice este mismo
+> informe, en esta misma sección, desde el 18 de septiembre—.
+>
+> **H3 no se reenuncia: se reporta con sus criterios de 85% y 90% intactos**, y
+> la reconciliación entra como **hipótesis nueva, H5 · reconciliación de
+> presentaciones**, con sus umbrales pendientes de un ADR de piloto que se
+> escribe *antes* de medir. Se numera H5 y no H3′ a propósito: renumerarla
+> borraría el rastro de que se planteó, se intentó contrastar y se encontró
+> algo.
+>
+> Todo lo anterior, con la evidencia y la cadena de fechas, en el
+> [**ADR 013**](../adr/013-h3-resultado-y-h5.md).
+
 ---
 
 ## Lo que la v0 dejó pendiente · estado al 18 de septiembre
@@ -318,7 +364,7 @@ Hacerlo en noviembre porque no salió es otra cosa.**
 | 1 | Volumen del recorte de siete entidades | **cerrado** · 4,384,962 |
 | 2 | El recorte de productos | **cerrado** · ADR 005 · 2,658,906 |
 | 3 | El «~6,000» mal puesto | **cerrado** · 5,015 corpus · 1,597 alcance |
-| 4 | Los pares de H3 | **cerrado** · muestra construida y calificada → ADR 004 |
+| 4 | Los pares de H3 | **cerrado** · muestra construida y calificada → ADR 004 · *resultado el 28-sep → ADR 013* |
 | 5 | Si PROFECO publica 2024 | **por confirmar** · consulta al portal |
 
 ---
@@ -394,3 +440,39 @@ Los dos últimos son errores de este informe, y están corregidos aquí con su
 explicación. **Ésa es la diferencia entre un sistema que se vigila a sí mismo y
 uno que se cree lo que le llega**, que es justamente el objeto de investigación
 del proyecto.
+
+---
+
+## Qué cambió después del 18 de septiembre
+
+**El cuerpo de este informe se dejó como estaba.** Un informe reescrito para que
+coincida con lo que se supo después deja de ser un informe y pasa a ser un
+resumen. Lo que se corrigió son las dos afirmaciones que eran **falsas** —no
+incompletas: falsas— y lo que se agregó va fechado y marcado.
+
+| # | qué | dónde quedó en este documento | fuente |
+|---|---|---|---|
+| 1 | **H3 no resultó contrastable.** 18 «sí» de 20 en la mitad por parecido; la regla del ADR 004 se activó y se siguió | bloque «Resultado · 28 de septiembre» al cierre de la pregunta 3, sin borrar lo anterior | [ADR 013](../adr/013-h3-resultado-y-h5.md) |
+| 2 | **Entra H5 · reconciliación de presentaciones**, con umbrales pendientes de un ADR de piloto | mismo bloque | [ADR 013](../adr/013-h3-resultado-y-h5.md) §5.3 |
+| 3 | **Dos calificaciones propias estaban mal hechas** (pares 026 y 029, justificadas por frecuencia de filas, criterio que el ADR 004 rechazaba) | mismo bloque | `perfilado/h3-muestra-para-calificar.txt`, líneas `CORREGIDO` |
+| 4 | **«Corregido en el protocolo» era falso** en territorio y ventana: se decidió, no se aplicó | tabla de la conclusión 2 y el blockquote que sigue | [pliego de correcciones](../entregas/pliego-correcciones-protocolo.md) |
+| 5 | **El contrato subió a 1.3.0.** La ventana se cierra en `2025-01-01 … 2026-07-31`, la frescura gana bloqueo a 45 días y se suspende mientras el corpus esté congelado, y `reparar_interrogantes` gana `catalogo` y `estado` | no se toca el cuerpo · ver la nota de abajo | [`contracts/qqp-v1.yaml`](../../contracts/qqp-v1.yaml) |
+
+**Sobre la compuerta de frescura**, que este informe recomendó *«que se quede
+como está en vez de aflojarla para que no moleste»*: el umbral de aviso **sigue
+en 20 días** y la recomendación se respetó. Lo que cambió es otra cosa y conviene
+no confundirla con aflojarla. El ADR 010, decisión 9, **congeló el corpus** en la
+segunda quincena de julio de 2026 para que el experimento corra sobre un conjunto
+estable. Con el corpus congelado la compuerta dispara todos los días por diseño,
+y una alarma que suena siempre no informa nada: deja de leerse. Por eso 1.3.0
+añade `no_aplica_mientras: corpus_congelado` y separa **avisar** (20 días) de
+**bloquear la publicación** (45 días). La compuerta no se relajó: se le quitó el
+ruido que ella misma generaba por una decisión ajena, y se dejó escrito de qué
+depende que vuelva a aplicar.
+
+**Lo que este informe midió no cambió.** Ninguna de las cifras de las secciones 1
+a 3 se movió: los 21,357,873 del corpus, los 2,658,906 del alcance, los 1,597
+artículos, el 3.61% de mojibake y los dos valores irrecuperables siguen siendo
+los mismos números, medidos sobre las mismas poblaciones. Lo que cambió es una
+hipótesis y una afirmación sobre el protocolo, y las dos están arriba con su
+fecha.

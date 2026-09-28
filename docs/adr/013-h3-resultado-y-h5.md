@@ -1,4 +1,4 @@
-# ADR 013 · La regla del ADR 004 se activó: H3 se reenuncia
+# ADR 013 · H3 no resultó contrastable sobre esta fuente; entra H5
 
 - **Fecha:** 28 de septiembre de 2026
 - **Estado:** **propuesta** · la ratifica el equipo, y el asesor tiene que
@@ -11,6 +11,12 @@
 > **Este ADR existe porque una regla escrita de antemano se activó en contra del
 > resultado que queríamos, y se sigue.** Ésa es toda la decisión. Lo demás es
 > dejar constancia de cómo se llegó ahí, incluido un error de quien firma.
+>
+> **H3 no se modifica.** Se reporta con sus criterios intactos y con el
+> resultado de haber intentado contrastarla. La reconciliación de presentaciones
+> entra como **hipótesis nueva, H5**, con sus propios criterios fijados antes de
+> medir. La sección 11 del protocolo promete *«sin ajuste retrospectivo de los
+> criterios»*, y ésta es la única forma de cumplirlo al pie de la letra.
 
 ---
 
@@ -160,7 +166,7 @@ pie. Por eso la recomendación es aplicar la regla literal.
 
 ---
 
-## 4 · Lo que el perfilado ya había encontrado, y que sostiene la reenunciación
+## 4 · Lo que el perfilado ya había encontrado, y que sostiene lo que sigue
 
 Reenunciar H3 **no es no haber llegado al número**. Es que el problema que el
 protocolo describe **no se presenta en esta fuente como la literatura lo
@@ -214,11 +220,83 @@ línea `CORREGIDO` y la razón, en `h3-muestra-para-calificar.txt`. **La muestra
 se regenera y ningún otro par se toca.**
 
 El resultado queda en **18 «sí» en la mitad por parecido**, por debajo del
-umbral de 20, y **H3 se reenuncia**.
+umbral de 20. La regla se activa.
 
-### 5.2 · H3 reenunciada
+### 5.1 bis · La alternativa no se inventa hoy: estaba pre-registrada
 
-> **H3 · Normalización de presentaciones.** Dado el campo libre `presentacion`,
+Esto importa tanto como la regla. **La alternativa estaba escrita, con nombre,
+antes de calificar un solo par.** El informe de perfilado v1, del **18 de
+septiembre**, dice:
+
+> *«Y hay una candidata para reenunciar H3 si la muestra confirma que el eje de
+> la escritura es fácil: reconciliar **presentaciones** dentro de un mismo
+> producto. `Carne Res` tiene 57. Eso ninguna normalización lo resuelve, y sí es
+> investigación.»*
+
+Y cierra esa sección con la frase que este documento no podría decir mejor:
+
+> *«Ajustar o reenunciar una hipótesis en septiembre, con datos, es método.
+> Hacerlo en noviembre porque no salió es otra cosa.»*
+
+**Hoy es 28 de septiembre.** No se está sustituyendo una hipótesis que falló por
+otra que convenga: se está ejecutando la alternativa que el propio proyecto
+había dejado apuntada, en la fecha en que dijo que se podía hacer.
+
+Y no es lo único que ya estaba dicho. **El ADR 001, del 11 de septiembre, dejó
+H3 formalmente abierta**, con esta casilla sin marcar:
+
+> *«- [ ] Se sostiene la meta de 85% de cobertura y 90% de precisión
+>   - [x] **Queda abierta.** No se alcanzó a tratar en la reunión del 11.»*
+
+y con la sospecha ya escrita: *«H3 mide la solución a un problema que esta
+fuente no tiene»*.
+
+**Lo que este ADR hace, entonces, no es abrir una discusión: es cerrar una que
+lleva abierta desde el 11 de septiembre**, con el dato que faltaba.
+
+> **Y ejecuta un voto, no lo contradice.** El [ADR 010](./010-acta-de-decisiones-semana-03.md),
+> decisión 8, el equipo votó **4 a 1** por *«la regla tal como está»*. Aplicarla
+> es obedecer esa votación.
+
+---
+
+### 5.2 · H3 se reporta, no se ajusta
+
+**H3 queda tal como está escrita, con sus criterios de 85% y 90% intactos**, y
+se le agrega el resultado de haber intentado contrastarla:
+
+> **H3 no resultó contrastable sobre esta fuente.** Por dos razones medidas, y
+> son independientes entre sí:
+>
+> **1 · El fenómeno que nombra casi no está.** «Variación de escritura de
+> nombres de producto entre cadenas»: **1.29 formas por artículo, mediana 1**,
+> cero agrupamientos incorrectos en la revisión manual de 15 grupos, y los cinco
+> casos con más variantes difieren **sólo en mayúsculas o acentos**. PROFECO
+> captura con su propio catálogo: hay 896 nombres de producto para 247 cadenas.
+>
+> **2 · Su métrica de cobertura no puede fallar.** Está medido y escrito desde
+> el 18 de septiembre, en el informe de perfilado v1: los pares se arman uniendo
+> literales que comparten clave normalizada, así que por construcción sólo
+> difieren en lo que la normalización quita. *«Medida así, la cobertura de H3
+> sale 100% siempre, sin importar qué tan buena sea la normalización. **Una
+> hipótesis que no puede fallar no es una hipótesis.**»*
+
+**Esto es un resultado, no un ajuste.** Y es el resultado más incómodo de
+reportar y el más útil de los cuatro: dice algo sobre la fuente que la
+literatura no anticipaba.
+
+> **Por qué importa la diferencia entre «reportar» y «reenunciar».** Reenunciar
+> H3 —cambiarle el objeto y conservarle el nombre— haría desaparecer del
+> expediente que se planteó, que se intentó contrastar y qué se encontró. Visto
+> desde fuera sería indistinguible de bajar el listón. Reportarla deja el rastro
+> completo, que es exactamente lo que la sección 11 del protocolo compromete.
+
+### 5.3 · Entra H5 · reconciliación de presentaciones
+
+La hipótesis que **sí** es contrastable sobre esta fuente, y que este proyecto
+ya había identificado por escrito el 18 de septiembre:
+
+> **H5 · Reconciliación de presentaciones.** Dado el campo libre `presentacion`,
 > el sistema extrae una **unidad comparable** —cantidad y unidad de medida
 > canónica— que permite comparar precios entre presentaciones equivalentes del
 > mismo producto.
@@ -236,18 +314,27 @@ Se mide con los dos indicadores de siempre, que se reportan juntos:
 `Granel`, `Paquete Grande`, `Pieza` — presentaciones sin cantidad declarada, que
 no son un fallo de la extracción sino una propiedad de la fuente.
 
-### 5.3 · Los umbrales NO se fijan en este documento
+**Por qué ésta sí puede fallar**, que es lo que le faltaba a H3: la extracción
+de cantidad y unidad **puede equivocarse de forma observable y contable**. Puede
+no encontrar la cantidad donde la hay, puede leer `620 Gr` como 620 unidades, y
+puede unir dos presentaciones que no son equivalentes. Se mide sobre los 1,597
+artículos reales, no sobre pares elegidos por parecerse.
+
+> **Se numera H5 y no H3′ a propósito.** H3 sigue existiendo en el expediente,
+> con su resultado. Renumerarla borraría el rastro.
+
+### 5.4 · Los umbrales de H5 NO se fijan en este documento
 
 **Y ésa es una decisión, no un olvido.**
 
-Los 85% y 90% del protocolo se heredaron sin una base escrita. Poner un número
-sin base fue parte de cómo llegamos hasta aquí, y repetirlo sería no haber
-aprendido nada.
+Los 85% y 90% de H3 se heredaron del protocolo sin una base escrita. Poner un
+número sin base fue parte de cómo llegamos hasta aquí, y repetirlo sería no
+haber aprendido nada.
 
-**Los umbrales se fijan en un ADR aparte, antes de medir, sobre un piloto de 30
-artículos elegidos al azar.** El piloto existe para una sola cosa: saber si el
-umbral que se propone es exigente. Un umbral que se cumple solo no prueba nada,
-y uno imposible tampoco.
+**Los umbrales de H5 se fijan en un ADR aparte, antes de medir, sobre un piloto
+de 30 artículos elegidos al azar.** El piloto existe para una sola cosa: saber
+si el umbral que se propone es exigente. Un umbral que se cumple solo no prueba
+nada —es el defecto que acaba de costarnos H3— y uno imposible tampoco.
 
 | Si el piloto muestra que… | El umbral… |
 |---|---|
@@ -268,11 +355,11 @@ completa.** No después. La secuencia importa tanto como el número.
 |---|---|
 | `docs/datos/perfilado/h3-muestra-para-calificar.txt` | Dos calificaciones corregidas, con su línea `CORREGIDO` |
 | `docs/datos/informe-perfilado-v1.md` | Un apartado con el hallazgo: el problema de escritura casi no existe aquí; la variación está en las presentaciones |
-| **Protocolo · §5** | La fila de H3 en la tabla de hipótesis |
+| **Protocolo · §5** | La fila de H3 gana su resultado; entra una fila H5 |
 | **Protocolo · §7** | El objetivo específico de reconciliación, que repite el mismo criterio de 85/90 |
 | **Protocolo · §3.3** | La descripción del problema, hoy ilustrada con un fenómeno que esta fuente casi no presenta |
-| **T053** · semana 8 | «Reconciliación de productos versión uno» cambia de objeto |
-| **T058** · semana 9 | «Medir cobertura y precisión sobre muestra de 200 pares» cambia de definición |
+| **T053** · semana 8 | «Reconciliación de productos versión uno» pasa a ser de presentaciones |
+| **T058** · semana 9 | Mide **H5**, no H3, con los umbrales del ADR del piloto |
 
 > **Ya que se abre el protocolo**, hay otra cosa desfasada que no tiene que ver
 > con H3: el **§8** dice *«recorte geográfico a Guanajuato y tres entidades
@@ -330,8 +417,9 @@ mide reconciliación.**
    resuelto con un criterio distinto del declarado** —y además con uno que el
    propio ADR 004 había descartado por escrito—.
 3. **Corregidas, el resultado queda en 18 y la regla se activa.**
-4. **Se sigue.** H3 se reenuncia sobre lo que el perfilado ya había mostrado que
-   es el problema real de esta fuente.
+4. **Se sigue.** H3 se reporta como no contrastable, con sus criterios
+   intactos, y entra **H5** sobre lo que el perfilado ya había mostrado que es
+   el problema real de esta fuente.
 
 El punto 2 es el que hay que decir en voz alta y no esconder. Un proyecto que
 encuentra su propio error de método y lo corrige contra su interés es más
