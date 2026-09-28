@@ -1,8 +1,34 @@
 contrato: qqp
-version: 1.2.1
+version: 1.3.0
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-09-17
+fecha: 2026-09-28
 autor: alm
+
+# ── Qué cambió en 1.3.0 ─────────────────────────────────────────────────────
+#
+# Transcribe al contrato dos decisiones del ADR 010 que llevaban cinco días sin
+# llegar aquí, y cierra tres cabos sueltos. NINGÚN cambio toca `columnas`: las
+# 15 y su orden son idénticos, así que nada de lo ya construido se ve afectado.
+#
+#   · `alcance.ventana` se CIERRA en 2026-07-31. El ADR 010, decisión 9, congeló
+#     el corpus a propósito; `hasta: null` describía una ingesta incremental que
+#     el equipo decidió no hacer este semestre.
+#   · `frescura` gana el BLOQUEO a los 45 días, y su aviso se reescribe: con el
+#     corpus congelado, la alarma permanente era ruido por diseño.
+#   · `reparar_interrogantes.aplica_a` gana `catalogo` y `estado`, que su propio
+#     comentario ya prometía y la lista no traía. Son las DOS columnas con las
+#     que se filtra el alcance: un `Michoac?n` o un `B?sicos` se saldría del
+#     alcance SIN incidente, que es la pérdida silenciosa que este proyecto
+#     existe para detectar.
+#   · El diccionario del mojibake se mueve a `contracts/`, porque en
+#     `docs/datos/perfilado/` no puede entrar al repositorio: `.gitignore`
+#     línea 20 tiene `*.csv`.
+#   · Se cierran los dos «CONFIRMAR»: el ADR 005 se ratificó y el ADR 001
+#     también.
+#   · Los comentarios que describían H3 se actualizan al ADR 013.
+#
+# H3 dejó de ser la hipótesis de la reconciliación. Lo mide H5 y lo explica el
+# ADR 013; este contrato sólo deja de afirmar lo que ya no es cierto.
 
 # 1.2.1 · los tres campos POR_MEDIR quedan cerrados con cifras propias del
 # alcance (medir-para-contrato.py, 17-sep-2026). Ninguna se copió de otra
@@ -12,7 +38,9 @@ autor: alm
 
 # ── Qué cambió en 1.2.0 ─────────────────────────────────────────────────────
 #
-# Cuatro decisiones y siete correcciones, todas en docs/datos/validacion-contrato-v1.md.
+# Cuatro decisiones y siete correcciones. 1.2.1 las remitía a
+# docs/datos/validacion-contrato-v1.md, que nunca se escribió; quedan
+# resumidas abajo y en los ADR 001, 002 y 005.
 #
 #   · El `?` se REPARA antes de validar (perfilado.md §3 ya lo tenía decidido y
 #     nunca se transcribió aquí). Cierra `pendientes.interrogantes`.
@@ -33,7 +61,10 @@ autor: alm
 alcance:
   entidades: [Aguascalientes, Guanajuato, Jalisco, Michoacán,
               Querétaro, San Luis Potosí, Zacatecas]         # ADR 001
-  ventana: {desde: "2025-01-01", hasta: null}                # ADR 001 — abierta, la fuente sigue publicando
+  ventana: {desde: "2025-01-01", hasta: "2026-07-31"}        # ADR 001 + ADR 010 · 9 — CONGELADA
+  # 1.3.0: la ventana se cierra. La decisión 9 del ADR 010 congeló el corpus en
+  # 2026-07-Q2 para que el experimento corra sobre un conjunto estable. Volver a
+  # abrirla es una decisión de equipo, no un cambio de configuración.
   catalogos_normalizados: [BASICOS, PACIC, "FRUTAS Y LEGUMBRES",
                            MERCADOS, "PESCADOS Y MARISCOS"]  # ADR 005
   # Lista única y canónica, ya normalizada. `columnas.catalogo.valores_aceptados`
@@ -71,8 +102,10 @@ medicion:
 
 frescura:
   mide: dias_desde_el_fecha_registro_mas_reciente_ingerido
-  maximo_dias_sin_dato_nuevo: 20
+  avisa_dias: 20                  # enciende el indicador en la consola
+  bloquea_dias: 45                # la capa de consumo deja de publicarse vigente
   aplica_desde: primera_ingesta_incremental
+  no_aplica_mientras: corpus_congelado     # ADR 010 · 9
   razon: >
     QQP se publica por quincena (~15 días); más de 20 días sin dato nuevo es
     incidente de fuente, no dato viejo.
@@ -85,10 +118,21 @@ frescura:
     el primero-. Segunda: no aplica a la carga histórica, que son 19 meses de
     una sola vez.
 
-    AVISO: con el corpus descargado hasta 2026-07-31, esta regla marca incidente
-    desde el día uno (48 días al 17/sep). Es correcto que lo haga: o PROFECO
-    publicó agosto y septiembre y no los hemos descargado, o dejó de publicar.
-    Las dos son incidentes reales y las dos se ven en el tablero sin simular nada.
+    Los dos umbrales los fijó el ADR 010. Veinte es un margen de cinco días
+    sobre el ciclo normal de quince; cuarenta y cinco son tres ciclos perdidos, y
+    a esa altura el dato ya no describe el mercado.
+
+    POR QUÉ NO APLICA HOY, y por qué 1.2.1 se equivocaba aquí. La versión
+    anterior decía que con el corpus hasta 2026-07-31 la regla «marca incidente
+    desde el día uno» y que eso era correcto, porque o PROFECO dejó de publicar o
+    no habíamos descargado. Ya no es ninguna de las dos: el ADR 010 congeló el
+    corpus A PROPÓSITO. Un corpus congelado no está rancio, está congelado.
+
+    Dejar la regla encendida contra un congelamiento deliberado enciende una
+    alarma permanente por diseño, y una alarma que siempre está prendida enseña
+    al equipo a ignorarla -que es justo el fallo que este proyecto estudia-. Por
+    eso `no_aplica_mientras: corpus_congelado`. La regla se activa sola el día
+    que se descongele, sin tocar nada.
 
 # ── Antes de validar: normalizar y reparar ─────────────────────────────────
 #
@@ -119,12 +163,25 @@ normalizacion:
       normaliza a la letra que se comió, así que sin reparación cada valor roto
       es un artículo aparte.
     aplica_a: [producto, presentacion, marca, categoria, cadena_comercial,
-               giro, nombre_comercial, direccion, municipio]
-      # Las 8 columnas de texto afectadas más `catalogo`, `estado` y
-      # `cadena_comercial`, que el perfilado midió limpias -se incluyen por si
-      # la fuente vuelve a degradarse, como ya hizo en junio de 2026-.
+               giro, nombre_comercial, direccion, municipio,
+               catalogo, estado]
+      # Las 8 columnas de texto afectadas más `cadena_comercial`, `catalogo` y
+      # `estado`, que el perfilado midió limpias -se incluyen por si la fuente
+      # vuelve a degradarse, como ya hizo en junio de 2026-.
+      #
+      # 1.3.0: `catalogo` y `estado` FALTABAN, aunque este mismo comentario ya
+      # las prometía desde 1.2.0. No es un detalle: son las dos columnas con las
+      # que `alcance` filtra. Un `Michoac?n` o un `B?sicos` sin reparar no entra
+      # al alcance y NO genera incidente -se pierde en silencio, que es
+      # exactamente el fallo que este proyecto existe para detectar-.
     metodo: gemelo_unico_de_igual_longitud
-    diccionario: docs/datos/perfilado/mojibake-diccionario.csv   # 1,650 entradas
+    diccionario: contracts/mojibake-diccionario.csv              # 1,650 entradas
+      # 1.3.0: se mueve desde docs/datos/perfilado/. Ahí NO podía entrar al
+      # repositorio -`.gitignore` línea 20 ignora `*.csv`- y sin el archivo el
+      # contrato no es ejecutable por nadie más. Requiere una excepción:
+      #     !contracts/mojibake-diccionario.csv
+      # No es dato crudo: es una tabla de decisiones del equipo, y va versionada
+      # como el resto del contrato.
     ambiguo:
       regla: por_frecuencia
       umbral: 10          # un gemelo que domina 10:1 en los datos limpios gana
@@ -228,7 +285,7 @@ archivo:
 
 # ── Las dos claves (ADR 002, punto 4). No son intercambiables. ──────────────
 
-clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app y mide H3
+clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app y el tablero
   columnas: [producto, presentacion]
   normalizacion: canonica      # la de arriba, después de reparar el `?`
   poblacion: alcance_del_contrato
@@ -257,7 +314,7 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 
     Este campo se mide sobre el alcance, con la normalización canónica y con el
     `?` ya reparado, y ése es el tamaño del catálogo que el producto expone y
-    sobre el que H3 se califica.
+    sobre el que se mide H5 -la reconciliación de presentaciones, ADR 013-.
 
     MEDIDO: 1,597 artículos sobre 303 productos, una media de 5.3
     presentaciones por producto. Es mucho más chico de lo que cualquiera de las
@@ -268,8 +325,8 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 
     Que sean 1,597 y no 5,015 cambia dos cosas prácticas. Para C1 y C2, el
     catálogo cabe entero en memoria y la pantalla de búsqueda no necesita
-    paginación agresiva. Para H3, la muestra de 200 pares cubre una fracción
-    mucho mayor del universo de lo que se había supuesto.
+    paginación agresiva. Para H5, los 1,597 son la población entera sobre la que
+    se mide la cobertura: no una muestra, el catálogo completo.
 
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
@@ -427,7 +484,7 @@ columnas:
       Y MARISCOS, que es el que lo va a tocar primero.
 
 columnas_extra:
-  politica: no_ingerir_con_aviso    # ADR 001 + enmienda del 16/sep — CONFIRMAR QUÉ SE RATIFICÓ
+  politica: no_ingerir_con_aviso    # ADR 001 + enmienda ratificada el 16/sep
   conocidas: [folio, cv_producto, cv_marca]   # 94.12% ausentes, sin diccionario oficial
   aviso:
     severidad: advertencia          # el lote entra completo; nadie se bloquea
@@ -445,9 +502,9 @@ columnas_extra:
     mostrar, y habría que simularlo. perfilado.md §2 regla 6 ya decía «avisar de
     las extra sin romperse ni descartarlas en silencio».
 
-    CONFIRMAR: la enmienda se ratificaba en la reunión del 16 de septiembre. Si
-    no pasó, este campo vuelve a `no_ingerir` y hay que escribir por qué el
-    contrato contradice a perfilado.md.
+    1.3.0: la enmienda se ratificó en la reunión del 16 de septiembre. El campo
+    queda en `no_ingerir_con_aviso` y el aviso es lo que le da contenido real al
+    indicador de deriva de esquema de la consola.
 
 # ── Presentación · no es ingesta, pero se escribe aquí para que no se pierda ─
 
@@ -527,7 +584,9 @@ pendientes:
       distribución de SU artículo -producto + presentacion-, que es la regla 3 de
       perfilado.md §2. Es el siguiente paso del contrato, no de esta versión.
   - id: ratificacion_adr_005
+    estado: cerrado
     que: >
-      Los cinco catálogos son propuesta del ADR 005, a ratificar el 16/sep. Si
-      la lista cambia, se vuelven a medir `medicion`, `clave_de_fila`,
-      `maximo_por_catalogo` y el porcentaje de S/M. Confirmar y fechar.
+      RATIFICADO el 16 de septiembre de 2026. Los cinco catálogos quedan firmes y
+      todo lo medido sobre ellos es válido. Si algún día la lista cambia, se
+      vuelven a medir `medicion`, `clave_de_fila`, `maximo_por_catalogo` y el
+      porcentaje de S/M -esa regla sigue en pie-.
