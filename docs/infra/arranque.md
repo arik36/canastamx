@@ -421,7 +421,10 @@ docker compose up -d
 
 > **NOTA**
 > ---
-> Sustituya <minio> o <mc> por los nombres correspondientes a la imagén que desee cargar, por ejemplo, `minio-RELEASE.2025-09-07T16-13-09Z-amd64.tar` o `mc-RELEASE.2025-08-13T08-35-41Z-amd64`.
+> Sustituya <minio> o <mc> por los nombres correspondientes a la imagén que desee cargar, por ejemplo, `minio-RELEASE.2025-09-07T16-13-09Z-amd64.tar` o `mc-RELEASE.2025-08-13T08-35-41Z-amd64`.  
+> Las imagenes para la arquitectura ARM64 son las siguientes:
+> MINIO: `minio-RELEASE.2025-09-07T16-13-09Z-arm64.tar`  
+> MC: `mc-RELEASE.2025-08-13T08-35-41Z-arm64`
 
 `docker load` mete la imagen en tu Docker sin descargar nada, y a partir de ahí el compose la encuentra sola.
 
