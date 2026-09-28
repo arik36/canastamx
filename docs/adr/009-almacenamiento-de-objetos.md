@@ -92,7 +92,7 @@ de comprometerse, no al desplegar.
 ## Decisión
 
 - [ ] **A · Quedarse en MinIO, apuntando a Quay.io** ← *recomendada*
-- [ ] **B · Quitar el almacenamiento de objetos y usar el sistema de archivos*
+- [ ] **B · Quitar el almacenamiento de objetos y usar el sistema de archivos**
 - [ ] **C · Reemplazar por otro S3 compatible**
 
 ### Qué cuesta cada una
