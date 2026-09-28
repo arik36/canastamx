@@ -1,4 +1,4 @@
-// Fuente: docs/entregas/diseño.md (sistema de diseño de D).
+// Fuente: docs/entregas/diseno.md (sistema de diseño de D).
 export const colors = {
   primary: "#23BBB7",
   background: "#F0EADF",

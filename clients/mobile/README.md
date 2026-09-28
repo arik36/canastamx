@@ -98,7 +98,7 @@ ignorados. Se versionan el código, la configuración y `package-lock.json`.
 
 ## Sistema de diseño de D (T028)
 
-Fuente: [especificación del equipo](../../docs/entregas/diseño.md).
+Fuente: [especificación del equipo](../../docs/entregas/diseno.md).
 La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-mobile.md).
 
 - `theme/design-system.ts`: valores compartidos de color, fuente, tamaño, radio y espaciado.
