@@ -105,3 +105,9 @@ desktop.ini
 !docs/experimento/bitacora.csv
 docker-compose.override.yml
 *:Zone.Identifier
+
+# Registros de corrida de la ingesta. Describen el estado de UNA máquina
+# -ruta local, reloj local- y se regeneran en cada corrida. Su evidencia
+# consolidada vive versionada en docs/datos/ingesta-capa-cruda.md.
+services/data-platform/ingestion/corridas/*
+!services/data-platform/ingestion/corridas/.gitkeep
