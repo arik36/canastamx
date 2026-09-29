@@ -1,385 +1,454 @@
 # Levantar CanastaMX en tu máquina
 
-> **Guía verificada.** El 27 de septiembre alguien que no la escribió intentó
-> seguirla en una máquina limpia. Todo lo que aparece aquí está probado; lo que
-> se atoró está en la sección de [Problemas](#problemas), con el texto literal
-> del error. El registro de esa prueba está en
-> [`verificacion-arranque-2026-09-27.md`](../equipo/verificacion-arranque-2026-09-27.md).
+> **Para quién es.** Para quien nunca ha usado Docker. Cada paso dice qué
+> escribir, qué tienes que ver y qué hacer si ves otra cosa. Si algo no coincide,
+> no improvises: busca el texto del error en [Problemas](#problemas).
+>
+> **La regla de esta guía:** la única cosa tuya que cambias es tu `.env`. Nunca
+> `docker-compose.yml` ni `.env.example`.
 
-> **RECOMENDACIÓN**
-> ---
-> Antes de iniciar con la guía, consulta el siguiente README y leélo con atención:
-> [`instalar/README.md`](../equipo/instalar/README.md)
+**En corto**, para quien ya lo hizo una vez:
 
-> **IMPORTANTE**  
-> ---
-> Para la ejecución de está guía es necesario satisfacer los siguientes requerimientos:
-> - Conexión estable a internet (Si eres usuario de Windows: WSL debe tener acceso a internet)
-> - Acceso a un entorno de Linux (WSL o una distribución de Linux)
-> - Docker, y sus dependencias, instalado y configurado (Consulte documentación de Docker)
-> - Contar con una instalación funcional en el entorno de Linux de los siguientes programas:
->   - git
->   - curl
-
-<br><br>
-
-# Indíce
-
-1. [Requisitos](#requisitos)
-2. [Configuración del entorno](#configuración-del-entorno)
-3. [Ejecución y paro](#ejecución-y-paro)
-4. [Comprobación](#comprobación)
-5. [Problemas](#problemas)
-6. [Si Docker Hub falla](#si-docker-hub-falla)
+```bash
+docker compose version                  # Docker responde
+git switch main && git pull             # repositorio al día
+cp .env.example .env                    # sólo la primera vez; luego llénalo
+docker compose config --quiet && echo "✓ compose válido"
+docker compose up -d                    # levanta todo
+docker compose ps -a                    # 5 «Up» y minio-init en «Exited (0)»
+```
 
 ---
 
-# Requisitos
+## Qué vas a levantar
 
-# PREPARACIÓN DEL ENTORNO
+Seis contenedores que viven en una red privada llamada `canastamx`. Dentro de
+esa red se llaman entre sí por su **nombre de servicio**; desde tu navegador
+entras por **localhost** y el puerto que diga tu `.env`.
 
-## Primeros pasos
+| Contenedor | Qué es | Qué hace | Quién lo usa | Puerto en tu máquina |
+|---|---|---|---|---|
+| `cmx-postgres-oltp` | PostgreSQL 16 | La base **transaccional**: usuarios, canastas y alertas | C1, desde el servicio de dominio | `OLTP_PORT` · 5432 |
+| `cmx-postgres-analytics` | PostgreSQL 16 | El **almacén analítico**: capas intermedia y de consumo, cuarentena y esquema estrella | A, y la API analítica que consumen C2 y D | `ANALYTICS_PORT` · 5433 |
+| `cmx-minio` | Almacenamiento de objetos compatible con S3 | Guarda la **capa cruda** (bronze): los archivos Parquet tal como llegan | A, desde la ingesta | `S3_PORT` · 9000 (API) y `S3_CONSOLE_PORT` · 9001 (consola web) |
+| `cmx-minio-init` | El cliente `mc` de MinIO | Espera a que MinIO esté sano, **crea el bucket `canastamx-bronze` y se apaga** | Nadie lo usa directo | ninguno |
+| `cmx-adminer` | Cliente web de bases de datos | Te deja asomarte a las dos bases sin instalar nada | Todos | `ADMINER_PORT` · 8080 |
+| `cmx-traefik` | Puerta de enlace | Da nombres a los servicios (`minio.canastamx.localhost`, `db.canastamx.localhost`) y, más adelante, a la aplicación | Todos | `TRAEFIK_WEB_PORT` · 80 y `TRAEFIK_DASHBOARD_PORT` · 8090 |
 
-> **RECORDATORIO**
-> ---
-> Si ere usuario de Windows, la ejecución de todo comando debe hacerse **dentro del entorno de Linux**, NO en el CMD (Línea de comando de Windows)
+Los datos viven en tres **volúmenes** (`oltp-data`, `analytics-data` y
+`minio-data`). Un volumen sobrevive aunque apagues o borres los contenedores:
+sólo `docker compose down -v` lo borra.
 
-El primer paso es verificar que se cuente con los requerimientos necesarios.  
-Ejecute los siguientes comandos uno por uno en la terminal:
+> **Cada quien tiene su propia copia de todo.** Lo que levantas vive en **tu**
+> máquina y está vacío. Los datos que A ingiere están en el MinIO de A, no en el
+> tuyo, y nada de lo que hagas aquí le llega a otro integrante.
+
+---
+
+## Paso 1 · Elige tu camino
+
+Todos los comandos de esta guía son de **bash**, y funcionan igual en las tres
+terminales de abajo. **No uses CMD ni PowerShell** para seguir esta guía: ahí no
+existen `cp`, `grep` ni `awk`.
+
+| Clave | Sistema | Terminal | Tu repositorio (según `docs/equipo/entorno/`) |
+|---|---|---|---|
+| A | Windows + WSL | Ubuntu, en Windows Terminal | `~/projects/canastamx` |
+| B | Fedora | la terminal de Linux | `~/Projects/canastamx` |
+| C1 | Windows 11 | **Git Bash**, en VS Code | `/d/projects/canastamx` |
+| C2 | Windows 11 | **Git Bash**, en VS Code | `"/c/Users/renat/Documents/Universidad/9no Semestre/Liss/Proyecto integrador/Proyecto/canastamx"` |
+| D | Windows 11 | **Git Bash** | `/c/Users/PC/ProjectsGIT/canastamx` |
+
+> **¿Tengo que volver a clonar el repositorio dentro de Linux? No.** Sigue usando
+> el clon que ya tienes, con la terminal que ya usas:
+>
+> - Docker Desktop funciona desde Git Bash. Ubuntu sólo hace falta si ya
+>   trabajas ahí, como A.
+> - Tus herramientas —Java y Maven, Node— están instaladas en Windows. Un clon
+>   dentro de Linux no las ve.
+> - El repositorio fuerza saltos de línea de Linux en todos los archivos de
+>   texto (`.gitattributes`), así que los guiones `.sh` corren bien aunque lo
+>   hayas clonado en Windows.
+> - **Dos clones es peor que uno.** Los dos se llaman `canastamx`, así que Docker
+>   los trata como el mismo proyecto y comparten las bases. Pero cada clon tiene
+>   su propio `.env`: con dos contraseñas distintas, una de las dos deja de
+>   entrar.
+>
+> Si ya trabajas en WSL y tu repositorio está en `/mnt/c`, puedes correr Docker
+> desde ahí. Haz tus commits desde Windows, porque Git desde WSL sobre `/mnt/c`
+> va muy lento.
+
+**Cómo abrir la terminal en la carpeta del repositorio**
+
+- **Git Bash en VS Code:** abre la carpeta del proyecto, luego *Terminal → New
+  Terminal*. En la flecha ⌄ junto al `+`, elige **Git Bash**.
+- **WSL:** abre *Ubuntu* desde el menú Inicio y escribe `cd ~/projects/canastamx`.
+
+Para saber si estás en el lugar correcto, escribe `ls`. Tienes que ver
+`docker-compose.yml` y `README.md` en la lista. Si no aparecen, no sigas: estás
+en otra carpeta.
+
+---
+
+## Paso 2 · Instala Docker
+
+### Windows (A, C1, C2 y D)
+
+1. Descarga **Docker Desktop for Windows** desde docker.com. Casi todas las
+   laptops usan la versión **AMD64**; la ARM64 es sólo para equipos con
+   procesador Snapdragon.
+2. Instálalo con la opción **«Use WSL 2»** marcada, que viene por omisión.
+   Reinicia si te lo pide.
+3. Ábrelo. Acepta el acuerdo de servicio: es gratis para uso educativo.
+4. **No inicies sesión.** En la pantalla de bienvenida elige saltar el paso. No
+   hace falta cuenta para descargar imágenes públicas.
+5. Espera a que abajo a la izquierda diga **«Engine running»**.
+
+Si al abrirlo te dice que hay que actualizar WSL, abre **PowerShell como
+administrador**, escribe `wsl --update` y reinicia.
+
+**Sólo si usas WSL (A):** en Docker Desktop entra a *Settings → Resources → WSL
+integration*, activa tu **Ubuntu** y dale **Apply & restart**. Después **cierra y
+vuelve a abrir** la terminal de Ubuntu. Sin esto, `docker` va a decir *command
+not found* dentro de Ubuntu aunque Docker Desktop esté corriendo. Es el tropiezo
+clásico.
+
+**Sólo si usas Git Bash (C1, C2 y D):** cierra **por completo** VS Code y Git
+Bash, y vuelve a abrirlos. La terminal que ya estaba abierta no sabe que Docker
+existe.
+
+### Linux (B)
+
+Docker Engine con el complemento `compose`. Agrega tu usuario al grupo `docker`
+(`sudo usermod -aG docker $USER`) y vuelve a iniciar sesión, para no usar `sudo`
+en cada comando.
+
+---
+
+## Paso 3 · Comprueba que Docker responde
 
 ```bash
 docker --version
 docker compose version
-git --version
+docker info --format '{{.ServerVersion}} · {{.OSType}}/{{.Architecture}}'
 ```
 
-Cada comando debe resultar en una impresión de la versión del programa respectivo y no en un error del siguiente tipo: 
+Cada línea tiene que responder con una versión. La tercera tiene que decir
+**`linux`** en medio, por ejemplo `28.4.0 · linux/x86_64`. El número de versión
+no importa.
 
-`bash: <programa>: command not found...`
+| Si ves | Qué pasa | Qué haces |
+|---|---|---|
+| `command not found` en Git Bash | La terminal se abrió antes de instalar Docker | Cierra VS Code por completo y vuelve a abrirlo |
+| `command not found` en Ubuntu | Falta la integración con WSL | *Settings → Resources → WSL integration* (Paso 2) |
+| `Cannot connect to the Docker daemon` o `error during connect` | Docker Desktop está cerrado o todavía está arrancando | Ábrelo y espera a que diga *Engine running* |
+| La tercera dice `windows/…` | Docker está en modo de contenedores de Windows | Clic derecho en la ballena → *Switch to Linux containers* |
 
-> **IMPORTANTE**
-> ---
-> Si el shell le índica que no encontró el comando, pero puede instalarlo, rechace la operación y consulte nuevamente el [`README.md`](../equipo/instalar/README.md). 
+---
 
-## Clonar el repositorio
+## Paso 4 · Pon tu repositorio al día
 
-_Clonar un repositorio significa hacer una copia local de todo el conjunto de archivos que componen el proyecto._
-
-> **IMPORTANTE**
-> ---
-> Para realizar el siguiente paso es necesario contar con una conexión a internet
-
-Para clonar el repositorio ejecute los siguientes comandos:
-
-```bash
-docker --version
-docker compose version
-docker info --format '{{.ServerVersion}}'
-```
-
-Como resultado, la terminal debe imprimir un estado de descarga, y después cambiar el directorio de trabajo a `canastamx`, que se le conocerá como **raíz del proyecto**.
-
-## Actualizar el proyecto
-
-> **IMPORTANTE**
-> ---
-> - Es necesario contar con internet para este paso
-
-> **RECOMENDACIÓN**
-> ---
-> - Consulte regularmente si existen actualizaciones al proyecto
-
-Si existe una versión actualizada del proyecto, y usted tiene un proyecto desactualizado, ejecute el siguiente comando para implementar los cambios en su copia del proyecto:
+Desde la carpeta del repositorio:
 
 ```bash
+git switch main
 git pull
 ```
 
-Como resultado, su copia ahora estará a la par que el proyecto de GitHub.
+Esto importa aquí porque trae la versión vigente de `docker-compose.yml` y de
+`.env.example`.
 
-## Configuración del entorno
-
-_Un archivo `.env` permite definir variables globales dentro del alcance del proyecto, esto nos ayudará a definir valores fijos que podemos consultar dentro del proyecto sin tener que repetirlos manualmente en cada configuración._
-
-> **IMPORTANTE**
-> ---
-> Si es la primera vez que ejecuta estos pasos, y existe un archivo `.env`, elíminelo o muevalo de directorio. **NO eliminar el archivo `.env.example`**  
->
-> **Si ya tenías el proyecto de antes**, tu `.env` viejo tiene variables
-> `MINIO_*` que ya no existen. Cambiaron de nombre a `S3_*` por el
-> [ADR 009](../adr/009-almacenamiento-de-objetos.md). Lo más rápido es borrar
-> tu `.env`, volver a copiar el ejemplo y rellenarlo.
-
-El siguiente paso es generar el archivo `.env`, necesario para levantar los servicios requeridos por el proyecto a través de Docker.
-
-Para crear el archivo `.env` debemos usar la plantilla proporcionada junto al proyecto, está plantilla se encuentra en el archivo `.env.example` en la **raíz del proyecto**. 
-
-Ejecute el siguiente comando en la terminal:
+Opcional, pero útil. Cambia `C1` por tu clave:
 
 ```bash
-cd canastamx
+bash infra/scripts/verificar-base.sh C1
+```
+
+Tiene que terminar en verde con **«PUEDES CREAR TU RAMA.»** Este guión revisa tu
+clon y las herramientas de tu frente. **No revisa Docker**, salvo para A y B.
+
+---
+
+## Paso 5 · Crea y llena tu `.env`
+
+El `.env` le dice a Docker con qué contraseñas crear **tus** bases y tu MinIO, y
+en qué puertos de tu máquina publicarlos. Es sólo tuyo: **nunca se sube al
+repositorio**, y el gancho de `pre-commit` y la integración continua lo impiden.
+
+```bash
 cp .env.example .env
 ```
 
-Ahora **abre el `.env` y llena los valores vacíos.** Este paso es el que la gente
-se salta y es el que rompe todo.
+Ábrelo con **VS Code** (`code .env`) o con **nano** (`nano .env`). En nano se
+guarda con `Ctrl+O` y `Enter`, y se sale con `Ctrl+X`.
 
-> **Con qué editor.** En WSL o Linux, `nano .env` (se guarda con `Ctrl+O`,
-> `Enter`, y se sale con `Ctrl+X`). En Windows, **no uses el Bloc de notas**: el
-> archivo usa saltos de línea de Unix y te lo va a mostrar todo en un solo
-> renglón. Usa VS Code o Notepad++.
+> **Si usas el Bloc de notas**, el riesgo no es cómo se ve el archivo: es que lo
+> guarde como `.env.txt`. Mejor VS Code.
 
-Son cuatro valores. Los demás se quedan como están.
+### Los cuatro valores que tú inventas
 
 | Variable | Qué poner | Por qué |
 |---|---|---|
-| `OLTP_PASSWORD` | 8 a 16 caracteres | Contraseña de la base transaccional |
-| `ANALYTICS_PASSWORD` | 8 a 16 caracteres | Contraseña de la base analítica |
-| `S3_ACCESS_KEY` | mínimo 3 caracteres, p. ej. `canastamx` | Es el *usuario* de MinIO |
-| `S3_SECRET_KEY` | **mínimo 8 caracteres** | Con menos, MinIO no arranca y el error no lo dice claro |
+| `OLTP_PASSWORD` | mínimo 8 caracteres | Contraseña de tu base transaccional |
+| `ANALYTICS_PASSWORD` | mínimo 8 caracteres, **distinta** de la anterior | Contraseña de tu base analítica |
+| `S3_ACCESS_KEY` | mínimo 3 caracteres, por ejemplo `canastamx` | Es el **usuario** de MinIO |
+| `S3_SECRET_KEY` | **mínimo 8 caracteres** | Es la contraseña de MinIO. Con menos, MinIO no arranca |
 
-<br><br>
+**Usa sólo letras, números, `-` y `_`.** Nada de espacios, comillas, `#`, `$` ni
+`=`. Docker lee el `$` como el inicio de una variable, así que una contraseña con
+`$` llega cortada sin avisar.
 
-# Ejecución y Desactivación
+**Decide tus contraseñas ahora.** Postgres guarda la contraseña de la primera vez
+que levantas. Si después la cambias en el `.env`, la base no se entera y te va a
+decir *password authentication failed*. Cómo arreglarlo está en
+[Problemas](#problemas).
 
-> **IMPORTANTE**
-> ---
-> - Es absolutamente necesario que haya realizado la configuración del `.env` correctamente. En algunos casos, Docker no avisará explicitamente que existe un error, pero los servicios podrían fallar internamente.  
-> 
-> Si se encuentra con algún problema, consulte la sección de [Problemas](#problemas).
+**No compartas tu `.env`**: ni por WhatsApp, ni en capturas, ni en un *issue*.
+Esas contraseñas sólo abren servicios de tu máquina, pero tu máquina publica esos
+puertos en la red donde estés conectado. En el Wi-Fi de la escuela, una
+contraseña débil es una base abierta. Si Windows te pregunta si Docker puede usar
+la red, permite **sólo redes privadas**.
 
-## Primera ejecución
+### Comprueba tus contraseñas
 
-> IMPORTANTE
-> ---
-> - El directorio de trabajo de la terminal debe estar posicionado en la **carpeta raíz** del proyecto.  
-> - Durante la primera ejecución es necesario contar con una conexión estable a internet  
-> - Asegurese de tener por lo menos **5 Gb** de espacio en disco disponible.
+Copia y pega esto completo:
 
-En la terminal, ejecute el siguiente comando para iniciar los servicios de Docker
+```bash
+awk -F= '
+  $1 ~ /^(OLTP_PASSWORD|ANALYTICS_PASSWORD|S3_SECRET_KEY)$/ {min=8}
+  $1 == "S3_ACCESS_KEY" {min=3}
+  $1 ~ /^(OLTP_PASSWORD|ANALYTICS_PASSWORD|S3_ACCESS_KEY|S3_SECRET_KEY)$/ {
+    v=$0; sub(/^[^=]*=/, "", v); crlf=sub(/\r$/, "", v); n=length(v)
+    if (crlf)                      r="✗ saltos de línea de Windows (CRLF)"
+    else if (n < min)              r="✗ mínimo " min
+    else if (v ~ /[^A-Za-z0-9_-]/) r="✗ sólo letras, números, - y _"
+    else                           r="✓"
+    printf "  %-20s %3d caracteres  %s\n", $1, n, r
+  }' .env
+```
+
+Tienen que salir **cuatro renglones con ✓**. Si alguno dice ✗, corrígelo en el
+`.env`, guarda y vuelve a correrlo.
+
+Si sale *saltos de línea de Windows*, en VS Code haz clic donde dice **CRLF**,
+abajo a la derecha, cámbialo a **LF** y guarda.
+
+### Si un puerto ya está ocupado, cambias tu `.env` y nada más
+
+Todos los puertos que Docker publica en tu máquina salen del `.env`. Si otro
+programa ya usa uno, cambia **sólo el número** en tu `.env`:
+
+| Síntoma | Qué cambias en tu `.env` |
+|---|---|
+| Tienes XAMPP, IIS u otro servidor web usando el 80 | `TRAEFIK_WEB_PORT=8081` |
+| Tienes PostgreSQL instalado en Windows | `OLTP_PORT=5442` |
+| Otro programa usa el 8080 | `ADMINER_PORT=8088` |
+| Otro programa usa el 9000 | `S3_PORT=9010` **y también** `S3_ENDPOINT=http://localhost:9010` |
+
+La última fila es la única con trampa: `S3_ENDPOINT` repite el puerto de
+`S3_PORT`, así que se cambian juntos.
+
+Cambiar un puerto también cambia la dirección que abres en el navegador. Por eso
+el Paso 8 te imprime **tus** direcciones, leídas de tu `.env`.
+
+---
+
+## Paso 6 · Tres comprobaciones antes de levantar
+
+```bash
+# 1 · No modificaste los archivos del equipo. No debe imprimir nada.
+git status --short docker-compose.yml .env.example
+
+# 2 · Tu .env tiene todas las variables del ejemplo
+faltan=$(grep -oE '^[A-Z0-9_]+=' .env.example | grep -vxFf <(grep -oE '^[A-Z0-9_]+=' .env))
+[ -z "$faltan" ] && echo "✓ tu .env tiene todas las variables" || echo "✗ le faltan: $(echo $faltan | tr -d '=')"
+
+# 3 · El compose se puede leer con tu .env
+docker compose config --quiet && echo "✓ compose válido"
+```
+
+Qué hacer con cada resultado:
+
+- **Si la 1 imprime algo**, cambiaste un archivo que no es tuyo. Déjalo como
+  estaba con `git restore docker-compose.yml .env.example`.
+- **Si la 2 dice que faltan variables**, alguien agregó una nueva. Cópiala de
+  `.env.example` a tu `.env` y llénala.
+- **La 3 valida el archivo y avisa si falta una variable.** No avisa si una
+  contraseña está vacía: eso lo revisó el Paso 5.
+
+Repite este paso **cada vez que hagas `git pull`**.
+
+---
+
+## Paso 7 · Levanta los servicios
 
 ```bash
 docker compose up -d
 ```
 
-Se descargarán las imagenes necesarias y se creará un contenedor de docker. La terminal mostrará el progreso de descarga y el proceso de creación de los contenedores. 
+La primera vez descarga cinco imágenes: `postgres`, `canastamx/minio`,
+`canastamx/mc`, `adminer` y `traefik`. Postgres se usa dos veces. Puede tardar
+unos minutos según tu internet. Deja al menos **5 GB libres** en disco.
 
-Al finalizar con éxito, los contenedores permanecerán activos. Verifique el estado de los servicios mediante el siguiente comando:
+Ahora mira el estado. **Con `-a`**, porque sin él no aparecen los contenedores
+que ya terminaron:
 
 ```bash
 docker compose ps -a
 ```
 
-`docker compose ps -a` tiene que mostrar seis contenedores:
+En la columna **STATUS** tiene que decir:
 
-| Contenedor | Estado esperado |
+| Contenedor | STATUS esperado |
 |---|---|
-| `cmx-postgres-oltp` | `running (healthy)` |
-| `cmx-postgres-analytics` | `running (healthy)` |
-| `cmx-minio` | `running (healthy)` |
-| `cmx-minio-init` | **`exited (0)`** |
-| `cmx-adminer` | `running` |
-| `cmx-traefik` | `running` |
-
-**`cmx-minio-init` sale apagado y así tiene que ser.** No está roto. Su único
-trabajo es crear el bucket `canastamx-bronze` y terminar. Si dice `exited (0)`,
-hizo su trabajo. Si dice `exited (1)`, no lo hizo — ve a la sección de [Troubleshooting](#troubleshooting).
-
-> **NOTA**
-> ---
-> Los tres `healthy` tardan entre diez y treinta segundos en aparecer. Si corres
-`docker compose ps` de inmediato vas a ver `starting`; espera y vuelve a correrlo.
-
-## Ejecuciones posteriores
-
-> IMPORTANTE
-> ---
-> - Si ha eliminado las imagenes o contenedores de Docker, vea [Primera ejecución](#primera-ejecución)
-> - Si ha ocurrido algún cambio respecto a las imagenes de Docker, y ya ha ejecutado el proyecto, es necesarios removerlas y actualizar el proyecto. 
-
-Para cualquier ejecución subsecuente a la primera ejecución, simplemente ejecutar el siguiente comando desde la raíz del proyecto en una terminal:
-
-```bash
-docker compose up -d
-```
-
-## Detener CanastaMX
-
-> **IMPORTANTE**
-> ---
-> - Verifique bien el comando que ingrese. **Cada ejecución es final**, significando que una vez ejecutado, **NO hay vuelta atrás**.
-
-Para detener los servicios debe ejecutar **UNO** de los siguientes comandos, dependiendo de su intención.
-
-```bash
-docker compose down        # apaga y CONSERVA los datos
-docker compose down -v     # apaga y BORRA los datos (bases y bucket)
-```
-
-`down -v` deja la máquina como recién clonada. Es el que se usa para probar esta
-guía; en el día a día, `down` a secas.
-
----
-
-<br><br>
-
-# Comprobar los servicios
-
-> **NOTA**
-> ---
-> Que los contenedores digan `running` sólo prueba que arrancaron, no que sirvan.
-
-> **IMPORTANTE**
-> ---
-> - Evite modificaciones accidentales al archivo `.env` al consultarlo, si se modifica y se guardan los cambios, puede generar errores de autorización, y por ende, de funcionalidad. 
-
-## Comprobación almacenamiento
-
-Abra **http://localhost:9001** y entra con el `S3_ACCESS_KEY` y el
-`S3_SECRET_KEY` que pusiste en tu `.env`.
-
-| Contenedor | Estado esperado |
-|---|---|
-| `cmx-postgres-oltp` | `Up (healthy)` |
-| `cmx-postgres-analytics` | `Up (healthy)` |
-| `cmx-minio` | `Up (healthy)` |
+| `cmx-postgres-oltp` | `Up … (healthy)` |
+| `cmx-postgres-analytics` | `Up … (healthy)` |
+| `cmx-minio` | `Up … (healthy)` |
 | `cmx-minio-init` | **`Exited (0)`** |
-| `cmx-adminer` | `Up` |
-| `cmx-traefik` | `Up` |
+| `cmx-adminer` | `Up …` |
+| `cmx-traefik` | `Up …` |
 
-<br>
+**Si ves `(health: starting)`, espera.** Los tres `healthy` tardan entre diez y
+treinta segundos. Vuelve a correr `docker compose ps -a`.
 
-## Comprobación de bases de datos
+**`cmx-minio-init` apagado es lo correcto.** Su único trabajo es crear el bucket y
+terminar:
 
-**`cmx-minio-init` sale apagado y así tiene que ser.** No está roto. Su único
-trabajo es crear el bucket y terminar. `Exited (0)` quiere decir que lo hizo.
-`Exited (1)` quiere decir que no: ve a [Problemas](#problemas).
+- `Exited (0)` quiere decir que lo hizo.
+- `Exited (1)` quiere decir que no.
 
-Para verlo con sus palabras:
+Para verlo en sus propias palabras:
 
 ```bash
 docker compose logs minio-init
 ```
 
-Tiene que decir:
+La última línea tiene que decir **`Bucket canastamx-bronze listo.`**
 
+---
+
+## Paso 8 · Comprueba que sirven, no sólo que arrancaron
+
+`Up` sólo prueba que el contenedor arrancó. Este paso prueba que responde y que
+tus contraseñas entran.
+
+Primero imprime **tus** direcciones. Salen de tu `.env`, así que ya traen tus
+puertos:
+
+```bash
+v() { grep -E "^$1=" .env | cut -d= -f2- | tr -d '\r'; }
+w=$(v TRAEFIK_WEB_PORT); [ "$w" = 80 ] && w="" || w=":$w"
+echo "MinIO · consola        http://localhost:$(v S3_CONSOLE_PORT)"
+echo "Adminer                http://localhost:$(v ADMINER_PORT)"
+echo "Traefik · panel        http://localhost:$(v TRAEFIK_DASHBOARD_PORT)"
+echo "MinIO · por nombre     http://minio.canastamx.localhost$w"
+echo "Adminer · por nombre   http://db.canastamx.localhost$w"
 ```
-Added `local` successfully.
-Bucket created successfully `local/canastamx-bronze`.
-Bucket canastamx-bronze listo.
-```
 
-Los tres `healthy` tardan entre diez y treinta segundos en aparecer. Si corres
-`ps -a` de inmediato vas a ver `starting`; espera y vuelve a correrlo.
+Abre cada dirección en tu navegador, en este orden.
 
-## 2 · El almacenamiento
+### 8.1 · El almacenamiento
 
-Abre **http://localhost:9001** y entra con:
+Abre **MinIO · consola** y entra con:
 
 | Campo | Valor |
 |---|---|
 | Username | tu `S3_ACCESS_KEY` |
 | Password | tu `S3_SECRET_KEY` |
 
-**Tiene que aparecer un bucket llamado `canastamx-bronze`, vacío.**
+**Tiene que aparecer el bucket `canastamx-bronze`, vacío.** Que esté vacío es lo
+correcto: es tu MinIO y nadie le ha subido nada. Lo que compruebas es que existe,
+y **nadie lo creó a mano**: lo creó `cmx-minio-init`. Si está ahí, la cadena
+completa funcionó.
 
-> **El bucket vacío es lo correcto.** Dice *«This location is empty»* y así tiene
-> que ser: todavía nadie ha subido nada. Lo que estás comprobando es que exista,
-> porque **nadie lo creó a mano** — lo creó `cmx-minio-init` al arrancar. Si está
-> ahí, la cadena completa funcionó: el servidor levantó, el cliente lo alcanzó
-> por la red interna y tus credenciales sirvieron.
+> **Para A:** si ya corriste la ingesta (T020) en tu máquina, verás adentro la
+> carpeta `qqp/`. Es la capa cruda real del alcance, no pruebas. Los demás no la
+> van a ver, porque cada MinIO es de su máquina.
 
-## 3 · Las dos bases de datos
+### 8.2 · Las dos bases de datos
 
-Abre **http://localhost:8080**, que es Adminer. Son **dos entradas distintas** y
-Adminer sólo mantiene una sesión a la vez: para la segunda hay que darle a
-**«Cerrar sesión»** arriba a la derecha y volver a entrar.
+Abre **Adminer** y entra a la primera:
 
-### Base transaccional
-
-| Campo | Valor |
+| Campo | Base transaccional |
 |---|---|
-| Motor | PostgreSQL |
+| Sistema | PostgreSQL |
 | Servidor | `postgres-oltp` |
 | Usuario | `canastamx` |
-| Contraseña | tu **`OLTP_PASSWORD`** |
+| Contraseña | tu `OLTP_PASSWORD` |
 | Base de datos | `canastamx_oltp` |
 
-### Base analítica
+Para la segunda, abre **otra pestaña** con la misma dirección de Adminer. Adminer
+recuerda una sesión por servidor, así que las dos quedan abiertas a la vez:
 
-> **NOTA**
-> ---
-> **Por qué `postgres-oltp` y no `localhost`:** Adminer corre *dentro* de la red de Docker. Desde ahí, `localhost` es el propio contenedor de Adminer, no tu máquina. Los contenedores se llaman entre sí por el nombre del servicio Desde **tu** máquina, en cambio, sí es `localhost:5432` — por ejemplo si conectas DBeaver. Son dos direcciones distintas para la misma base según desde dónde preguntes, y confundirlas es el error de red más común del proyecto.
-
-| Campo | Valor |
+| Campo | Base analítica |
 |---|---|
-| Motor | PostgreSQL |
+| Sistema | PostgreSQL |
 | Servidor | `postgres-analytics` |
 | Usuario | `canastamx` |
-| Contraseña | tu **`ANALYTICS_PASSWORD`** — la otra, no la de arriba |
+| Contraseña | tu `ANALYTICS_PASSWORD`, la otra |
 | Base de datos | `canastamx_analytics` |
 
-> **NOTA**
-> ---
-> **No existen tablas» es lo correcto.** Las dos bases están creadas y vacías
-> porque nadie ha creado ninguna todavía: el servicio de dominio es de la semana
-> 7. Lo que compruebas es que la base existe, acepta tus credenciales y
-> responde.
+> **Por qué `postgres-oltp` y no `localhost`.** Adminer corre *dentro* de la red
+> de Docker. Desde ahí, `localhost` es el propio Adminer, no tu máquina. Dentro de
+> la red, cada contenedor se llama por su nombre de servicio y usa el puerto
+> **5432**, aunque en tu `.env` hayas cambiado `OLTP_PORT`.
 
-### Tabla de direcciones
+**«No existen tablas» es lo correcto.** Las bases están creadas y vacías porque
+todavía nadie crea tablas. Lo que compruebas es que la base existe, acepta tu
+contraseña y responde.
 
-| Qué | Desde tu máquina | Desde otro contenedor |
-|---|---|---|
-| MinIO · consola web | http://localhost:9001 | — |
-| MinIO · API de objetos | http://localhost:9000 | `http://minio:9000` |
-| PostgreSQL transaccional | `localhost:5432` | `postgres-oltp:5432` |
-| PostgreSQL analítico | `localhost:5433` | `postgres-analytics:5432` |
-| Adminer | http://localhost:8080 | — |
-| Traefik · panel | http://localhost:8090 | — |
+### 8.3 · Los nombres de Traefik
 
-**Esa columna de la derecha es la que confunde al escribir el `.env`.** El guión
-de ingesta se corre desde tu máquina, así que ahí va
-`S3_ENDPOINT=http://localhost:9000`. El nombre `minio` sólo existe dentro de la
-red de compose.
+Abre **MinIO · por nombre** y **Adminer · por nombre**. Tienen que mostrar lo
+mismo que los dos pasos anteriores.
 
-### Las rutas por nombre - opcional
+- **Si cambiaste `TRAEFIK_WEB_PORT`**, la dirección lleva el puerto, por ejemplo
+  `http://db.canastamx.localhost:8081`. Sin el puerto no llegas a Traefik.
+- **Si te lleva a otra página** (la bienvenida de XAMPP o de IIS), otro programa
+  ya ocupa el 80. Ve a la tabla del Paso 5.
 
-El sistema también publica dos rutas a través de Traefik:
-
-- http://minio.canastamx.localhost
-- http://db.canastamx.localhost
-
-**Si te llevan a otra página** —la bienvenida de XAMPP, una pantalla de IIS, el
-panel de tu módem— no están rotas: hay otro programa ocupando el puerto 80 en tu
-máquina. Ve a [Problemas](#problemas); son opcionales y los puertos directos de
-la tabla de arriba funcionan siempre.
+**Traefik · panel** es opcional. Si abre y lista los routers `adminer` y
+`minio-console`, Traefik está bien.
 
 ---
 
-# Problemas
+## El día a día
 
-| Lo que ves | Qué pasa | Qué hacer |
+| Situación | Qué haces |
+|---|---|
+| Vas a trabajar | Abre Docker Desktop (en Windows) y luego `docker compose up -d` |
+| Reiniciaste la computadora | Lo mismo: los contenedores **no** arrancan solos |
+| Quieres ver cómo están | `docker compose ps -a` |
+| Terminaste por hoy | `docker compose down`. Apaga y **conserva** los datos |
+| Hiciste `git pull` | Repite el [Paso 6](#paso-6--tres-comprobaciones-antes-de-levantar) y luego `docker compose up -d` |
+| Quieres empezar de cero | `docker compose down -v` y luego `docker compose up -d` |
+
+> **`down -v` borra los datos** de las dos bases y del bucket. Hoy están vacíos y
+> no pasa nada, pero cuando tengan datos no hay vuelta atrás. En el día a día es
+> `down` a secas. Se usa `-v` sólo para empezar de cero, por ejemplo después de
+> cambiar una contraseña de Postgres.
+
+---
+
+## Problemas
+
+| Lo que ves | Qué pasa | Qué haces |
 |---|---|---|
-| `Command 'docker' not found` | No está instalado, o en WSL falta la integración | Ver [Requisitos](#requisitos) |
-| `Cannot connect to the Docker daemon` | Docker Desktop está cerrado | Ábrelo y espera a que la ballena deje de moverse |
-| `port is already allocated` | Otro programa usa ese puerto | Cambia el puerto en tu `.env`: `OLTP_PORT`, `ANALYTICS_PORT`, `S3_PORT`, `ADMINER_PORT`, `TRAEFIK_WEB_PORT` |
-| El 5432 ocupado | Tienes PostgreSQL instalado en tu máquina | `OLTP_PORT=5442`. No hace falta desinstalar nada |
-| **Las rutas `*.canastamx.localhost` llevan a otra página** | Otro programa escucha en el puerto 80 —**XAMPP es el culpable habitual**— y **Docker no da ningún error** | `TRAEFIK_WEB_PORT=8081` en tu `.env`, `docker compose up -d`, y usa `http://minio.canastamx.localhost:8081` |
-| `cmx-minio` reinicia en bucle | Tu `S3_SECRET_KEY` tiene menos de 8 caracteres | Alárgala, `docker compose down -v` y vuelve a subir |
-| `cmx-minio-init` sale con `Exited (1)` y dice **`Bucket name cannot be empty`** | El contenedor no recibió `S3_BUCKET` | Tu `.env` tiene los nombres viejos. Corre el guión de [Si ya tenías el proyecto de antes](#si-ya-tenías-el-proyecto-de-antes) |
-| `cmx-minio-init` sale con `Exited (1)` y se queja de credenciales | `S3_ACCESS_KEY` o `S3_SECRET_KEY` traen espacios, comillas, `#` o `$` | Déjalas sólo con letras y números |
-| `Access Denied` desde el guión de ingesta | Tu `.env` tiene las variables viejas | El mismo guión de migración |
-| `variable is not set` al subir | Falta una variable en tu `.env` | Alguien agregó una nueva. Vuelve a copiar `.env.example` y rellénalo |
-| `no such host: minio` | Usaste el nombre interno desde tu máquina | Desde tu máquina es `localhost`. Ver la [tabla de direcciones](#4--la-tabla-de-direcciones) |
-| Todo en una sola línea al abrir el `.env` | Lo abriste con el Bloc de notas | VS Code, Notepad++ o `nano` |
-| `pull access denied` · `manifest unknown` | Docker Hub no responde, o el repositorio quedó privado | Ver [Si Docker Hub falla](#si-docker-hub-falla) |
-
-**El de las rutas `.localhost` merece una nota**, porque es el único que falla en
-silencio: `docker compose ps -a` te va a decir que Traefik está `Up` y con el
-puerto 80 publicado. Todo verde, sirviendo el contenido equivocado. Si quieres
-confirmarlo, abre el panel de Traefik en http://localhost:8090 — si carga y no
-marca errores, Traefik está bien y el problema es sólo quién llegó primero al
-puerto.
+| Docker Desktop dice que hay que actualizar WSL | Falta el componente de WSL 2 | PowerShell como administrador: `wsl --update`, y reinicia |
+| *Virtualization support not detected* | La virtualización está apagada en el BIOS | Enciéndela (Intel VT-x o AMD SVM). Si no sabes cómo, pide ayuda en el grupo |
+| `docker: command not found` | Ver la tabla del [Paso 3](#paso-3--comprueba-que-docker-responde) | |
+| `port is already allocated`, o `Ports are not available … forbidden by its access permissions` | Otro programa, o Windows, ya tiene ese puerto | Cambia el puerto en tu `.env` (Paso 5) y `docker compose up -d` |
+| `http://db.canastamx.localhost` abre XAMPP, IIS u otra cosa | El 80 está ocupado **y Docker no da error** | `TRAEFIK_WEB_PORT=8081`, `docker compose up -d`, y usa `:8081` en la dirección |
+| Traefik responde *404 page not found* | Llegaste a Traefik sin un nombre que conozca | Usa las direcciones con nombre que imprime el Paso 8 |
+| Adminer: *password authentication failed* | La contraseña no coincide, o la cambiaste **después** de la primera vez | Vuelve a poner la anterior, o `docker compose down -v` y `docker compose up -d` |
+| Adminer: *could not translate host name* o *connection refused* | Escribiste `localhost` como servidor | Usa `postgres-oltp` o `postgres-analytics` |
+| `cmx-minio` no llega a `healthy` | `S3_SECRET_KEY` con menos de 8 caracteres, o `S3_ACCESS_KEY` con menos de 3 | `docker compose logs minio` lo dice. Corrige el `.env` y `docker compose up -d`. Si sigue, `down -v` y otra vez `up -d` |
+| `cmx-minio-init` en `Exited (1)` con *Bucket name cannot be empty* | Tu `.env` es viejo: trae `MINIO_*` en vez de `S3_*` | Vuelve a copiar `.env.example` y llénalo |
+| `cmx-minio-init` en `Exited (1)` quejándose de credenciales | Caracteres especiales en las llaves | Sólo letras, números, `-` y `_` |
+| `WARN … variable is not set` | Falta una variable nueva en tu `.env` | Comprobación 2 del Paso 6 |
+| `toomanyrequests` al descargar | Docker Hub limita las descargas sin sesión por dirección IP, y en la escuela muchos comparten la misma | Espera un rato, o entra con una cuenta gratuita (`docker login`) |
+| `pull access denied` o `manifest unknown` | El espejo de imágenes no responde | Ver [Si Docker Hub falla](#si-docker-hub-falla) |
+| Una contraseña funciona un día y al otro no | Tienes dos clones con dos `.env` distintos | Trabaja con un solo clon (Paso 1) |
 
 Para ver por qué se cayó algo:
 
@@ -388,78 +457,53 @@ docker compose logs minio          # o el servicio que falló
 docker compose logs --tail 50      # lo último de todos
 ```
 
-Y para empezar de cero sin dudas:
-
-```bash
-docker compose down -v
-docker compose up -d
-docker compose ps -a
-```
-
 ---
 
-# Si Docker Hub falla
+## Si Docker Hub falla
 
-Las imágenes de MinIO salen de un espejo **nuestro** —`canastamx/minio` y
-`canastamx/mc`— precisamente porque el registro original las borró dos veces en
-once días. Está contado en el
-[ADR 012](../adr/012-de-donde-salen-las-imagenes.md), junto con la comprobación
-de que los binarios que traen son exactamente los que publicó MinIO.
+Las imágenes de MinIO salen de un espejo nuestro, `canastamx/minio` y
+`canastamx/mc`, porque el registro original las retiró. Está contado en el
+[ADR 012](../adr/012-de-donde-salen-las-imagenes.md). No hace falta cuenta para
+descargarlas: son públicas.
 
-**No hace falta cuenta de Docker Hub para descargarlas.** Los dos repositorios
-son públicos; está comprobado bajando las seis imágenes sin haber iniciado
-sesión.
-
-Si algún día el espejo tampoco responde, las dos imágenes están guardadas como
-archivo en el Drive del equipo:
+Si el espejo tampoco responde, las dos imágenes están guardadas como archivo en
+el Drive del equipo. **Pide el enlace en el grupo**; no se publica aquí porque
+este repositorio es público.
 
 ```bash
-docker load -i <minio>.tar
-docker load -i <mc>.tar
+docker load -i minio-RELEASE.2025-09-07T16-13-09Z-amd64.tar
+docker load -i mc-RELEASE.2025-08-13T08-35-41Z-amd64.tar
 docker compose up -d
 ```
 
-> **NOTA**
-> ---
-> Sustituya <minio> o <mc> por los nombres correspondientes a la imagén que desee cargar, por ejemplo, `minio-RELEASE.2025-09-07T16-13-09Z-amd64.tar` o `mc-RELEASE.2025-08-13T08-35-41Z-amd64`.  
-> Las imagenes para la arquitectura ARM64 son las siguientes:
-> MINIO: `minio-RELEASE.2025-09-07T16-13-09Z-arm64.tar`  
-> MC: `mc-RELEASE.2025-08-13T08-35-41Z-arm64`
+En equipos ARM64, los archivos terminan en `-arm64.tar`. `docker load` mete la
+imagen en tu Docker sin descargar nada, y el compose la encuentra solo.
 
-`docker load` mete la imagen en tu Docker sin descargar nada, y a partir de ahí el compose la encuentra sola.
-
-> **NOTA**
-> ---
-> - Los `.tar` no están en el repositorio a propósito: pesan más de 10 MB y la
-verificación de higiene de la integración continua rechaza archivos de ese
-tamaño.  
-> - Puedes encontrar las imagenes en la siguiente carpeta de Google Drive: [CanastaMX en Google Drive](https://drive.google.com/drive/folders/1vgHQ__Cq_aq2-Uqg2rrgpQELRfq9CnIR?usp=sharing). Las images están nombradas con su versión y arquitectura.
+Los `.tar` no van en el repositorio porque pesan más de 10 MB y la integración
+continua los rechaza.
 
 ---
 
-# Qué **no** levanta esto todavía
+## Qué no levanta esto todavía
 
 Sólo la infraestructura: las dos bases, el almacenamiento y la puerta de enlace.
-Los servicios de la aplicación —la plataforma de datos, la interfaz analítica, el
-servicio de dominio y los dos clientes— todavía no están en el `docker-compose`.
-Se van agregando conforme cada frente los tenga.
-
-Así que si levantas esto y no ves «la aplicación» por ningún lado, está bien: no
-existe aún. Lo que existe es el suelo donde se va a parar.
+Los servicios de la aplicación todavía no están en el `docker-compose.yml`: la
+plataforma de datos, la interfaz analítica, el servicio de dominio y los dos
+clientes. Se van agregando conforme cada frente los tenga. Si no ves «la
+aplicación» por ningún lado, está bien: todavía no existe.
 
 ---
 
-# Registro de verificación
+## Registro de verificación
 
 Esta guía se verifica con una regla: **alguien que no la escribió la sigue en su
 máquina, sin preguntar.** Si tiene que preguntar algo, se arregla el documento,
 no se le explica a esa persona.
 
-| Quién | Sistema | Fecha | ¿Llegó al final sin preguntar? | Qué se atoró |
+| Quién | Sistema y terminal | Fecha | ¿Llegó al final sin preguntar? | Qué se atoró |
 |---|---|---|---|---|
-| Ariadne (A) | Windows + WSL 2 · Edge | 27-09-2026 | No | Docker no instalado; nombres del `.env` distintos a los de la guía; `minio-init` fallaba; `ps` sin `-a`; las rutas de Traefik iban a XAMPP |
-| *(por definir)* | Windows nativo | | | |
+| A | Windows + WSL · Ubuntu | 27-09-2026 | No | Docker no instalado; nombres del `.env` distintos a los de la guía; `minio-init` fallaba; `ps` sin `-a`; las rutas de Traefik iban a XAMPP |
+| C1, C2 o D | Windows 11 · Git Bash | *pendiente* | | |
 
-**La columna «qué se atoró» es la más útil de la tabla.** Cada cosa anotada ahí
-es una línea que le faltaba a la guía, y es lo que hace que la siguiente persona
-no se atore igual.
+**La columna «qué se atoró» es la más útil.** Cada cosa anotada ahí es una línea
+que le faltaba a la guía.
