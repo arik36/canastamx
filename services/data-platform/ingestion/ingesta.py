@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 ingesta.py — CanastaMX · T020 · primer guión de ingesta a la capa cruda
 
@@ -70,11 +69,17 @@ pasos, y los dos importan:
 
     1. antes de escribir, se **borran los objetos de las particiones que este
        lote va a tocar** —no el bucket entero, sólo esas—;
-    2. el COPY usa `OVERWRITE`, que reemplaza en vez de agregar.
+    2. el COPY usa `OVERWRITE_OR_IGNORE`, que conserva las particiones que no
+       toca y reusa el nombre `data_0.parquet` dentro de las que sí.
 
-El borrado explícito es el que da la garantía: `OVERWRITE_OR_IGNORE` deja
-archivos viejos si el nombre coincide, y ahí es donde se duplican los datos en
-silencio.
+**NO se usa `OVERWRITE`**, y la diferencia no se deduce del nombre: `OVERWRITE`
+borra el DIRECTORIO COMPLETO en cada `COPY`, así que con un lote por archivo cada
+uno borraría al anterior y el bucket terminaría con el último nada más. Tampoco
+`APPEND`, que conserva lo demás pero nombra con UUID y duplicaría al reescribir.
+
+El borrado explícito sigue haciendo falta aun con la opción correcta: si una
+partición tenía `data_0` y `data_1` y ahora sólo se escribe `data_0`, el viejo
+sobreviviría.
 
 CONFIGURACIÓN — nada de esto va escrito en el código
 ----------------------------------------------------
@@ -203,8 +208,9 @@ def recorte_del_contrato(contrato):
               "ventana (ADR 010 · 9).")
 
     def lista(valores):
-        return ", ".join("upper(strip_accents('%s'))" % v.replace("'", "''")
-                         for v in valores)
+        return ", ".join(
+            f"upper(strip_accents('{v.replace(chr(39), chr(39) * 2)}'))"
+            for v in valores)
 
     # Llave de partición canónica para `estado`. La fuente trae 37 literales
     # para 30 entidades: 2025 escribe `Michoacan` y 2026 `Michoacán`
@@ -213,8 +219,10 @@ def recorte_del_contrato(contrato):
     # partido. `entidad` es la llave; el literal crudo se conserva intacto en la
     # columna `estado`, que es lo que la capa cruda promete.
     casos = " ".join(
-        "WHEN upper(strip_accents(trim(estado))) = upper(strip_accents('%s')) "
-        "THEN '%s'" % (e.replace("'", "''"), e.replace("'", "''")) for e in ent)
+        f"WHEN upper(strip_accents(trim(estado))) = "
+        f"upper(strip_accents('{e.replace(chr(39), chr(39) * 2)}')) "
+        f"THEN '{e.replace(chr(39), chr(39) * 2)}'"
+        for e in ent)
     entidad_sql = (f"CASE {casos} ELSE upper(strip_accents(trim(estado))) END")
 
     return {
@@ -393,8 +401,8 @@ def main():
     # columna como texto y sigue. El error aparece cien líneas después como un
     # «Binder Error» de strftime que no dice nada del problema real. Aquí se
     # atrapa donde ocurre y con el motivo que el contrato le da.
-    tipo_fecha = dict((c[0], c[1]) for c in
-                      con.sql("DESCRIBE SELECT * FROM entrada").fetchall())["fecha_registro"]
+    tipo_fecha = {c[0]: c[1] for c in
+                  con.sql("DESCRIBE SELECT * FROM entrada").fetchall()}["fecha_registro"]
     if not tipo_fecha.startswith(("DATE", "TIMESTAMP")):
         morir(f"`fecha_registro` llegó como {tipo_fecha}, no como fecha.\n"
               f"  El contrato declara {decl['humano']} para este archivo y los "
@@ -472,9 +480,14 @@ def main():
         return
 
     s3 = cliente_s3(cfg)
+    from botocore.exceptions import ClientError
     try:
         s3.head_bucket(Bucket=cfg["bucket"])
-    except Exception:
+    except ClientError:
+        # SÓLO ClientError, no cualquier excepción. Un `except Exception` aquí
+        # trataba igual «el bucket no existe» que «MinIO está apagado», y en el
+        # segundo caso el create_bucket de abajo fallaba con un error que no
+        # decía nada. Ahora un problema de conexión sube tal cual.
         print(f"\nel bucket {cfg['bucket']} no existe; creándolo")
         s3.create_bucket(Bucket=cfg["bucket"])
 
@@ -489,11 +502,47 @@ def main():
 
     # 2 · escritura
     print("escribiendo")
+    # OVERWRITE_OR_IGNORE y NO `OVERWRITE`. Medido, porque la diferencia no se
+    # deduce del nombre y costó una ingesta entera:
+    #
+    #   OVERWRITE            borra el DIRECTORIO COMPLETO en cada COPY. Con un
+    #                        lote por archivo, cada uno borra al anterior y el
+    #                        bucket termina con el último, nada más.
+    #   APPEND               conserva lo demás, pero nombra los archivos con un
+    #                        UUID: reescribir el mismo lote DUPLICA las filas.
+    #   OVERWRITE_OR_IGNORE  conserva las particiones que no toca y reusa el
+    #                        nombre `data_0.parquet`, así que reescribir el
+    #                        mismo lote reemplaza en vez de sumar.  <- ésta
+    #
+    # El borrado explícito de arriba sigue haciendo falta: si una partición tenía
+    # `data_0` y `data_1` y ahora sólo se escribe `data_0`, el `data_1` viejo
+    # sobreviviría. Las dos cosas juntas son lo que da la garantía.
     con.sql(f"""COPY listo TO '{destino}'
-                (FORMAT PARQUET, PARTITION_BY (entidad, quincena), OVERWRITE)""")
+                (FORMAT PARQUET, PARTITION_BY (entidad, quincena),
+                 OVERWRITE_OR_IGNORE)""")
 
-    objetos, bytes_ = inventario(s3, cfg["bucket"], PREFIJO + "/")
+    # Las cifras del LOTE: sólo las particiones que este archivo escribió. Antes
+    # se contaba todo el destino, que con `OVERWRITE` daba lo mismo porque el
+    # destino sólo tenía este lote. Ya no: ahora el bucket acumula, y comparar el
+    # total contra las filas de UN archivo fallaría siempre a partir del segundo.
+    from urllib.parse import quote as _q
+    objetos = bytes_ = 0
+    for e, q in particiones:
+        o, b = inventario(s3, cfg["bucket"],
+                          f"{PREFIJO}/entidad={_q(str(e))}/quincena={_q(str(q))}/")
+        objetos += o
+        bytes_ += b
+    pares = " OR ".join(
+        f"(entidad = '{str(e).replace(chr(39), chr(39) * 2)}' "
+        f"AND quincena = '{str(q).replace(chr(39), chr(39) * 2)}')"
+        for e, q in particiones)
     filas_escritas = con.sql(
+        f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
+        f"hive_partitioning=1) WHERE {pares}").fetchone()[0]
+
+    # Y el acumulado del bucket, que es otra cosa y conviene no confundirla.
+    obj_tot, byt_tot = inventario(s3, cfg["bucket"], PREFIJO + "/")
+    filas_tot = con.sql(
         f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
         "hive_partitioning=1)").fetchone()[0]
     duracion = round(time.time() - arranque, 2)
@@ -502,13 +551,20 @@ def main():
     print(f"objetos         : {objetos}")
     print(f"tamaño          : {bytes_/1024/1024:.2f} MiB")
     print(f"duración        : {duracion} s")
+    print(f"\nacumulado en el bucket · {filas_tot:,} filas · {obj_tot} objetos "
+          f"· {byt_tot/1024/1024:.2f} MiB")
 
     if filas_escritas != filas_leidas:
         morir(f"se leyeron {filas_leidas:,} filas y se escribieron "
               f"{filas_escritas:,}. Algo se quedó en el camino.")
 
     CORRIDAS.mkdir(parents=True, exist_ok=True)
-    registro = CORRIDAS / f"{dt.date.today().isoformat()}-{lote}.json"
+    # UTC a propósito: así el nombre del registro coincide con la marca de
+    # tiempo que MinIO le pone a los objetos. Con la hora local de México
+    # (UTC-6) una corrida de las 20:15 quedaba fechada un día antes que sus
+    # propios objetos, y eso confunde al revisar la evidencia.
+    hoy = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    registro = CORRIDAS / f"{hoy}-{lote}.json"
 
     # Las cinco cifras van agrupadas y con ese nombre a propósito: son el
     # criterio de cierre de T020 y así se comprueban de un vistazo, sin tener
@@ -541,9 +597,11 @@ def main():
         "columnas_extra_ignoradas": extra,
         "cinco_cifras": cinco_cifras,
         "objetos_borrados_antes": borrados,
+        "acumulado_en_el_bucket": {"filas": filas_tot, "objetos": obj_tot,
+                                   "bytes": byt_tot},
         "particiones": [{"entidad": e, "quincena": q} for e, q in particiones],
         "destino": destino,
-        "corrida": dt.datetime.now().isoformat(timespec="seconds"),
+        "corrida": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"registro        : {registro}")

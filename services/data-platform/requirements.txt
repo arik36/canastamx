@@ -1,0 +1,27 @@
+# CanastaMX · plataforma de datos · dependencias de Python
+#
+# Este archivo existe por dos razones, y las dos importan:
+#
+#   1. Sin él, `ingesta.py` no es ejecutable por nadie más que quien lo escribió.
+#      El contrato de datos puede estar perfecto: si las dependencias no están
+#      declaradas, quien clone el repositorio no puede correrlo.
+#   2. `actions/setup-python` con `cache: pip` lo necesita para calcular la llave
+#      del caché. Sin él, el trabajo «Datos (Python)» del CI falla antes de
+#      empezar —y ése fue justamente su primer fallo real, el 29 de septiembre,
+#      en cuanto entró el primer .py a services/—.
+#
+# `.github/workflows/ci.yml` ya lo referenciaba en su paso de pruebas comentado.
+
+duckdb>=1.0        # lee Parquet y CSV, y escribe particionado a S3 (ingesta.py)
+boto3>=1.34        # borra las particiones antes de escribir · httpfs no borra
+PyYAML>=6.0        # lee contracts/qqp-v1.yaml · las 15 columnas y los 3 recortes
+
+# Herramientas de desarrollo. El CI instala ruff por su cuenta; se listan aquí
+# para que quien clone tenga lo mismo.
+ruff>=0.6
+pytest>=8.0        # todavía no hay pruebas; llegan en la semana 6 con la
+                   # compuerta de calidad contra el contrato
+
+# NOTA · las versiones son mínimos, no anclas. Cuando el frente de datos cierre
+# la semana 7 conviene fijarlas con `pip freeze` para que el experimento de la
+# semana 13 corra sobre el mismo conjunto que se documentó.

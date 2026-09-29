@@ -1,6 +1,6 @@
 # Ingesta a la capa cruda · evidencia de la corrida
 
-**Generado:** 2026-09-28 por `services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90
+**Generado:** 2026-09-29 por `services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90
 
 > Este documento se **genera**, no se escribe a mano. Sale de los registros
 > de `ingestion/corridas/`, que no entran al repositorio porque describen el

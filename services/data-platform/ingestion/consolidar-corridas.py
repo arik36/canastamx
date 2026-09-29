@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 consolidar-corridas.py — CanastaMX · T020
 
@@ -19,10 +18,10 @@ es lo que este guión rescata y deja en un documento versionado.
     python services/data-platform/ingestion/consolidar-corridas.py
 """
 
+import datetime as dt
 import json
 import pathlib
 import sys
-import datetime as dt
 
 AQUI = pathlib.Path(__file__).resolve().parent
 RAIZ = AQUI.parents[2]
@@ -74,7 +73,7 @@ def main():
     w = L.append
     w("# Ingesta a la capa cruda · evidencia de la corrida")
     w("")
-    w(f"**Generado:** {dt.date.today().isoformat()} por "
+    w(f"**Generado:** {dt.datetime.now(dt.timezone.utc).date().isoformat()} por "
       "`services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90")
     w("")
     w("> Este documento se **genera**, no se escribe a mano. Sale de los registros")
@@ -90,8 +89,8 @@ def main():
     w(f"`medicion.filas: {esperado}`, medido el {contrato['medicion']['fecha']} por")
     w(f"`{contrato['medicion']['guion']}` sobre otra ruta y con otro código.")
     w("")
-    w(f"| | |")
-    w(f"|---|---:|")
+    w("| | |")
+    w("|---|---:|")
     w(f"| Ingesta · suma de los {len(filas)} archivos | **{total:,}** |")
     w(f"| Contrato · `medicion.filas` | **{esperado:,}** |")
     w(f"| Diferencia | **{total - esperado:+,}** |")
@@ -106,7 +105,7 @@ def main():
     w("")
     w("## El recorte que se aplicó")
     w("")
-    w(f"Los tres que `medicion.poblacion` nombra, leídos del contrato:")
+    w("Los tres que `medicion.poblacion` nombra, leídos del contrato:")
     w("")
     w(f"- **{len(alcance['entidades'])} entidades** · {', '.join(alcance['entidades'])}")
     w(f"- **{len(alcance['catalogos_normalizados'])} catálogos** · "
@@ -179,7 +178,7 @@ def main():
         w("| lote | columnas ignoradas |")
         w("|---|---|")
         for f in ex:
-            w(f"| `{f['lote']}` | {', '.join('`%s`' % c for c in f['extra'])} |")
+            w(f"| `{f['lote']}` | {', '.join(f'`{c}`' for c in f['extra'])} |")
         w("")
         w("Avisadas, no descartadas en silencio (contrato · `columnas_extra`).")
         w("")
@@ -188,7 +187,7 @@ def main():
         w("### Corridas sin recorte")
         w("")
         w(f"{len(sin_recorte)} corrida(s) con `--sin-recorte`, excluidas del total: "
-          f"{', '.join('`%s`' % s for s in sin_recorte)}.")
+          f"{', '.join(f'`{s}`' for s in sin_recorte)}.")
         w("")
 
     w("## Identidad de los archivos de entrada")
