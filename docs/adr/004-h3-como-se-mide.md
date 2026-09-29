@@ -1,5 +1,39 @@
 # ADR 004 · H3 · cómo se enuncia y cómo se mide
- 
+
+> ## Nota de estado · 28 de septiembre de 2026
+>
+> **Este ADR sigue vigente y no se edita. Su regla, su umbral y su método son los
+> que mandan.** Lo que quedó desactualizado es su **tabla de resultados**, y lo
+> actualiza el [ADR 014](./014-recuento-h3.md) usando la cláusula que este mismo
+> documento escribió para el caso: *«si la calificación se revisa antes de la
+> semana 9, el conteo se recalcula y la rama se vuelve a evaluar»*.
+>
+> | | este ADR dice | vigente desde el 28-sep · ADR 014 |
+> |---|---:|---:|
+> | «sí» en la mitad por parecido | 20 | **30** |
+> | rama del §4 que aplica | primera | **primera** · no cambia |
+> | tasa de omisión de la normalización vigente | 20 de cada 100 | **30 de cada 100** |
+>
+> **La rama no cambió: el margen sí.** Pasó de cero a diez, y el resultado dejó
+> de ser de frontera. El umbral sigue en 20 y nunca se movió.
+>
+> Dos afirmaciones del cuerpo dejaron de ser ciertas y las corrige el ADR 014
+> §5 bis: que **«los 23 «sí» son de un solo tipo, todos ortográficos»** —los 12
+> nuevos son color de empaque y nombre de línea comercial, que no son
+> ortográficos— y, por consecuencia, la receta de **T053** de atacar «esas cinco
+> formas más comparación difusa encima», que no alcanza para las dos clases
+> nuevas.
+>
+> **Y una contradicción interna, sin resolver:** este ADR cita `200 gr` / `200 ml`
+> como uno de sus «sí» por la pregunta P1, y el **par 078** del archivo calificado
+> está en «no». Uno de los dos está mal.
+>
+> **Qué hizo bien este documento, y conviene decirlo:** fijó la regla y el umbral
+> antes de los datos, avisó de que su propio resultado era de frontera, escribió
+> qué hacer si el conteo se movía, y dejó anotado que su calificación no fue a
+> ciegas ni doble (kappa 0.578). Las cuatro cosas juntas son las que permitieron
+> detectar el error de once días en vez de entregarlo.
+
 - **Fecha:** 17 de septiembre de 2026 · **resultados añadidos el 24 de septiembre**
 - **Estado:** **aceptada.** El método y la corrección al ADR 002 los ratificó el
   equipo en la boleta de la semana 3 (ADR 010, decisiones 4 y 8). La tabla de
