@@ -1,8 +1,44 @@
 # ADR 013 · H3 no resultó contrastable sobre esta fuente; entra H5
 
+> # ⚠ RETIRADA · 28 de septiembre de 2026
+>
+> **Este ADR no se sostiene y no se aplica. Lo retira el
+> [ADR 014](./014-recuento-h3.md).** Se conserva sin editar, igual que el
+> `informe-perfilado-v0.md`, porque borrarlo dejaría once días sin explicar en un
+> expediente cuyo valor es la trazabilidad.
+>
+> **Qué pasó.** Una segunda lectura independiente de la muestra, hecha por Karen
+> (C2) el mismo día y sin conocer el conteo, encontró **12 «sí» más** entre los 82
+> «no» de la mitad por parecido —73 de los cuales no llevaban una sola palabra de
+> justificación—. El conteo pasó de **18 a 30**, con el umbral del ADR 004 en 20,
+> así que la regla se activa en su **primera** rama: **H3 se mide como está
+> enunciada.** Que era, exactamente, lo que el ADR 004 había decidido el 17 de
+> septiembre.
+>
+> **Y no falla sólo el conteo: fallan los dos argumentos del §5.2**, los dos por
+> error de quien firma este documento.
+>
+> 1. **«El fenómeno casi no está: 1.29 formas por artículo».** Ese 1.29 sale de
+>    la medición que `perfilado.md` §3 y el informe v1 declaran **circular**. Se
+>    usó como prueba el número que el propio proyecto había descalificado, en el
+>    mismo documento donde lo descalificó.
+> 2. **«Su métrica de cobertura no puede fallar».** Era una objeción a cómo
+>    `h3-entre-cadenas.py` armaba los pares, no a H3.
+>    `h3-muestra-para-calificar.py` se construyó para corregir eso, y sobre esa
+>    muestra la cobertura **sí** puede fallar: acaba de fallar 30 veces de 100.
+>
+> **Lo que sigue siendo válido de aquí:** el §5.1, donde se corrigen los pares
+> 026 y 029 por haberse justificado con un criterio que el ADR 004 rechazaba —esa
+> corrección estaba bien hecha y sigue en pie—, y el §5.4, que se negó a fijar
+> umbrales sin un piloto. Todo lo demás lo reemplaza el ADR 014.
+>
+> **Lo que NO hay que sacar de aquí:** que reportar un resultado incómodo estuvo
+> mal. Estuvo bien. Lo que estuvo mal fue el resultado.
+
 - **Fecha:** 28 de septiembre de 2026
-- **Estado:** **propuesta** · la ratifica el equipo, y el asesor tiene que
-  enterarse antes de la entrega del 9 de octubre
+- **Estado:** **RETIRADA** el 28 de septiembre de 2026 por el
+  [ADR 014](./014-recuento-h3.md). Nunca se ratificó, así que no hubo votación
+  que revocar
 - **Autora:** Ariadne (A)
 - **Corrige:** la **aplicación** del ADR 004, no su contenido. El ADR 004 no se
   edita: su regla era correcta y es la que manda este documento

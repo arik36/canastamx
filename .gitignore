@@ -25,6 +25,10 @@ raw/
 # Excepcion: las muestras que necesitan las pruebas
 !services/data-platform/tests/fixtures/*.csv
 !services/data-platform/tests/fixtures/*.parquet
+# Excepcion: el diccionario del mojibake. NO es dato crudo, es la tabla de
+# decisiones del equipo sobre que hacer con cada texto roto, y el contrato
+# la referencia por ruta (contracts/qqp-v1.yaml 1.3.0).
+!contracts/mojibake-diccionario.csv
 
 # ---- Volumenes de contenedor ----
 .volumes/

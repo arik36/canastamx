@@ -1,8 +1,58 @@
 contrato: qqp
-version: 1.3.0
+version: 1.3.2
 fuente: "PROFECO · Quién es Quién en los Precios"
 fecha: 2026-09-28
 autor: alm
+
+# ── Qué cambió en 1.3.2 ─────────────────────────────────────────────────────
+#
+# Cuatro líneas de comentario y UN pendiente nuevo. Ninguna REGLA cambia: las 15
+# columnas, las dos claves, los techos y la frescura quedan idénticos a 1.3.1, así
+# que nada de lo ya construido se ve afectado. Lo que cambia es que el contrato
+# deja de afirmar algo que dejó de ser cierto el mismo día que se escribió, y que
+# gana un pendiente que el recuento destapó.
+#
+# NOTA DE NUMERACIÓN: en el repositorio, `main` va de 1.3.0 a 1.3.2 sin pasar por
+# 1.3.1. No es un error: 1.3.1 se escribió y se corrigió el mismo día, antes de
+# subirse, y su bloque de cambios se conserva aquí abajo para que el salto quede
+# explicado en vez de ser un hueco.
+#
+#   · Una segunda lectura independiente de la muestra de H3, hecha por Karen (C2)
+#     el 28 de septiembre sin conocer el conteo, encontró 12 «sí» más. El conteo
+#     pasó de 18 a 30 con el umbral del ADR 004 en 20, así que la regla se activa
+#     en su PRIMERA rama: H3 se mide como está enunciada. El ADR 013 queda
+#     RETIRADO y lo explica el ADR 014.
+#   · Por tanto H5 queda SIN EFECTO: era el instrumento de la rama 2, que no
+#     aplicó. Las dos menciones de H5 en `clave_de_articulo` vuelven a H3.
+#
+# Lo que esto NO cambia, y conviene decirlo porque es la pregunta obvia: la
+# reparación del `?` sigue siendo un mecanismo de reconciliación y sigue mandando
+# igual; el catálogo sigue siendo de 1,597 artículos; y `columnas` sigue intacta,
+# así que `ingesta.py` y el modelo dimensional no se tocan.
+
+# ── Qué cambió en 1.3.1 ─────────────────────────────────────────────────────
+#
+# Cuatro correcciones a 1.3.0. NINGUNA cambia una regla: son dos comentarios,
+# una cita y un error de razonamiento dentro de `frescura.razon`. Se sube la
+# versión en vez de editar 1.3.0 en silencio porque 1.3.0 ya se publicó, y una
+# versión que cambia sin decirlo es exactamente la deriva que este contrato
+# existe para impedir.
+#
+#   · `frescura.razon` decía que congelar el corpus contestaba si PROFECO había
+#     dejado de publicar. NO la contesta: la silencia. La pregunta se muda a
+#     `pendientes`, donde puede seguir abierta sin una alarma que la tape.
+#   · `medido_en_el_corpus` citaba «perfilado.md §2». Esas cifras viven en §1.
+#   · El bloque del diccionario mezclaba poblaciones: las 1,650 entradas son del
+#     CORPUS; dentro del alcance se usan 455 de ellas.
+#   · La cabecera de 1.3.0 presentaba `catalogo` y `estado` como una pérdida en
+#     curso, mientras el comentario de la propia lista decía -correctamente- que
+#     el perfilado las midió limpias. Se alinean: es precaución, no hallazgo.
+#
+# Y se define `gemelo_unico_de_igual_longitud` con precisión, más la advertencia
+# de que un valor puede traer MÁS DE UN `?`. Las dos salieron de auditar el
+# diccionario contra perfilado.md: la suma de su columna `filas` da 1,088,196,
+# exactamente las apariciones reparables declaradas, y sus 1,650 entradas son
+# los 1,738 valores rotos distintos menos los 63 ambiguos y los 25 sin gemelo.
 
 # ── Qué cambió en 1.3.0 ─────────────────────────────────────────────────────
 #
@@ -17,18 +67,26 @@ autor: alm
 #     corpus congelado, la alarma permanente era ruido por diseño.
 #   · `reparar_interrogantes.aplica_a` gana `catalogo` y `estado`, que su propio
 #     comentario ya prometía y la lista no traía. Son las DOS columnas con las
-#     que se filtra el alcance: un `Michoac?n` o un `B?sicos` se saldría del
-#     alcance SIN incidente, que es la pérdida silenciosa que este proyecto
-#     existe para detectar.
+#     que se filtra el alcance, y un `Michoac?n` o un `B?sicos` sin reparar se
+#     saldría del alcance SIN incidente. ES PRECAUCIÓN, NO HALLAZGO (corregido en
+#     1.3.1): perfilado.md §1 midió el `?` sobre los 21,357,873 renglones y esas
+#     dos columnas -más `cadena_comercial`- salieron limpias. El diccionario no
+#     trae una sola entrada suya. Se agregan porque cuestan cero y porque esta
+#     fuente ya demostró que se degrada; no porque se haya observado el caso.
 #   · El diccionario del mojibake se mueve a `contracts/`, porque en
 #     `docs/datos/perfilado/` no puede entrar al repositorio: `.gitignore`
 #     línea 20 tiene `*.csv`.
 #   · Se cierran los dos «CONFIRMAR»: el ADR 005 se ratificó y el ADR 001
 #     también.
 #   · Los comentarios que describían H3 se actualizan al ADR 013.
+#     ^ REVERTIDO en 1.3.2: el ADR 013 quedó retirado y H3 sigue siendo la
+#       hipótesis de la reconciliación. Ver el ADR 014.
 #
-# H3 dejó de ser la hipótesis de la reconciliación. Lo mide H5 y lo explica el
-# ADR 013; este contrato sólo deja de afirmar lo que ya no es cierto.
+# [1.3.0 decía aquí: «H3 dejó de ser la hipótesis de la reconciliación. Lo mide
+#  H5 y lo explica el ADR 013». ERA FALSO desde el 28 de septiembre por la
+#  tarde, y se deja tachado en vez de borrado para que el desvío quede a la
+#  vista. H3 nunca dejó de serlo: el conteo que sostenía esa frase era 18 y el
+#  recuento lo dejó en 30.]
 
 # 1.2.1 · los tres campos POR_MEDIR quedan cerrados con cifras propias del
 # alcance (medir-para-contrato.py, 17-sep-2026). Ninguna se copió de otra
@@ -125,8 +183,19 @@ frescura:
     POR QUÉ NO APLICA HOY, y por qué 1.2.1 se equivocaba aquí. La versión
     anterior decía que con el corpus hasta 2026-07-31 la regla «marca incidente
     desde el día uno» y que eso era correcto, porque o PROFECO dejó de publicar o
-    no habíamos descargado. Ya no es ninguna de las dos: el ADR 010 congeló el
-    corpus A PROPÓSITO. Un corpus congelado no está rancio, está congelado.
+    no habíamos descargado. Lo que estaba mal no era el diagnóstico sino lo que
+    se hacía con él: el ADR 010 congeló el corpus A PROPÓSITO, así que hoy no se
+    descarga más por decisión nuestra y la alarma no informa de nada. Un corpus
+    congelado no está rancio, está congelado.
+
+    Y AQUÍ 1.3.0 SE EQUIVOCÓ, con estas palabras: «ya no es ninguna de las dos».
+    Sí lo es. Congelar el corpus dice qué ingerimos nosotros; NO dice si PROFECO
+    publicó agosto y septiembre. Esa pregunta sigue abierta y sigue importando
+    -si la fuente dejó de publicar, el producto que este proyecto propone se
+    queda sin insumo, y eso es un hallazgo del trabajo, no un detalle de
+    operación-. Apagar la compuerta la silencia; no la contesta. Por eso la
+    pregunta pasa a `pendientes.publicacion_de_la_fuente`, donde se contesta
+    consultando el portal.
 
     Dejar la regla encendida contra un congelamiento deliberado enciende una
     alarma permanente por diseño, y una alarma que siempre está prendida enseña
@@ -162,6 +231,10 @@ normalizacion:
       escribir (`Camar?n`, `Art?culos`, `Bocinas Port?tiles`). El `?` NO se
       normaliza a la letra que se comió, así que sin reparación cada valor roto
       es un artículo aparte.
+
+      Un valor puede traer MÁS DE UN `?`: 196 de las 1,650 entradas del
+      diccionario (11.9%) los tienen -`F?rmula L?ctea` -> `Fórmula Láctea`-.
+      Quien implemente esto no puede asumir uno solo por valor.
     aplica_a: [producto, presentacion, marca, categoria, cadena_comercial,
                giro, nombre_comercial, direccion, municipio,
                catalogo, estado]
@@ -175,7 +248,25 @@ normalizacion:
       # al alcance y NO genera incidente -se pierde en silencio, que es
       # exactamente el fallo que este proyecto existe para detectar-.
     metodo: gemelo_unico_de_igual_longitud
-    diccionario: contracts/mojibake-diccionario.csv              # 1,650 entradas
+      # 1.3.1 · definición exacta, para que no haya dos implementaciones. El
+      # gemelo mide lo mismo carácter por carácter y coincide en TODA posición
+      # donde el roto no lleva `?`. Si hay más de un candidato, es ambiguo y cae
+      # en la regla de abajo. Verificado sobre el diccionario entero: 0 pares de
+      # distinta longitud, 0 pares que difieran fuera de la posición del `?`,
+      # 0 claves (columna, valor_roto) repetidas.
+    diccionario: contracts/mojibake-diccionario.csv   # 1,650 entradas · CORPUS
+      # 1.3.1: las 1,650 son del CORPUS, no del alcance. Dentro del alcance se
+      # aplican 455 de ellas -ver `medido_en_el_alcance`-. Se dice porque este
+      # contrato ya se equivocó tres veces mezclando poblaciones (ver
+      # `medicion.advertencia`) y ésta es justo la cifra con la que alguien
+      # decidiría si el archivo está completo.
+      #
+      # Columnas: columna, valor_roto, reparado, filas. COMPROBABLE sin correr
+      # nada: la suma de `filas` da 1,088,196, exactamente las apariciones
+      # reparables que declara perfilado.md §1; y 1,650 son los 1,738 valores
+      # rotos distintos de esa misma tabla menos los 63 ambiguos y los 25 sin
+      # gemelo.
+      #
       # 1.3.0: se mueve desde docs/datos/perfilado/. Ahí NO podía entrar al
       # repositorio -`.gitignore` línea 20 ignora `*.csv`- y sin el archivo el
       # contrato no es ejecutable por nadie más. Requiere una excepción:
@@ -189,7 +280,11 @@ normalizacion:
     sin_gemelo:
       accion: cuarentena
       motivo: codificacion_irrecuperable
-    medido_en_el_corpus:  # perfilado.md §2 — NO son las cifras del alcance
+    medido_en_el_corpus:  # perfilado.md §1 — NO son las cifras del alcance
+      # 1.3.1: decía «§2». La tabla del `?` por columna y los tres porcentajes de
+      # abajo están en la sección 1 (Estructura). Las citas a «§2 regla N» que
+      # este contrato hace en otros campos SÍ son correctas: la sección 2 tiene
+      # las siete reglas numeradas.
       filas_afectadas: 770273        # 3.61% de 21,357,873
       reparable_pct: 96.82
       ambiguo_pct: 2.82
@@ -314,7 +409,8 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 
     Este campo se mide sobre el alcance, con la normalización canónica y con el
     `?` ya reparado, y ése es el tamaño del catálogo que el producto expone y
-    sobre el que se mide H5 -la reconciliación de presentaciones, ADR 013-.
+    sobre el que se califica H3 -la reconciliación de nombres de artículo entre
+    cadenas, ADR 004, cuyo recuento vigente está en el ADR 014-.
 
     MEDIDO: 1,597 artículos sobre 303 productos, una media de 5.3
     presentaciones por producto. Es mucho más chico de lo que cualquiera de las
@@ -325,8 +421,9 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 
     Que sean 1,597 y no 5,015 cambia dos cosas prácticas. Para C1 y C2, el
     catálogo cabe entero en memoria y la pantalla de búsqueda no necesita
-    paginación agresiva. Para H5, los 1,597 son la población entera sobre la que
-    se mide la cobertura: no una muestra, el catálogo completo.
+    paginación agresiva. Para H3, es la población de la que sale la muestra de
+    200 pares del ADR 004 §1: el estrato difícil se construye sobre estos 1,597,
+    no sobre los 5,015 del corpus.
 
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
@@ -577,6 +674,42 @@ pendientes:
       limpieza, bebidas, tabaco y temporada. Eso es lo que la vista por omisión
       tiene que administrar, y por eso la decisión de presentación importa más
       de lo que parecía.
+  - id: publicacion_de_la_fuente
+    que: >
+      ¿PROFECO publicó agosto y septiembre de 2026? El corpus llega al
+      2026-07-31 y el ADR 010 lo congeló a propósito, así que la compuerta de
+      frescura ya no lo pregunta. 1.3.0 escribió que congelar el corpus dejaba
+      la pregunta sin objeto; no es así: la silencia.
+
+      Importa, y no para la ingesta de este semestre -que corre sobre el corpus
+      congelado y no depende de esto-. Importa porque si la fuente dejó de
+      publicar, el producto que este proyecto propone se queda sin insumo, y eso
+      es un hallazgo del trabajo. Se contesta consultando el portal, no leyendo
+      una alarma.
+
+      Va junto al pendiente 5 del informe de perfilado -«si PROFECO publica
+      2024»-, que es la misma consulta hacia atrás. Conviene hacer las dos en
+      una sola visita al portal.
+  - id: vocabulario_que_no_identifica
+    que: >
+      Hallazgo del recuento de H3 (ADR 014 §5 bis, 28-sep-2026), y entra al
+      contrato porque es una tabla de decisiones como la del mojibake.
+
+      Los 12 «sí» que encontró la segunda lectura NO son variantes ortográficas:
+      son COLOR DE EMPAQUE -`con envoltura` contra `con envoltura rosa`, `talco
+      200 gr azul` contra `rosa`- y NOMBRE DE LÍNEA COMERCIAL -`liquido limon`
+      contra `liquido pure lemon`-. Difieren en una palabra entera, así que ni la
+      normalización canónica ni una comparación difusa los unen: bajar el umbral
+      hasta juntarlos uniría también `congelado` con `descongelado`.
+
+      HACE FALTA una lista de palabras que NO identifican al artículo, que se
+      quiten antes de comparar -igual que el diccionario del `?` repara antes de
+      normalizar-. Y no puede ser global: `azul` no identifica un jabón pero SÍ
+      identifica `agave azul` en el tequila, y `blanco` contra `integral` sí
+      identifica un pan de caja. Tiene que ser por producto o por categoría.
+
+      Vive aquí cuando exista, con su archivo versionado en `contracts/` y su
+      regla de quién aprueba una entrada. Lo implementa A en T053, semana 8.
   - id: compuerta_fina_de_precio
     que: >
       El techo por catálogo no atrapa el error de captura típico (ver

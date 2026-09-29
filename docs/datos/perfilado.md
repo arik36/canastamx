@@ -74,13 +74,37 @@ explicado bloque por bloque, está en `recapitulado-perfilado.md`.
 > | cuenta | valor | definición |
 > |---|---:|---|
 > | literales, corpus completo | **896** | tal como vienen, incluidas las filas con `?` |
-> | literales, corpus sin `?` | **891** | tal como vienen, sin texto corrompido |
+> | literales, corpus sin `?` | **891** ⚠ · ver abajo | tal como vienen, sin texto corrompido |
 > | claves normalizadas, corpus sin `?` | **816** | tras la normalización canónica |
 >
 > Cinco de los 896 son artículos fantasma que crea el `?`, y otros 75
 > literales se colapsan al normalizar. La diferencia entre 896 y 816 no es
 > ruido de medición: **son dos preguntas distintas**, «cuántas formas de
 > escribir hay» y «cuántos productos hay».
+>
+> ### ⚠ El 891 no cuadra · pendiente de volver a medir · 28-sep-2026
+>
+> **La sección 3 da otro número para lo mismo.** Su tabla de variantes declara
+> **821** literales crudos de `producto` sobre las filas sin `?`, y este recuadro
+> declara 891. Las dos cuentas dicen ser «literales de `producto` en el corpus sin
+> `?`» y no pueden ser las dos.
+>
+> **La aritmética apoya el 821.** La tabla del `?` por columna, en esta misma
+> sección, dice que `producto` tiene **75** valores distintos con `?`:
+> 896 − 75 = **821**. Y la misma resta cuadra exacta en `marca`:
+> 1,439 − 99 = 1,340, que es lo que la sección 3 declara.
+>
+> **Dos cosas más de la misma familia, anotadas aquí para que se midan juntas:**
+>
+> | | |
+> |---|---|
+> | `presentacion` falla por 5 | 5,961 − 636 = **5,325**, y la sección 3 declara **5,320** |
+> | `productos distintos: 891` en «Presentaciones por producto» | arrastra el mismo número dudoso; si son 821, la media de 6.8 presentaciones y el «137 de 891» se mueven |
+>
+> **Qué NO se ve afectado, y por eso esto es un defecto de documentación y no de
+> resultados:** el contrato mide sobre el alcance, donde los productos son **303**
+> y los artículos **1,597**, cifras de `medir-para-contrato.py` que no dependen de
+> esta resta. El informe v1 cita 896 y 816, y se salta el 891.
 
 **«Ausente» y «vacío» no son lo mismo, y por eso van en columnas separadas.**
 «Ausente» quiere decir que el archivo **no trae esa columna**: es una estructura
@@ -359,7 +383,9 @@ Medido sobre los 21,357,873 registros:
 | **· posible centinela** (en el extremo) | **8** | **4,246** | **0.0199%** |
 
 **El 97% de lo que la primera versión llamaba «centinela» son precios reales.**
-Los diez más grandes de esa clase, para que se vea por qué:
+Los siete más grandes de esa clase, para que se vea por qué:
+<!-- 28-sep-2026: decía «los diez» y la tabla trae siete. Se corrige el texto en
+     vez de inventar tres renglones: los siete son los que se midieron. -->
 
 | producto | precio | veces | posición | mediana | razón |
 |---|---:|---:|---:|---:|---:|
@@ -544,6 +570,14 @@ normaliza a la letra que se comió: `Art?culos` y `Artículos` quedarían como d
 artículos distintos. Contaminaban **1,215 de 6,962 claves (17.5%)** — artículos
 fantasma, no variantes de escritura.
 
+<!-- 28-sep-2026: 423,676 NO contradice las 770,273 de la sección 1. Aquélla
+     cuenta filas con `?` en cualquiera de las 11 columnas de texto; ésta cuenta
+     sólo las que lo traen en `producto`, `presentacion` o `marca`, que son las
+     tres que forman la clave de esta medición. Las ocurrencias en esas tres
+     suman 466,425, así que 423,676 filas es consistente -una fila puede traer
+     `?` en más de una-. Faltaba decirlo: dos cifras distintas para algo que se
+     llama igual es exactamente lo que este documento advierte en su cabecera. -->
+
 | | por `producto` | por `presentacion` | por `marca` | **por artículo (el trío)** |
 |---|---:|---:|---:|---:|
 | literales crudos | 821 | 5,320 | 1,340 | **7,389** |
@@ -603,6 +637,30 @@ difusa para esto.
 > **Conclusión corregida: la comparación difusa sí hace falta**, tal como el
 > protocolo la comprometió desde el principio. La corrección formal va en el
 > **ADR 004**; el ADR 002 no se edita porque está aceptado.
+>
+> ### Confirmado con medición · 28 de septiembre de 2026
+>
+> **Lo de arriba era un argumento; ahora tiene número.** La muestra de 200 pares
+> construida sobre claves **distintas** —las únicas donde la normalización puede
+> fallar— se calificó, y en la mitad de mayor parecido **30 de 100 pares eran el
+> mismo artículo que la normalización determinista no unió**. La tasa de omisión
+> de la normalización vigente sobre el estrato difícil es, entonces, del 30%.
+>
+> **Y el tipo de fallo no es el que se esperaba.** No son plurales ni acentos: los
+> casos que aparecieron son **color de empaque** (`con envoltura` contra `con
+> envoltura rosa`, `talco 200 gr azul` contra `rosa`) y **nombre de línea
+> comercial** (`liquido limon` contra `liquido pure lemon`). Difieren en una
+> palabra entera, así que **ni la normalización ni una comparación difusa los
+> unen**: hace falta un tercer mecanismo, una lista de palabras que no identifican
+> al artículo, y por producto o categoría —porque `azul` no identifica un jabón
+> pero sí identifica `agave azul`—.
+>
+> El recuento, con la cadena de fechas y quién lo hizo, en el **ADR 014**. La
+> segunda lectura de la muestra la hizo Karen (C2), sin conocer el conteo previo.
+>
+> **El 1.29 de arriba sigue siendo el número correcto de lo que se midió.** Lo que
+> cambió es que ya no hay que discutir si la medición servía: hay otra medición,
+> hecha donde sí se puede fallar, y falla el 30% de las veces.
 
 En los diez grupos de control tomados al azar aparecen dos casos de mojibake
 —`Coctel de Frutas en Alm?bar`, `Ma?z Pozolero`— que confirman lo dicho arriba:
@@ -646,6 +704,12 @@ De cada 7.4 presentaciones escritas por producto, 6.8 son distintas de verdad.
 Sólo 0.6 son cómo se escribió. **El problema no es de normalización: es de
 modelo de datos.**
 
+<!-- 28-sep-2026: el 7.4 no sale de ninguna tabla de este documento. La división
+     más cercana, 5,320 literales de presentacion / 891 productos, da 5.97. Hay
+     que reponer la cifra o quitar la frase; la conclusión -que el problema es de
+     modelo y no de escritura- no depende de ella y se sostiene con la media de
+     6.8 presentaciones y el máximo de 248. -->
+
 <!-- Para saber qué producto tiene las 248 presentaciones:
 SELECT producto, count(DISTINCT presentacion) n
 FROM read_parquet('~/canastamx-datos/procesado/por_archivo/*.parquet', union_by_name=true)
@@ -658,12 +722,23 @@ GROUP BY producto ORDER BY n DESC LIMIT 5; -->
      4 a 8 variantes  → normal. 85% alcanzable con comparación difusa
      más de 10        → hay que bajar la meta o acotar el recorte -->
 
+> **REFUTADO con medición · 28 de septiembre de 2026.** Lo que sigue en este
+> apartado, hasta el subtítulo «Pero H3 tiene un segundo eje», **no se sostiene**,
+> y se conserva sin borrar porque es lo que se creía el 9 de septiembre. La
+> medición correcta ya existe y dice lo contrario: sobre los pares que la
+> normalización NO unió, **30 de cada 100 eran el mismo artículo**. La
+> comparación difusa hace falta —y ni siquiera alcanza—. Ver la nota «Confirmado
+> con medición» de arriba y el **ADR 014**.
+
 **1.29 variantes por artículo cae en la primera banda. En el eje de la
-escritura, H3 está holgada y no hace falta comparación difusa.**
-*(Ver la corrección de arriba: esta lectura se apoya en la misma medición
-circular y el ADR 004 la revisa.)* La verificación manual lo respalda: los cinco grupos revisados difieren sólo en mayúsculas y
+escritura, H3 está holgada y no hace falta comparación difusa.** La verificación
+manual lo respalda: los cinco grupos revisados difieren sólo en mayúsculas y
 acentos, que es exactamente lo que una normalización determinista resuelve al
 100%. La meta del 85% no está en riesgo por este lado.
+
+> **Y por qué esa última frase era el error entero, en una línea:** «por este
+> lado» sólo mira los pares que la normalización YA unió. Los que no unió no
+> aparecen en ninguna de estas cifras, y ahí es donde falla el 30%.
 
 **Pero H3 tiene un segundo eje que estas cifras no cubren, y ahí sí hay decisión
 que tomar.** Emparejar «leche» con un precio no es un problema de ortografía: es

@@ -9,17 +9,26 @@
 sabía el 11 de septiembre y qué se recomendó con esa información.
 
 > **Este documento sigue fechado el 18 de septiembre y su cuerpo no se reescribe.**
-> Después de esa fecha pasaron tres cosas que lo afectan: se calificó la muestra
-> de H3 y **H3 no resultó contrastable** (ADR 013), el contrato subió a 1.3.0, y
-> se descubrió que dos casillas de la conclusión 2 afirmaban una corrección del
-> protocolo que **nunca se aplicó**. Lo falso se corrige en el lugar donde
-> estaba; lo nuevo se agrega fechado. El recuento completo está al final, en
+> Después de esa fecha pasaron cuatro cosas que lo afectan: se calificó la muestra
+> de H3, **H3 quedó confirmada como contrastable y se mide como está enunciada**
+> (ADR 004, con el recuento del ADR 014), el contrato subió a 1.3.2, y se descubrió
+> que dos casillas de la conclusión 2 afirmaban una corrección del protocolo que
+> **nunca se aplicó**. Lo falso se corrige en el lugar donde estaba; lo nuevo se
+> agrega fechado. El recuento completo está al final, en
 > [**Qué cambió después del 18 de septiembre**](#qué-cambió-después-del-18-de-septiembre).
+>
+> **Aviso sobre una versión intermedia de este documento.** Entre la mañana y la
+> tarde del 28 de septiembre este informe llevó un bloque que decía que H3 no
+> había resultado contrastable, apoyado en el ADR 013. **Ese ADR quedó retirado el
+> mismo día** y este informe lo corrige abajo, con la explicación. Si alguien tiene
+> una copia con ese texto, es la equivocada.
 
 Las decisiones en firme viven en los ADR: [001 · fuente y
 recorte](../adr/001-fuente-de-datos.md), [002 · identidad del
 artículo](../adr/002-identidad-del-articulo.md), [005 · recorte de
-catálogos](../adr/005-recorte-de-catalogos.md), y **004 · cómo se mide H3**.
+catálogos](../adr/005-recorte-de-catalogos.md), [004 · cómo se mide
+H3](../adr/004-h3-como-se-mide.md) y [014 · el recuento de la muestra de
+H3](../adr/014-recuento-h3.md).
 El contrato de datos está en [`contracts/qqp-v1.yaml`](../../contracts/qqp-v1.yaml).
 
 ---
@@ -328,32 +337,55 @@ Hacerlo en noviembre porque no salió es otra cosa.**
 
 > ### Resultado · 28 de septiembre de 2026
 >
-> **Los dos párrafos de arriba se conservan palabra por palabra, y ésa es la
-> razón por la que importan.** Fueron escritos el 18 de septiembre, antes de
-> calificar un solo par, y dejaron apuntada la alternativa con nombre. Lo que
-> sigue es lo que pasó después, y no cambia una coma de lo anterior.
+> **Los dos párrafos de arriba se conservan palabra por palabra**, porque fueron
+> escritos el 18 de septiembre, antes de calificar un solo par, y porque la
+> historia de este resultado es la parte que vale.
 >
-> **La muestra se calificó y la regla del ADR 004 se activó en contra del
-> resultado que convenía: 18 «sí» en la mitad por parecido, con el umbral en
-> 20.** Dos calificaciones propias —los pares 026 y 029— estaban mal hechas y se
-> corrigieron a «no»; se habían justificado por frecuencia de filas, que es
-> exactamente el criterio que el ADR 004 había rechazado por escrito. La muestra
-> no se regeneró y ningún otro par se tocó.
+> **La muestra se calificó tres veces y el conteo se movió dos.**
 >
-> **H3 no resultó contrastable sobre esta fuente**, por dos razones medidas e
-> independientes: el fenómeno que nombra casi no está (1.29 formas por artículo,
-> mediana 1), y su métrica de cobertura no puede fallar —lo dice este mismo
-> informe, en esta misma sección, desde el 18 de septiembre—.
+> | | mitad por parecido | rama del ADR 004 |
+> |---|---:|---|
+> | Primera calificación · 24-sep · A, no a ciegas | **20** de 100 | primera · margen cero |
+> | Se corrigen dos pares propios · 28-sep · A | **18** | segunda · se abandona H3 |
+> | **Segunda lectura independiente · 28-sep · Karen (C2)** | **30** | **primera** · H3 se mide como está |
 >
-> **H3 no se reenuncia: se reporta con sus criterios de 85% y 90% intactos**, y
-> la reconciliación entra como **hipótesis nueva, H5 · reconciliación de
-> presentaciones**, con sus umbrales pendientes de un ADR de piloto que se
-> escribe *antes* de medir. Se numera H5 y no H3′ a propósito: renumerarla
-> borraría el rastro de que se planteó, se intentó contrastar y se encontró
-> algo.
+> **El conteo vigente es 30 y la rama es la primera: H3 se mide como está
+> enunciada**, con cobertura ≥ 85% y precisión ≥ 90%. Es la misma decisión que el
+> ADR 004 tomó el 17 de septiembre; el umbral de 20 nunca se movió.
 >
-> Todo lo anterior, con la evidencia y la cadena de fechas, en el
-> [**ADR 013**](../adr/013-h3-resultado-y-h5.md).
+> **Qué pasó en el medio, y es lo que hay que contar.** Dos calificaciones propias
+> —los pares 026 y 029— estaban mal hechas: se habían justificado por frecuencia
+> de filas, el criterio que el ADR 004 rechazó por escrito. Corregirlas bajó el
+> conteo a 18, y de ahí salió el **ADR 013**, que declaró H3 no contrastable. Ese
+> ADR **quedó retirado el mismo día** y no sólo por el conteo: sus dos argumentos
+> tampoco se sostenían. Uno se apoyaba en el 1.29 de la sección 3 de este informe,
+> que este informe declara circular. El otro confundía una crítica a
+> `h3-entre-cadenas.py` con una crítica a la hipótesis.
+>
+> **Lo que lo destrabó fue una segunda lectora.** Karen releyó 32 de los 82 «no»
+> de la mitad por parecido —**73 de ellos no llevaban una sola palabra de razón**—
+> sin conocer el conteo ni el ADR 013, y encontró 12 «sí». Aunque se descartara
+> todo lo discutible de su lectura y se contaran sólo los cuatro colores de
+> envoltura que nadie puede rebatir, el conteo sería 22 y la rama la misma.
+>
+> **Y lo que encontró cambia el diseño, no sólo el número.** Los 12 «sí» **no son
+> variantes ortográficas**: son color de empaque (`con envoltura` contra `con
+> envoltura rosa`, `talco azul` contra `rosa`) y nombre de línea comercial
+> (`limón` contra `pure lemon`). Difieren en una palabra entera, así que ni la
+> normalización ni una comparación difusa los unen. Hace falta una **lista de
+> palabras que no identifican al artículo**, por producto o por categoría, porque
+> `azul` no identifica un jabón pero sí identifica `agave azul`.
+>
+> **La tasa de omisión que este informe puede afirmar hoy: 30 de cada 100** pares
+> de alta similitud que la normalización vigente no unió eran el mismo artículo.
+> El expediente decía 20.
+>
+> **H5 queda sin efecto.** Era el instrumento de la segunda rama, que no aplicó.
+> El problema de las presentaciones sigue siendo real y sigue anotado en el
+> ADR 004 §4; si alguna vez es hipótesis, será con un ADR propio.
+>
+> Todo lo anterior, con la cadena de fechas y los nombres, en el
+> [**ADR 014**](../adr/014-recuento-h3.md).
 
 ---
 
@@ -364,7 +396,7 @@ Hacerlo en noviembre porque no salió es otra cosa.**
 | 1 | Volumen del recorte de siete entidades | **cerrado** · 4,384,962 |
 | 2 | El recorte de productos | **cerrado** · ADR 005 · 2,658,906 |
 | 3 | El «~6,000» mal puesto | **cerrado** · 5,015 corpus · 1,597 alcance |
-| 4 | Los pares de H3 | **cerrado** · muestra construida y calificada → ADR 004 · *resultado el 28-sep → ADR 013* |
+| 4 | Los pares de H3 | **cerrado** · muestra construida y calificada → ADR 004 · *recontada el 28-sep por segunda lectura: 30 «sí» → ADR 014* |
 | 5 | Si PROFECO publica 2024 | **por confirmar** · consulta al portal |
 
 ---
@@ -452,11 +484,13 @@ incompletas: falsas— y lo que se agregó va fechado y marcado.
 
 | # | qué | dónde quedó en este documento | fuente |
 |---|---|---|---|
-| 1 | **H3 no resultó contrastable.** 18 «sí» de 20 en la mitad por parecido; la regla del ADR 004 se activó y se siguió | bloque «Resultado · 28 de septiembre» al cierre de la pregunta 3, sin borrar lo anterior | [ADR 013](../adr/013-h3-resultado-y-h5.md) |
-| 2 | **Entra H5 · reconciliación de presentaciones**, con umbrales pendientes de un ADR de piloto | mismo bloque | [ADR 013](../adr/013-h3-resultado-y-h5.md) §5.3 |
-| 3 | **Dos calificaciones propias estaban mal hechas** (pares 026 y 029, justificadas por frecuencia de filas, criterio que el ADR 004 rechazaba) | mismo bloque | `perfilado/h3-muestra-para-calificar.txt`, líneas `CORREGIDO` |
-| 4 | **«Corregido en el protocolo» era falso** en territorio y ventana: se decidió, no se aplicó | tabla de la conclusión 2 y el blockquote que sigue | [pliego de correcciones](../entregas/pliego-correcciones-protocolo.md) |
-| 5 | **El contrato subió a 1.3.0.** La ventana se cierra en `2025-01-01 … 2026-07-31`, la frescura gana bloqueo a 45 días y se suspende mientras el corpus esté congelado, y `reparar_interrogantes` gana `catalogo` y `estado` | no se toca el cuerpo · ver la nota de abajo | [`contracts/qqp-v1.yaml`](../../contracts/qqp-v1.yaml) |
+| 1 | **H3 se mide como está enunciada.** 30 «sí» de 100 en la mitad por parecido contra un umbral de 20; la primera rama del ADR 004 | bloque «Resultado · 28 de septiembre» al cierre de la pregunta 3, sin borrar lo anterior | [ADR 014](../adr/014-recuento-h3.md) |
+| 2 | **El ADR 013 quedó retirado el mismo día que se escribió.** Declaró H3 no contrastable con un conteo de 18 y dos argumentos que no se sostienen | mismo bloque | [ADR 013](../adr/013-h3-resultado-y-h5.md), con su nota de retiro |
+| 3 | **Tres calificaciones revisadas.** Dos propias mal hechas (pares 026 y 029, por frecuencia de filas) y 12 «sí» que encontró la segunda lectura de Karen | mismo bloque | `perfilado/h3-muestra-para-calificar.txt`, líneas `CORREGIDO` y `RECUENTO` |
+| 3 · b | **Los «sí» no son ortográficos: son color de empaque y línea comercial.** Ni la normalización ni el difuso los unen; hace falta una lista de palabras que no identifican | mismo bloque | [ADR 014](../adr/014-recuento-h3.md) §5 bis |
+| 4 | **H5 queda sin efecto** · era el instrumento de una rama que no aplicó | mismo bloque | [ADR 014](../adr/014-recuento-h3.md) §5 |
+| 5 | **«Corregido en el protocolo» era falso** en territorio y ventana: se decidió, no se aplicó | tabla de la conclusión 2 y el blockquote que sigue | [pliego de correcciones](../entregas/pliego-correcciones-protocolo.md) |
+| 6 | **El contrato subió a 1.3.2.** La ventana se cierra en `2025-01-01 … 2026-07-31`, la frescura gana bloqueo a 45 días y se suspende mientras el corpus esté congelado, y `reparar_interrogantes` gana `catalogo` y `estado`. 1.3.1 corrigió cuatro cosas suyas y 1.3.2 devolvió a H3 los comentarios que 1.3.0 le había pasado a H5 | no se toca el cuerpo · ver la nota de abajo | [`contracts/qqp-v1.yaml`](../../contracts/qqp-v1.yaml) |
 
 **Sobre la compuerta de frescura**, que este informe recomendó *«que se quede
 como está en vez de aflojarla para que no moleste»*: el umbral de aviso **sigue
@@ -470,7 +504,23 @@ añade `no_aplica_mientras: corpus_congelado` y separa **avisar** (20 días) de
 ruido que ella misma generaba por una decisión ajena, y se dejó escrito de qué
 depende que vuelva a aplicar.
 
-**Lo que este informe midió no cambió.** Ninguna de las cifras de las secciones 1
+**Lo que apagar la compuerta NO contesta**, y conviene decirlo porque el contrato
+1.3.0 lo dio por contestado y 1.3.1 lo corrige: **sigue sin saberse si PROFECO
+publicó agosto y septiembre.** Congelar el corpus dice qué ingerimos nosotros, no
+qué publicó la fuente. La pregunta que este hallazgo abrió sigue abierta —ahora
+en `pendientes.publicacion_de_la_fuente` del contrato— y se contesta visitando el
+portal, no leyendo una alarma. Va con el pendiente 5 de la tabla de arriba, que
+es la misma consulta hacia atrás.
+
+**Una cosa que este informe midió sí cambió de significado, aunque no de valor.**
+El **1.29 formas por artículo** de la sección 3 sigue siendo el número correcto de
+lo que se midió, y esa misma sección ya explicaba desde el 18 de septiembre que la
+medición era circular. Lo que pasó el 28 es que **quedó comprobado con datos**: la
+muestra construida sobre claves distintas, donde la normalización sí puede fallar,
+dio 30 fallos de 100. La nota de corrección de la sección 3 tenía razón, y ahora
+tiene medición detrás en vez de sólo un argumento.
+
+**Lo demás que este informe midió no cambió.** Ninguna de las cifras de las secciones 1
 a 3 se movió: los 21,357,873 del corpus, los 2,658,906 del alcance, los 1,597
 artículos, el 3.61% de mojibake y los dos valores irrecuperables siguen siendo
 los mismos números, medidos sobre las mismas poblaciones. Lo que cambió es una
