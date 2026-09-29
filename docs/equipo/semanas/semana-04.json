@@ -1,0 +1,70 @@
+{
+  "semana": 4,
+  "del": "2026-09-28",
+  "al": "2026-10-04",
+  "hito": "E2 — Análisis",
+  "fuente": "Panel CanastaMX (tareas T036 a T040) y docs/equipo/cronograma.md, que llama «Semana 5» a estas mismas fechas",
+  "tareas": [
+    {
+      "id": "T036",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "fecha": "2026-10-04",
+      "titulo": "[S4][Datos] Casos de uso CU-01 a CU-07 y BPMN de ingesta e incidentes",
+      "que": "Escribir CU-01 a CU-07, los del subsistema de datos, con la plantilla Cockburn de `docs/analisis/casos-uso/PLANTILLA.md`. CU-02 (validar un lote contra el contrato de datos) ya está especificado en el protocolo y sirve de modelo. Dibujar dos diagramas BPMN: el proceso de ingesta y el proceso de atención de un incidente de calidad.",
+      "criterio": "Los siete casos existen y cada uno tiene flujos alternos; un caso sin flujos alternos está incompleto. Los dos BPMN están en `docs/analisis/` exportados como imagen, junto con su archivo fuente para poder editarlos.",
+      "donde": "docs/analisis/",
+      "depende": []
+    },
+    {
+      "id": "T037",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "fecha": "2026-10-04",
+      "titulo": "[S4][Infra] Contratos OpenAPI acordados entre los tres servicios",
+      "que": "Coordinar el acuerdo de los contratos OpenAPI entre los tres servicios, para que nadie construya contra una interfaz imaginaria: una sesión de una hora con quien publica y quien consume cada uno, para fijar nombres de campos y respuestas. Publicar primero el del servicio de dominio, porque la primera llamada real de C2 (esta misma semana) lo consume.",
+      "criterio": "Tres archivos YAML en `docs/analisis/openapi/`, uno por servicio, aprobados en la solicitud de cambios por quien los va a consumir.",
+      "donde": "docs/analisis/openapi/",
+      "depende": []
+    },
+    {
+      "id": "T038",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "fecha": "2026-10-04",
+      "titulo": "[S4][Dominio] BPMN de alerta y modelo entidad-relación",
+      "que": "Diagrama BPMN del proceso de alerta y notificación al usuario. Modelo entidad-relación de la base transaccional (`postgres-oltp`), coherente con `docs/analisis/modelo-dominio.md`.",
+      "criterio": "El BPMN y el modelo entidad-relación existen en `docs/analisis/`; el entidad-relación trae cardinalidades y restricciones.",
+      "donde": "docs/analisis/",
+      "depende": []
+    },
+    {
+      "id": "T039",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "fecha": "2026-10-04",
+      "titulo": "[S4][Móvil] Primera llamada real al servicio de dominio",
+      "que": "Consumir el OpenAPI del dominio desde la app: primera llamada real. Hoy el único endpoint que existe es `GET /health`. Ojo: desde un teléfono, `localhost` es el propio teléfono; hay que usar la IP de la computadora en la red (en el emulador de Android es `10.0.2.2`).",
+      "criterio": "La app hace una llamada al servicio de dominio de C1 y muestra la respuesta en pantalla.",
+      "donde": "clients/mobile/",
+      "depende": ["T037"],
+      "nota_dependencia": "Además hay que poder correr el servicio de dominio: pide JDK 21 en la máquina de C2 (su `docs/equipo/entorno/c2.md` no lista Java), o que C1 lo levante en la misma red."
+    },
+    {
+      "id": "T040",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "fecha": "2026-10-04",
+      "titulo": "[S4][Web] Cerrar el prototipo y definir los tres puntos de quiebre",
+      "que": "Cerrar el prototipo navegable de las ocho vistas. Definir los tres puntos de quiebre y el comportamiento de cada vista en cada uno.",
+      "criterio": "El prototipo está cerrado en Figma, y el comportamiento por punto de quiebre está documentado en `docs/analisis/` junto con el enlace al prototipo.",
+      "donde": "Figma y docs/analisis/",
+      "depende": []
+    }
+  ]
+}
