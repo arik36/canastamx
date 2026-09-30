@@ -8,7 +8,7 @@
 > expediente cuyo valor es la trazabilidad.
 >
 > **Qué pasó.** Una segunda lectura independiente de la muestra, hecha por Karen
-> (C2) el mismo día y sin conocer el conteo, encontró **12 «sí» más** entre los 82
+> (D) el mismo día y sin conocer el conteo, encontró **12 «sí» más** entre los 82
 > «no» de la mitad por parecido —73 de los cuales no llevaban una sola palabra de
 > justificación—. El conteo pasó de **18 a 30**, con el umbral del ADR 004 en 20,
 > así que la regla se activa en su **primera** rama: **H3 se mide como está
