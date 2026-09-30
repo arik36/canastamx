@@ -231,7 +231,9 @@ par 015 · parecido 0.980
    ·  ya normalizados, la diferencia está aquí:
       A: jarabe p preparar bebidas · botella 700 ml horchata
       B: jarabe p preparar bebidas · botella 700 ml horchata azul
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es azul , que es color de empaque
 
 par 016 · parecido 0.979
    A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera
@@ -288,7 +290,9 @@ par 020 · parecido 0.977
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de tocador · barra 150 gr antibacterial
       B: jabon de tocador · barra 150 gr antibacterial rosa
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es rosa , que es color de empaque
 
 par 021 · parecido 0.977
    A  Cerveza · Paquete con 12 Latas de 355 Ml.
@@ -311,6 +315,7 @@ par 022 · parecido 0.977
       A: leche ultrapasteurizada · caja 1 lt parcialmente descremada azul
       B: leche ultrapasteurizada · caja 1 lt parcialmente descremada light
    ¿son el MISMO artículo?  [ ] sí   [x] no
+   ·  RESUELTO · 30-sep-2026 · veredicto no por P3 · «light» es propiedad nutricional; «azul» no cambia el veredicto
 
 par 023 · parecido 0.977
    A  Leche Ultrapasteurizada · Caja 1 Lt. Parcialmente Descremada. Light
@@ -344,7 +349,9 @@ par 025 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: detergente p trastes · botella 750 ml liquido limon
       B: detergente p trastes · botella 750 ml liquido verde limon
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es verde , que es color de empaque
 
 par 026 · parecido 0.976
    A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje. Primera
@@ -369,7 +376,9 @@ par 027 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de pasta · barra 400 gr con envoltura
       B: jabon de pasta · barra 400 gr con envoltura rosa
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es rosa , que es color de empaque
 
 par 028 · parecido 0.976
    A  Jabón de Pasta · Barra 400 Gr. con Envoltura
@@ -380,7 +389,9 @@ par 028 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de pasta · barra 400 gr con envoltura
       B: jabon de pasta · barra 400 gr con envoltura azul
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es azul , que es color de empaque
 
 par 029 · parecido 0.976
    A  Jitomate · 1 Kg. Granel. Saladette/huaje o Tomate Saladette/huaje
@@ -417,7 +428,11 @@ par 031 · parecido 0.976
    ·  ya normalizados, la diferencia está aquí:
       A: tequila · botella 950 ml reposado 100 de agave
       B: tequila · botella 950 ml reposado 100 de agave azul
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es azul , que es color de empaque
+   EN DISPUTA · veredicto correcto, clasificacion equivocada: `agave azul` es VARIEDAD botanica, no color de empaque. Cae en «si» porque todo el tequila es legalmente de agave azul (P3 · lo que la norma da por hecho)
+   ·  RESUELTO · 30-sep-2026 · veredicto sí por P3 · todo el tequila es legalmente de agave azul: es algo que la norma ya da por hecho (la razón «color de empaque» era la equivocada)
 
 par 032 · parecido 0.976
    A  Papel Higiénico · Paquete 4 Rollos. 300 Hojas Dobles
@@ -528,7 +543,9 @@ par 041 · parecido 0.972
    ·  ya normalizados, la diferencia está aquí:
       A: detergente p trastes · botella 750 ml liquido pure lemon
       B: detergente p trastes · botella 750 ml liquido verde limon
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es pure , que es pure lemon podría llegar a ser un tipo distinto de presentación pero me suena mas bien a que es lo mismo que limon
 
 par 042 · parecido 0.972
    A  Camarón · 1 Kg. Granel. Mediano. con Cabeza
@@ -583,7 +600,9 @@ par 046 · parecido 0.971
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de pasta · barra 400 gr con envoltura azul
       B: jabon de pasta · barra 400 gr con envoltura rosa
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es azul y rosa , que es color de empaque
 
 par 047 · parecido 0.971
    A  Papel Higiénico · Paquete 4 Rollos. 200 Hoja Dobles
@@ -628,6 +647,10 @@ par 050 · parecido 0.971
       A: tortilla de maiz · 1 kg granel amarilla
       B: tortilla de maiz · 1 kg granel amarilla chica
    ¿son el MISMO artículo?  [ ] sí   [x] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es chica , que es el hecho de que diga chica me haría pensar que es una presentación pero es la misma cantidad granel
+   EN DISPUTA · «chica» es TAMANO y P3 manda tamano a NO. Lo resuelve el equipo
+   ·  REGLA · 30-sep-2026 · no · P3 · «chica» es tamaño, y P3 manda tamaño a no
 
 par 051 · parecido 0.970
    A  Margarina · Caja Plástico 190 Gr. con Sal
@@ -661,6 +684,10 @@ par 053 · parecido 0.969
       A: tortilla de maiz · 1 kg granel blanca
       B: tortilla de maiz · 1 kg granel blanca chica
    ¿son el MISMO artículo?  [ ] sí   [x] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es chica , que es lo mismo que el otro par, si bien dice que una es chica los kilogramos son los mismos así que quizás es una palabra que se omitio
+   EN DISPUTA · «chica» es TAMANO y P3 manda tamano a NO. Lo resuelve el equipo
+   ·  REGLA · 30-sep-2026 · no · P3 · «chica» es tamaño, y P3 manda tamaño a no
 
 par 054 · parecido 0.969
    A  Calamar · 1 Kg. Granel. Tentáculos. Crudo. Congelado
@@ -771,7 +798,8 @@ par 063 · parecido 0.967
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de tocador · barra 135 gr
       B: jabon de tocador · barra 135 gr aqua
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   ·  REGLA · 30-sep-2026 · sí · Default · la calificadora escribió que «aqua» puede ser variante, aroma o línea: P3 no alcanza a decidir → sí
 
 par 064 · parecido 0.967
    A  Jabón de Tocador · Barra 150 Gr.
@@ -782,7 +810,11 @@ par 064 · parecido 0.967
    ·  ya normalizados, la diferencia está aquí:
       A: jabon de tocador · barra 150 gr
       B: jabon de tocador · barra 150 gr rosa
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es rosa , que es podria ser perfectamente el color del empáquelo clasificaría como igules
+   EN DISPUTA · la casilla vino como `[]`; y el par 063, de igual estructura, se califico NO
+   ·  RESUELTO · 30-sep-2026 · veredicto sí por el default · «rosa» puede ser color o aroma; el par 063 queda igual por la misma razón
 
 par 065 · parecido 0.967
    A  Refresco · Botella 2 Lt. No Retornable. Manzanita
@@ -936,7 +968,8 @@ par 078 · parecido 0.964
    ·  ya normalizados, la diferencia está aquí:
       A: crema solida · frasco 200 gr
       B: crema solida · frasco 200 ml
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   ·  REGLA · 30-sep-2026 · sí · P1 · gr/ml es diferencia de unidad; el propio ADR 004 cita 200 gr / 200 ml como uno de sus «sí»
 
 par 079 · parecido 0.963
    A  Maíz Pozolero · Bolsa 1 Kg.
@@ -1048,7 +1081,8 @@ par 088 · parecido 0.962
    ·  ya normalizados, la diferencia está aquí:
       A: yoghurt · bote 900 gr natural sin azucar
       B: yoghurt · bote 900 gr natural sin azucar anadida
-   ¿son el MISMO artículo?  [x] sí   [ ] no
+   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ·  REGLA · 30-sep-2026 · no · P3 · «añadida» cambia la propiedad nutricional: «sin azúcar» y «sin azúcar añadida» son declaraciones distintas en la etiqueta
 
 par 089 · parecido 0.961
    A  Talco para Bebé · Botella 200 Gr. Azul
@@ -1059,7 +1093,9 @@ par 089 · parecido 0.961
    ·  ya normalizados, la diferencia está aquí:
       A: talco para bebe · botella 200 gr azul
       B: talco para bebe · botella 200 gr rosa
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   RECUENTO · Karen (D) · 28-sep-2026 · ADR 014
+   P3 · la palabra que cambia es azul/rosa , que es me suena a que el color es solo del envase jamás he visto polvo de talco de color
 
 par 090 · parecido 0.961
    A  Refresco · Botella 2 Lt. No Retornable.
@@ -1070,7 +1106,8 @@ par 090 · parecido 0.961
    ·  ya normalizados, la diferencia está aquí:
       A: refresco · botella 2 lt no retornable
       B: refresco · botella 2 lt no retornable naranja
-   ¿son el MISMO artículo?  [ ] sí   [x] no
+   ¿son el MISMO artículo?  [x] sí   [ ] no
+   ·  REGLA · 30-sep-2026 · sí · Default · «naranja» puede ser color de empaque o sabor: P3 no alcanza a decidir → sí
 
 par 091 · parecido 0.961
    A  Salsa Picante y Similares · Botella 220 Gr. Chipotles Adobados Molidos

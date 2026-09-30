@@ -347,7 +347,7 @@ Hacerlo en noviembre porque no salió es otra cosa.**
 > |---|---:|---|
 > | Primera calificación · 24-sep · A, no a ciegas | **20** de 100 | primera · margen cero |
 > | Se corrigen dos pares propios · 28-sep · A | **18** | segunda · se abandona H3 |
-> | **Segunda lectura independiente · 28-sep · Karen (C2)** | **30** | **primera** · H3 se mide como está |
+> | **Segunda lectura independiente · 28-sep · Karen (D)** | **30** | **primera** · H3 se mide como está |
 >
 > **El conteo vigente es 30 y la rama es la primera: H3 se mide como está
 > enunciada**, con cobertura ≥ 85% y precisión ≥ 90%. Es la misma decisión que el

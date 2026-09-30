@@ -3,7 +3,7 @@
 - **Fecha:** 28 de septiembre de 2026
 - **Estado:** **propuesta** · la ratifica el equipo. El asesor tiene que
   enterarse antes de la entrega del 9 de octubre
-- **Autora del recuento:** **Karen (C2)** · segunda lectura independiente
+- **Autora del recuento:** **Karen (D)** · segunda lectura independiente
 - **Redacta:** Ariadne (A), que es quien se equivocó
 - **Retira:** el [ADR 013](./013-h3-resultado-y-h5.md), que nunca se ratificó
 - **Restituye:** la decisión original del [ADR 004](./004-h3-como-se-mide.md),
@@ -88,9 +88,14 @@ aparece en ninguna de sus 32 justificaciones.**
 | **A · la lectura de Karen tal como la entregó** | 18 + 12 = **30** | **sí** |
 | **B · aplicando además las reglas ya escritas del ADR 004** (ver abajo) | 18 + 15 = **33** | **sí** |
 | **C · descartando TODO lo discutible**, y quedándose sólo con los cuatro que nadie puede discutir | 18 + 4 = **22** | **sí** |
+| **D · la regla escrita, aplicada par por par** (§6) · **vigente** | 18 + 12 − 3 + 3 = **30** | **sí** |
 
-**El escenario C es el que decide**, porque es el que no depende de ningún juicio
-contestable. Los cuatro son colores de envoltura y de envase:
+**El escenario D es el que decide**, porque es el único que no agrega ningún
+criterio: aplica a cada par en duda la regla del 17 de septiembre —P1, la lista
+de P3 y el default— y cada cambio cita su cláusula (§6). Los escenarios A, B y C
+son los pasos que llevaron ahí. El C, además, no estaba libre de juicio: decidir
+que un color es de empaque y no de variante también es aplicar P3. Los cuatro de
+C son éstos:
 
 | par | A | B |
 |---|---|---|
@@ -104,8 +109,10 @@ califica literalmente la envoltura. Y Karen dio para el talco el argumento más
 corto y más difícil de rebatir de toda la lectura: *«jamás he visto polvo de
 talco de color»*.
 
-**Karen tendría que haberse equivocado en nueve de sus doce pares para que el
-umbral no se cruzara.**
+**Para quedar por debajo de 20 habría que voltear 11 de los 30 «sí»**, y cada
+uno está sostenido por una cláusula que se escribió antes de ver los datos. Los
+47 «no» que nadie ha releído sólo pueden subir el conteo, porque el default de
+P3 es «sí».
 
 ### 3 bis · Lo que suma el escenario B, y de dónde sale
 
@@ -232,9 +239,10 @@ recuento son **30 de cada 100**. La normalización vigente es **la mitad de peor
 de lo que el expediente decía, y ése es el número que va al informe.
 
 **5 · El conteo vigente es 30, y el archivo calificado lo refleja par por par.**
-Las 12 calificaciones de Karen entran con su razón escrita y con su nombre. Los
-pares en disputa (§6) quedan marcados como tales y **no** se cuentan en el 30;
-si se resuelven a «sí», el conteo sube.
+Sale de aplicar la regla escrita a los pares en duda (§6): tres «sí» pasan a «no»
+(050 y 053 por tamaño, 088 por propiedad nutricional) y tres «no» pasan a «sí»
+(078 por P1; 063 y 090 por el default). Cada par lleva en el archivo una línea
+`REGLA · 30-sep-2026` con su cláusula. Ningún par queda en disputa.
 
 ---
 
@@ -282,17 +290,20 @@ no puede atender sola.
 
 ---
 
-## 6 · Lo que queda en disputa, y por qué no cambia nada
+## 6 · Cómo resolvió la regla escrita cada disputa
 
-Cinco de los 32 tienen problemas que hay que resolver antes de cerrar el
-archivo. **Ninguno mueve la rama**, porque el escenario C ya la decide sin ellos.
+Ninguna disputa se resolvió por opinión: cada una cae en una cláusula del ADR
+004. El archivo lo registra par por par con líneas `REGLA` y `RESUELTO`.
 
-| par | problema | quién lo resuelve |
+| par | cláusula | veredicto |
 |---|---|---|
-| **064** | La casilla vino escrita `[]` en vez de `[ ]`, así que un lector automático no la cuenta. Y es **la misma estructura que el par 063**, que Karen calificó «no»: `jabon de tocador · barra 135 gr` contra `135 gr aqua` frente a `150 gr` contra `150 gr rosa`. Una de las dos está mal | Karen, con el default escrito a la vista |
-| **031** | Respuesta correcta, clasificación equivocada. `agave azul` **no** es color de empaque: es la variedad botánica *Agave tequilana* Weber var. azul. Cae en «sí» por la otra puerta de P3 —todo el tequila es legalmente de agave azul, así que es *algo que la norma ya da por hecho*— | se corrige la razón, no el veredicto |
-| **050 · 053** | `tortilla de maiz · 1 kg granel amarilla` contra `amarilla chica`. **«Chica» es tamaño**, y P3 manda tamaño a «no». El argumento de Karen —que los kilos son los mismos— no responde a que la tortilla es de otro tamaño | el equipo. Si son «no», el conteo baja a 28 |
-| **022** | La razón escrita clasifica «light» pero declara que la palabra que cambia es «azul y light». Falta clasificar «azul» | Karen |
+| **050 · 053** | P3 · «chica» es **tamaño** | **no** (era sí) |
+| **088** | P3 · «añadida» cambia la **propiedad nutricional**: «sin azúcar» y «sin azúcar añadida» son declaraciones distintas | **no** (era sí) |
+| **078** | P1 · `gr`/`ml` es **unidad**; el propio ADR 004 cita `200 gr` / `200 ml` como «sí» | **sí** (era no) |
+| **063 · 090** | Default · la calificadora escribió que la palabra podía ser de cualquiera de las dos clases | **sí** (eran no) |
+| **064** | Default · «rosa» puede ser color o aroma; queda igual que el 063 | sí |
+| **031** | P3 · todo el tequila es de agave azul: algo que la norma da por hecho | sí |
+| **022** | P3 · «light» es propiedad nutricional | no |
 
 ---
 
@@ -398,6 +409,21 @@ reportaría algo falso durante dos semanas, y el asesor lo leería antes.
 | Calificó la muestra la primera vez, no a ciegas | Ariadne (A) · 24 de septiembre |
 | Se equivocó en dos pares y lo corrigió | Ariadne (A) · 28 de septiembre |
 | Escribió el ADR 013 con dos argumentos que no se sostienen | Ariadne (A) · 28 de septiembre |
-| **Volvió a leer 32 pares sin conocer el conteo, y encontró 12 «sí»** | **Karen (C2) · 28 de septiembre** |
+| **Volvió a leer 32 pares sin conocer el conteo, y encontró 12 «sí»** | **Karen (D) · 28 de septiembre** |
+| Aplicó la regla escrita a los nueve pares en duda | Ariadne (A) · 30 de septiembre |
 | Redacta este ADR | Ariadne (A) |
 | Ratifica | el equipo, pendiente |
+
+## 12 · Limitaciones, escritas
+
+- **No hubo doble calificación a ciegas.** Estaba prevista, con quienes no
+  calificaron (C1 o C2), y no se pudo hacer porque los dos estaban incapacitados
+  por enfermedad. Ambos delegaron su voto por escrito.
+- **La segunda lectura sólo miró pares «no»,** así que sólo podía subir el
+  conteo. La base de 18 no la releyó nadie; lo que la sostiene es que cada «sí»
+  cae en una cláusula de P1 o de P3.
+- **Clasificar una palabra sigue siendo un juicio** («rosa», ¿color o aroma?).
+  La regla lo resuelve con el default, que se fijó el 17 de septiembre, antes de
+  ver los datos.
+- **Nada de esto mueve la rama.** Afecta la tasa de omisión (30 de cada 100), que
+  importa para T053 en la semana 8, no para decidir cómo se mide H3.

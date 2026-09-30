@@ -656,7 +656,7 @@ difusa para esto.
 > pero sí identifica `agave azul`—.
 >
 > El recuento, con la cadena de fechas y quién lo hizo, en el **ADR 014**. La
-> segunda lectura de la muestra la hizo Karen (C2), sin conocer el conteo previo.
+> segunda lectura de la muestra la hizo Karen (D), sin conocer el conteo previo.
 >
 > **El 1.29 de arriba sigue siendo el número correcto de lo que se midió.** Lo que
 > cambió es que ya no hay que discutir si la medición servía: hay otra medición,
