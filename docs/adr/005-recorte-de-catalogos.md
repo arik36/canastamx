@@ -5,6 +5,12 @@
 - **Participantes:** Ariadne (A) — autora de la propuesta. Ari Adair (B),
   Liseth (C1), Oscar (C2), Karen (D).
 
+> **Nota de estado · 30-sep-2026.** La sección «Lo que la medición posterior
+> confirmó» dice que el ADR 001 midió el recorte en 4,384,962 filas. La cifra
+> no la midió el ADR 001, que dice «todavía no está medido»: salió de
+> `medir-decisiones.py` el 12 de septiembre. La nota de archivo de abajo ya
+> quedó resuelta: el ADR 010 · 10 corrigió el issue. El resto de este ADR no cambia.
+
 > **Nota de archivo.** El issue sembrado en el tablero cita la ruta
 > `docs/adr/005-recorte-de-catalogos.md`. Iguala 
 > una de las dos antes de entregar; da lo mismo cuál, pero que no queden dos.
