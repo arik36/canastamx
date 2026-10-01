@@ -1,8 +1,28 @@
 contrato: qqp
-version: 1.3.2
+version: 1.3.3
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-09-28
+fecha: 2026-09-30
 autor: alm
+
+# ── Qué cambió en 1.3.3 ─────────────────────────────────────────────────────
+#
+# Tres reglas quedan escritas donde estaban implícitas, y dos preguntas se cierran.
+# Ninguna de las 15 columnas cambia.
+#
+#   · `frescura`: la fecha de referencia es un parámetro de la corrida (ADR 010 ·
+#     9). En operación es la fecha del día y, mientras el corpus siga congelado,
+#     la regla no aplica, igual que en 1.3.2. En el experimento se fija para
+#     inyectar datos viejos y medir si la compuerta los detecta.
+#   · `clave_de_fila`: dice con qué normalización se compara y qué va a
+#     cuarentena en una colisión de precio alta: el GRUPO COMPLETO. Con más de
+#     $50 de diferencia no se sabe cuál precio es el bueno, y quedarse con el menor
+#     podía publicar el equivocado. Es lo que ya decía el CU-02 de la plantilla.
+#   · Los navideños de BASICOS se quedan visibles: lo decidió el ADR 010 · 7.
+#   · `publicacion_de_la_fuente`: contestada el 30 de septiembre.
+#
+# Cambia una cifra derivada: 2,586,019 filas de hechos suponía que de cada
+# colisión alta se quedaba una. Con el grupo completo son menos; la cifra exacta
+# la da la primera corrida de la compuerta de calidad.
 
 # ── Qué cambió en 1.3.2 ─────────────────────────────────────────────────────
 #
@@ -162,6 +182,11 @@ frescura:
   mide: dias_desde_el_fecha_registro_mas_reciente_ingerido
   avisa_dias: 20                  # enciende el indicador en la consola
   bloquea_dias: 45                # la capa de consumo deja de publicarse vigente
+  fecha_referencia: parametro_de_la_corrida   # 1.3.3 · ADR 010 · 9
+  # Por omisión, la fecha del día. En el experimento se FIJA: con datos hasta
+  # julio y la fecha de hoy, cualquier corrida daría «bloquea», y la compuerta
+  # nunca podría mostrar «ok» ni «avisa». Con 2026-08-10 da 10 días (ok), con
+  # 2026-08-25 da 25 (avisa) y con 2026-09-20 da 51 (bloquea).
   aplica_desde: primera_ingesta_incremental
   no_aplica_mientras: corpus_congelado     # ADR 010 · 9
   razon: >
@@ -428,7 +453,13 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
   colisiones_conocidas: 74992  # medido sobre el alcance del contrato (ver `medicion`)
-  desempate: min_precio
+  desempate: min_precio           # sólo en la captura doble (menos de $1)
+  compara: [repara_interrogantes, normalizacion_canonica]   # 1.3.3
+  # producto, presentación, nombre comercial y dirección en su forma canónica
+  # (la misma de la clave de artículo); marca en mayúsculas sin acentos.
+  colision_precio_alta:           # 1.3.3
+    mas_de: 50
+    a_cuarentena: grupo_completo   # todas las filas del grupo, no sólo la sobrante
   que_se_hace: >
     Medido con verificar-precios.py (15-sep-2026) sobre las 2,658,906 filas del
     alcance, hay 74,992 filas sobrantes: 72,631 (96.85%) tienen diferencia de
@@ -455,6 +486,13 @@ clave_de_fila:                 # lo que la compuerta usa para detectar duplicado
     contra 0.15% fuera. Los básicos chocan dieciocho veces más seguido que los
     electrodomésticos, porque se capturan una y otra vez. La regla de dedup
     trabaja casi toda aquí.
+
+    1.3.3 · Las cifras de arriba se midieron SIN normalizar y antes de reparar
+    el `?`: verificar-precios.py compara los valores tal como llegan. Con la
+    regla de `compara` pueden subir un poco, y con `a_cuarentena:
+    grupo_completo` la cuarentena por colisión alta pasa de 256 filas a todas
+    las de esos grupos. Las dos cifras se vuelven a medir en la primera corrida
+    de la compuerta de calidad.
 
 columnas:
   # `columna_requerida`  : el archivo tiene que traer la columna. Si no, es
@@ -615,12 +653,12 @@ presentacion:
       cerveza:           {filas: 35000, productos: 1, mediana: 137.00, maximo: 302.50}
       "vinos y licores": {filas: 26197, productos: 4, mediana: 349.00, maximo: 635.00}
       cigarrillos:       {filas:  3794, productos: 1, mediana:  27.00, maximo:  30.00}
-    a_decidir_por_el_equipo: >
-      Un cuarto candidato que la medición destapó y que NO está en la lista
-      todavía: `productos de temporada (navidenos)`, 16,723 filas dentro de
-      BASICOS. El ADR 005 ya dejó fuera el CATÁLOGO `Navideños`, así que
-      ocultar también estas filas sería coherente -pero es la misma clase de
-      decisión de mensaje y la toma el equipo, no el contrato-.
+    decidido_por_el_equipo: >
+      `productos de temporada (navidenos)`, 16,723 filas dentro de BASICOS, se
+      quedan VISIBLES: lo decidió el ADR 010 · 7 (23-sep-2026). El ADR 005 dejó
+      fuera el CATÁLOGO `Navideños`; estas filas entran por la clasificación de
+      BASICOS y se muestran como cualquier otra. [1.3.3: aquí decía que la
+      decisión era del equipo; el equipo ya la tomó.]
     razon: >
       `Basicos` es la clasificación de PROFECO y este contrato la respeta
       completa: el protocolo compromete un recorte «conforme a la clasificación
@@ -690,6 +728,11 @@ pendientes:
       Va junto al pendiente 5 del informe de perfilado -«si PROFECO publica
       2024»-, que es la misma consulta hacia atrás. Conviene hacer las dos en
       una sola visita al portal.
+    contestado: >
+      30-sep-2026 · A · No. La última quincena publicada sigue siendo
+      2026-07-Q2: dos meses sin datos nuevos. Se vuelve a consultar en cada
+      reunión del viernes; el día que publique, entra como lote nuevo y la
+      frescura se mide desde ahí.
   - id: vocabulario_que_no_identifica
     que: >
       Hallazgo del recuento de H3 (ADR 014 §5 bis, 28-sep-2026), y entra al
