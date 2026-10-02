@@ -18,6 +18,7 @@ es lo que este guión rescata y deja en un documento versionado.
     python services/data-platform/ingestion/consolidar-corridas.py
 """
 
+import argparse
 import datetime as dt
 import json
 import pathlib
@@ -31,21 +32,36 @@ CONTRATO = RAIZ / "contracts" / "qqp-v1.yaml"
 
 
 def main():
-    archivos = sorted(CORRIDAS.glob("*.json"))
+    ap = argparse.ArgumentParser(description="Consolida las corridas de la ingesta")
+    ap.add_argument("--corridas", type=pathlib.Path, default=CORRIDAS)
+    ap.add_argument("--salida", type=pathlib.Path, default=SALIDA)
+    a = ap.parse_args()
+    archivos = sorted(a.corridas.glob("*.json"))
     if not archivos:
-        sys.exit(f"no hay registros en {CORRIDAS}")
+        sys.exit(f"no hay registros en {a.corridas}")
 
     import yaml
     contrato = yaml.safe_load(CONTRATO.read_text(encoding="utf-8"))
     esperado = contrato["medicion"]["filas"]
     alcance = contrato["alcance"]
 
-    filas, sin_recorte = [], []
+    # Sólo la corrida más reciente de cada lote. Si un lote se volvió a ingerir
+    # otro día, hay dos registros suyos, y sumar los dos lo contaría doble.
+    ultimas = {}
     for j in archivos:
         d = json.loads(j.read_text(encoding="utf-8"))
+        if d["lote"] not in ultimas or d["corrida"] > ultimas[d["lote"]]["corrida"]:
+            ultimas[d["lote"]] = d
+    # El bucket completo, contado por la corrida más reciente de todas. Es lo que
+    # de verdad quedó guardado; la suma de los registros es sólo lo que se leyó.
+    ultima = max(ultimas.values(), key=lambda d: d["corrida"])
+    en_bucket = ultima["acumulado_en_el_bucket"]["filas"]
+
+    filas, sin_recorte = [], []
+    for d in ultimas.values():
         r = d.get("recorte")
         if not isinstance(r, dict):
-            sin_recorte.append(d.get("lote", j.stem))
+            sin_recorte.append(d["lote"])
             continue
         filas.append({
             "lote": d["lote"],
@@ -68,6 +84,7 @@ def main():
     corpus = sum(f["del_archivo"] for f in filas)
     ents = sorted({e for f in filas for e in f["entidades"]})
     cuadra = total == esperado
+    cuadra_bucket = en_bucket == total
 
     L = []
     w = L.append
@@ -94,11 +111,17 @@ def main():
     w(f"| Ingesta · suma de los {len(filas)} archivos | **{total:,}** |")
     w(f"| Contrato · `medicion.filas` | **{esperado:,}** |")
     w(f"| Diferencia | **{total - esperado:+,}** |")
+    w(f"| Bucket · lo que quedó guardado, según la corrida del {ultima['corrida'][:10]} | "
+      f"**{en_bucket:,}** |")
     w("")
     w(f"**{'CUADRA al dígito.' if cuadra else 'NO CUADRA — hay que averiguar por qué antes de cerrar el issue.'}**")
     if cuadra:
         w("Dos mediciones independientes, separadas en el tiempo y hechas con")
         w("código distinto, dando el mismo número.")
+    w("")
+    w(f"**{'El bucket guarda exactamente lo que se leyó.' if cuadra_bucket else 'EL BUCKET NO GUARDA LO QUE SE LEYÓ: faltan o sobran filas.'}**")
+    w("La comparación contra el contrato prueba el filtro; ésta prueba el")
+    w("almacenamiento: que ningún lote borró lo que otro había escrito.")
     w("")
     w(f"Filas leídas de los archivos: **{corpus:,}** · el alcance es el "
       f"**{100*total/corpus:.2f}%** de eso.")
@@ -210,12 +233,16 @@ def main():
     w("Las dos únicas columnas que se agregan, `quincena` y `entidad`, son **llaves")
     w("de partición**, no limpieza. Las 15 del contrato entran intactas.")
 
-    SALIDA.parent.mkdir(parents=True, exist_ok=True)
-    SALIDA.write_text("\n".join(L) + "\n", encoding="utf-8")
-    print(f"escrito: {SALIDA}")
+    a.salida.parent.mkdir(parents=True, exist_ok=True)
+    a.salida.write_text("\n".join(L) + "\n", encoding="utf-8")
+    print(f"escrito: {a.salida}")
     print(f"  {len(filas)} corridas · total {total:,} · contrato {esperado:,} · "
           f"{'CUADRA' if cuadra else 'NO CUADRA'}")
     print(f"  {len(ents)} entidades en el bucket")
+    print(f"  bucket {en_bucket:,} · leídas {total:,} · "
+          f"{'CUADRA' if cuadra_bucket else 'NO CUADRA'}")
+    if not cuadra_bucket:
+        sys.exit("✗ el bucket no guarda lo que se leyó: revisa antes de cerrar")
 
 
 if __name__ == "__main__":
