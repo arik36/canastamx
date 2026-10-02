@@ -503,7 +503,7 @@ no se le explica a esa persona.
 | Quién | Sistema y terminal | Fecha | ¿Llegó al final sin preguntar? | Qué se atoró |
 |---|---|---|---|---|
 | A | Windows + WSL · Ubuntu | 27-09-2026 | No | Docker no instalado; nombres del `.env` distintos a los de la guía; `minio-init` fallaba; `ps` sin `-a`; las rutas de Traefik iban a XAMPP |
-| C1, C2 o D | Windows 11 · Git Bash | *pendiente* | | |
+| C2 (Oscar) | Windows 11 · Git Bash | 02-10-2026 | No | Docker instalado pero con el motor detenido; contraseñas vacías en `.env` y duda al abrir el archivo; los nombres de Traefik abrían XAMPP en el puerto 80. Se completaron las credenciales locales, se cambió `TRAEFIK_WEB_PORT` a `8081` y se aplicó con `docker compose up -d traefik`. Se verificaron las dos bases desde Adminer, el bucket `canastamx-bronze` en MinIO y los dos accesos por nombre con `:8081`. |
 
 **La columna «qué se atoró» es la más útil.** Cada cosa anotada ahí es una línea
 que le faltaba a la guía.
