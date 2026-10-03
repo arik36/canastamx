@@ -35,4 +35,4 @@ docker compose -f infra/envs/test/docker-compose.yml --env-file infra/envs/test/
 > El llenado de .env solo es necesario hacerlo una vez. Tras realizarlo, puede omitir esos pasos y ejecutar directamente docker compose de acuerdo al método elegido.
 
 **RESULTADO ESPERADO**
-Un entorno de canastamx bajo el nombre de canastamx-test, que pueda ser ejecutado en conjunto a canastamx (dev)
+Un entorno de canastamx bajo el nombre de canastamx_test, que pueda ser ejecutado en conjunto a canastamx (dev)
