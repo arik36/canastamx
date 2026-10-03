@@ -16,14 +16,14 @@
 # en .env.example, o el compose levanta con variables vacías y Postgres
 # arranca sin contraseña.
 
-name: canastamx-test
+name: canastamx_test
 services:
 
   # ── Base transaccional · datos de usuario ─────────────────────────────────
   # La usa C1 desde el servicio de dominio. Ninguna consulta analítica la toca.
   postgres-oltp:
     image: postgres:16-alpine
-    container_name: ${COMPOSE_PROJECT_NAME:-cmx}-postgres-oltp
+    container_name: ${COMPOSE_PROJECT_NAME:-cmx}_postgres_oltp
     environment:
       POSTGRES_USER:     ${OLTP_USER}
       POSTGRES_PASSWORD: ${OLTP_PASSWORD}
@@ -44,7 +44,7 @@ services:
   # Lo usa A. Se publica en otro puerto para no chocar con la transaccional.
   postgres-analytics:
     image: postgres:16-alpine
-    container_name: ${COMPOSE_PROJECT_NAME:-cmx}-postgres-analytics
+    container_name: ${COMPOSE_PROJECT_NAME:-cmx}_postgres_analytics
     environment:
       POSTGRES_USER:     ${ANALYTICS_USER}
       POSTGRES_PASSWORD: ${ANALYTICS_PASSWORD}
