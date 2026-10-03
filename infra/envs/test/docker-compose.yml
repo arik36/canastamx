@@ -1,4 +1,4 @@
-# CanastaMX-Test — entorno de desarrollo local
+# CanastaMX-Test — entorno de desarrollo de pruebas
 #
 # Dueño: B (Ari Adair). Cualquier cambio pasa por él.
 #
@@ -80,10 +80,6 @@ services:
       timeout: 10s
       retries: 5
     networks: [canastamx]
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.minio-console.rule=Host(`minio.canastamx.localhost`)"
-      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
 
   # ── Crea el bucket bronze y se apaga ──────────────────────────────────────
   # Sin esto hay que crear el bucket a mano desde la consola, y se olvida.
