@@ -97,12 +97,11 @@ jobs:
           pip install ruff
           ruff check services/ --output-format=github
 
-      # Semana 2: descomenta cuando existan pruebas
-      # - name: Pruebas
-      #   if: steps.existe.outputs.hay == 'si'
-      #   run: |
-      #     pip install -r services/data-platform/requirements.txt
-      #     pytest services/data-platform/tests/ -v
+      - name: Pruebas
+        if: steps.existe.outputs.hay == 'si'
+        run: |
+          pip install -r services/data-platform/requirements.txt
+          python -m pytest services/data-platform/tests/ -v
 
   # ── Higiene del repositorio · corre siempre, desde el día uno ─────────────
   # Este es el único que verifica de verdad desde el principio, y es el que
