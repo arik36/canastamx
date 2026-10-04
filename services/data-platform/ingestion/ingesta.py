@@ -104,6 +104,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -117,6 +118,18 @@ PREFIJO = "qqp"
 # Día 1–15 → Q1 · 16 en adelante → Q2. Es la convención de la fuente.
 QUINCENA = ("strftime(fecha_registro, '%Y-%m') || '-Q' || "
             "CASE WHEN extract(day FROM fecha_registro) <= 15 THEN '1' ELSE '2' END")
+
+
+# Contrato · `archivo.codificacion.compuerta_extra`. Los caracteres de control C1
+# (U+0080 a U+009F) son bytes de Windows-1252 o de DOS leídos como latin-1: no se
+# ven, no rompen el parseo y contaminan el texto en silencio.
+COMPUERTA_C1 = "detectar_controles_C1"
+PATRON_C1 = r"[\x{80}-\x{9F}]"
+# Los dos rastros visibles de una codificación rota: el `?` y el carácter de
+# reemplazo. En `estado` o `catalogo` impiden saber si la fila es del alcance.
+PATRON_ROTO = r"[?\x{FFFD}]"
+# Nombre de archivo de la fuente → quincena del lote: 01-2025_01, 07-2026_Q2.
+NOMBRE_DE_LOTE = re.compile(r"^(\d{2})-(\d{4})_(?:Q|0)?([12])$")
 
 
 def morir(mensaje):
@@ -315,6 +328,35 @@ def lector(ruta, decl):
     morir(f"no sé leer {ext}. Se esperaba .parquet o .csv")
 
 
+def controles_c1(con, columnas_texto):
+    """Cuántas filas traen un control C1 en alguna columna de texto, y ejemplos."""
+    cond = " OR ".join(f"regexp_matches({c}, '{PATRON_C1}')" for c in columnas_texto)
+    n = con.sql(f"SELECT count(*) FROM entrada WHERE {cond}").fetchone()[0]
+    ejemplos = []
+    for c in columnas_texto if n else []:
+        ejemplos += [(c, v) for (v,) in con.sql(
+            f"SELECT DISTINCT {c} FROM entrada "
+            f"WHERE regexp_matches({c}, '{PATRON_C1}') LIMIT 3").fetchall()]
+        if len(ejemplos) >= 3:
+            break
+    return n, ejemplos[:3]
+
+
+def interrogantes_en_filtros(con):
+    """Filas con `?` o con el carácter de reemplazo en estado o catalogo."""
+    filas = con.sql(f"""SELECT estado, catalogo, count(*) AS n FROM entrada
+                        WHERE regexp_matches(estado, '{PATRON_ROTO}')
+                           OR regexp_matches(catalogo, '{PATRON_ROTO}')
+                        GROUP BY ALL ORDER BY n DESC""").fetchall()
+    return sum(f[2] for f in filas), filas[:5]
+
+
+def quincena_del_lote(nombre):
+    """La quincena que le toca a un lote por su nombre, o None si no la dice."""
+    m = NOMBRE_DE_LOTE.match(nombre)
+    return f"{m.group(2)}-{m.group(1)}-Q{m.group(3)}" if m else None
+
+
 def borrar_prefijo(s3, bucket, prefijo):
     """Borra todos los objetos bajo un prefijo. Devuelve cuántos borró."""
     borrados = 0
@@ -346,6 +388,8 @@ def main():
     ap.add_argument("--sin-recorte", action="store_true", dest="sin_recorte",
                     help="ingiere el archivo COMPLETO, sin aplicar el alcance. "
                          "Para reprocesar si el ADR 001 o el ADR 005 cambian")
+    ap.add_argument("--quincena", help="la quincena del lote (AAAA-MM-Q1) si su "
+                                       "nombre no sigue el de la fuente")
     a = ap.parse_args()
 
     origen = Path(a.archivo).expanduser().resolve()
@@ -410,6 +454,19 @@ def main():
               f"  Motivo del contrato: fecha_ilegible → cuarentena del lote.\n"
               f"  Revisa `archivo.formato_de_fecha` en el contrato: si este "
               f"archivo trae otro formato, va como excepción con su nombre.")
+
+    # Contrato · `archivo.codificacion.compuerta_extra: detectar_controles_C1`, con
+    # `al_fallar: cuarentena_del_lote`: el lote no se ingiere a medias.
+    texto = [c for c in cols if contrato["columnas"][c].get("tipo") == "texto"]
+    n_c1, ej_c1 = controles_c1(con, texto)
+    if n_c1:
+        morir(f"{n_c1:,} filas traen caracteres de control C1 (U+0080 a U+009F).\n"
+              f"  Ejemplos: " + "; ".join(f"{c} = {v!r}" for c, v in ej_c1) + "\n"
+              f"  Casi siempre es un archivo leído con la codificación equivocada.\n"
+              f"  Contrato · archivo.codificacion · {COMPUERTA_C1} → cuarentena del lote.\n"
+              f"  Revisa `archivo.codificacion.excepciones`: si este archivo viene en "
+              f"otra codificación, va ahí con su nombre.")
+
     # ── El recorte del alcance ────────────────────────────────────────────────
     # Se aplica ANTES de derivar la quincena y de escribir. Se reporta por motivo
     # y no sólo el total, porque una fila puede caer fuera por más de uno y el
@@ -420,6 +477,17 @@ def main():
         filas_archivo = con.sql("SELECT count(*) FROM entrada").fetchone()[0]
         fuera = {}
     else:
+        # Un `?` en `estado` o `catalogo` no es «fuera del alcance»: es «no se
+        # sabe». Filtrarlo lo perdería sin incidente, que es justo la pérdida
+        # silenciosa que el contrato 1.3.0 dice evitar.
+        n_q, ej_q = interrogantes_en_filtros(con)
+        if n_q:
+            morir(f"{n_q:,} filas traen `?` en estado o catalogo, y con eso no se "
+                  f"puede saber si son del alcance.\n  Ejemplos (estado · catalogo · "
+                  f"filas): " + "; ".join(f"{e!r} · {c!r} · {n:,}" for e, c, n in ej_q)
+                  + "\n  No se filtran en silencio: agrega la reparación al "
+                  "diccionario del contrato, o decide en el contrato qué se hace "
+                  "con ellas.")
         s = rec["sql"]
         filas_archivo = con.sql("SELECT count(*) FROM entrada").fetchone()[0]
         fuera = dict(zip(
@@ -464,6 +532,24 @@ def main():
         print(f"· {literales[0]} literales de `estado` se unifican en "
               f"{literales[1]} entidades para particionar "
               f"(el literal crudo se conserva en la columna)")
+    # Cada lote escribe SOLO su quincena. Antes de escribir se borran las
+    # particiones que el lote toca; si una fila cayera en otra quincena, se
+    # borraría lo que otro lote dejó ahí y la comprobación por lote no lo vería.
+    esperada = a.quincena or quincena_del_lote(origen.stem)
+    if esperada is None:
+        morir(f"no sé de qué quincena es el lote {origen.stem!r}: su nombre no sigue "
+              f"el de la fuente (MM-AAAA_01 o MM-AAAA_Q1).\n  Pásala con --quincena "
+              f"AAAA-MM-Q1. Sin eso no puedo garantizar que no sobrescriba la "
+              f"partición de otro lote.")
+    ajenas = sorted({q for _, q in particiones} - {esperada})
+    if ajenas:
+        n_aj = con.sql(f"SELECT count(*) FROM listo WHERE quincena <> '{esperada}'"
+                       ).fetchone()[0]
+        morir(f"{n_aj:,} filas caen en otra quincena ({', '.join(ajenas)}) y no en "
+              f"{esperada}, la quincena del lote.\n  Escribirlas borraría lo que otro "
+              f"lote dejó en esa partición. Revisa las fechas de esas filas antes de "
+              f"ingerir.")
+
     print(f"filas leídas    : {filas_leidas:,}")
     print(f"particiones     : {len(particiones)}")
     for e, q in particiones:
@@ -476,6 +562,8 @@ def main():
         print("  · se leyó con la codificación y el formato de fecha del contrato")
         print("  · cuántas filas caen dentro del alcance, y por qué salen las demás")
         print("  · las particiones que se van a crear, una por (entidad, quincena)")
+        print("  · que ningún texto trae controles C1 y ningún filtro trae `?`")
+        print(f"  · que todas las filas son de {esperada}, la quincena del lote")
         print("Vuelve a correrlo sin --simular para escribir.")
         return
 

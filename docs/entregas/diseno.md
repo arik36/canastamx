@@ -19,3 +19,14 @@ Están declarados como variables en `index.css`:
 
 ## ENLACE A FIGMA: 
 https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0?t=5QeO3L2hmrAGrZqX-1
+
+## Puntos de Quiebre (App y Web)
+- **Móvil:** Hasta 768 px
+- **Tableta:** 769 px a 1024 px
+- **Escritorio:** Desde 1025 px
+
+## Semántica de Colores (Alertas y Estados)
+El sistema utiliza la siguiente paleta alineada a los estados del contrato (*Nota para C2 / Renato: favor de replicar estos valores en `clients/mobile/theme/design-system.ts`*):
+- **OK:** Verde `#16A34A`
+- **Aviso:** Naranja `#F59E0B`
+- **Bloquea / Incidente:** Rojo `#DC2626`

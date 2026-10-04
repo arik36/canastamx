@@ -1,6 +1,6 @@
 # Ingesta a la capa cruda · evidencia de la corrida
 
-**Generado:** 2026-09-29 por `services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90
+**Generado:** 2026-10-02 por `services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90
 
 > Este documento se **genera**, no se escribe a mano. Sale de los registros
 > de `ingestion/corridas/`, que no entran al repositorio porque describen el
@@ -20,10 +20,15 @@
 | Ingesta · suma de los 38 archivos | **2,658,906** |
 | Contrato · `medicion.filas` | **2,658,906** |
 | Diferencia | **+0** |
+| Bucket · lo que quedó guardado, según la corrida del 2026-09-29 | **2,658,906** |
 
 **CUADRA al dígito.**
 Dos mediciones independientes, separadas en el tiempo y hechas con
 código distinto, dando el mismo número.
+
+**El bucket guarda exactamente lo que se leyó.**
+La comparación contra el contrato prueba el filtro; ésta prueba el
+almacenamiento: que ningún lote borró lo que otro había escrito.
 
 Filas leídas de los archivos: **21,357,873** · el alcance es el **12.45%** de eso.
 
