@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Def_incidentes" targetNamespace="http://canastamx/bpmn" exporter="CanastaMX" exporterVersion="1.0">
+  <bpmn:collaboration id="Colab">
+    <bpmn:participant id="Pool" name="Atención de un incidente de calidad de datos" processRef="Proc" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc" isExecutable="false">
+    <bpmn:laneSet id="Carriles">
+      <bpmn:lane id="L_pla" name="Plataforma de datos">
+        <bpmn:flowNodeRef>Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Registrar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Avisar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="L_ope" name="Operador de datos">
+        <bpmn:flowNodeRef>Revisar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Diagnosticar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>G_causa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fuente</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Aceptar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Escalar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_asignado</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Proponer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Reprocesar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>G_union</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Cerrar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_cerrado</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="L_equ" name="Equipo">
+        <bpmn:flowNodeRef>Aprobar</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Inicio" name="Una compuerta detecta un problema">
+      <bpmn:outgoing>g01</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Inicio_def" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Registrar" name="Registrar el incidente: lote, compuerta, motivo y filas">
+      <bpmn:incoming>g01</bpmn:incoming>
+      <bpmn:outgoing>g02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Avisar" name="Avisar al operador">
+      <bpmn:incoming>g02</bpmn:incoming>
+      <bpmn:outgoing>g03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Revisar" name="Revisar el incidente en la consola (CU-05)">
+      <bpmn:incoming>g03</bpmn:incoming>
+      <bpmn:outgoing>g04</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Diagnosticar" name="Diagnosticar con las filas en cuarentena">
+      <bpmn:incoming>g04</bpmn:incoming>
+      <bpmn:outgoing>g05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="G_causa" name="¿Cuál es la causa?">
+      <bpmn:incoming>g05</bpmn:incoming>
+      <bpmn:outgoing>g06</bpmn:outgoing>
+      <bpmn:outgoing>g07</bpmn:outgoing>
+      <bpmn:outgoing>g08</bpmn:outgoing>
+      <bpmn:outgoing>g09</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Fuente" name="Reprocesar cuando la fuente lo corrija">
+      <bpmn:incoming>g06</bpmn:incoming>
+      <bpmn:outgoing>g13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Aceptar" name="Aceptar con aviso y escribir por qué">
+      <bpmn:incoming>g07</bpmn:incoming>
+      <bpmn:outgoing>g14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Escalar" name="Asignar a infraestructura (B)">
+      <bpmn:incoming>g08</bpmn:incoming>
+      <bpmn:outgoing>g10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Fin_asignado" name="Incidente asignado a infraestructura">
+      <bpmn:incoming>g10</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Proponer" name="Proponer el cambio del contrato en un PR">
+      <bpmn:incoming>g09</bpmn:incoming>
+      <bpmn:outgoing>g11</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Aprobar" name="Revisar y aprobar el cambio (ADR si cambia una decisión)">
+      <bpmn:incoming>g11</bpmn:incoming>
+      <bpmn:outgoing>g12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Reprocesar" name="Reprocesar el lote con la regla nueva">
+      <bpmn:incoming>g12</bpmn:incoming>
+      <bpmn:outgoing>g15</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="G_union" name="">
+      <bpmn:incoming>g13</bpmn:incoming>
+      <bpmn:incoming>g14</bpmn:incoming>
+      <bpmn:incoming>g15</bpmn:incoming>
+      <bpmn:outgoing>g16</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Cerrar" name="Cerrar el incidente con su causa y su decisión">
+      <bpmn:incoming>g16</bpmn:incoming>
+      <bpmn:outgoing>g17</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Fin_cerrado" name="Incidente cerrado">
+      <bpmn:incoming>g17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="g01" sourceRef="Inicio" targetRef="Registrar" />
+    <bpmn:sequenceFlow id="g02" sourceRef="Registrar" targetRef="Avisar" />
+    <bpmn:sequenceFlow id="g03" sourceRef="Avisar" targetRef="Revisar" />
+    <bpmn:sequenceFlow id="g04" sourceRef="Revisar" targetRef="Diagnosticar" />
+    <bpmn:sequenceFlow id="g05" sourceRef="Diagnosticar" targetRef="G_causa" />
+    <bpmn:sequenceFlow id="g06" name="Archivo de la fuente" sourceRef="G_causa" targetRef="Fuente" />
+    <bpmn:sequenceFlow id="g07" name="Dato real atípico" sourceRef="G_causa" targetRef="Aceptar" />
+    <bpmn:sequenceFlow id="g08" name="Infraestructura" sourceRef="G_causa" targetRef="Escalar" />
+    <bpmn:sequenceFlow id="g09" name="Regla del contrato" sourceRef="G_causa" targetRef="Proponer" />
+    <bpmn:sequenceFlow id="g10" sourceRef="Escalar" targetRef="Fin_asignado" />
+    <bpmn:sequenceFlow id="g11" sourceRef="Proponer" targetRef="Aprobar" />
+    <bpmn:sequenceFlow id="g12" sourceRef="Aprobar" targetRef="Reprocesar" />
+    <bpmn:sequenceFlow id="g13" sourceRef="Fuente" targetRef="G_union" />
+    <bpmn:sequenceFlow id="g14" sourceRef="Aceptar" targetRef="G_union" />
+    <bpmn:sequenceFlow id="g15" sourceRef="Reprocesar" targetRef="G_union" />
+    <bpmn:sequenceFlow id="g16" sourceRef="G_union" targetRef="Cerrar" />
+    <bpmn:sequenceFlow id="g17" sourceRef="Cerrar" targetRef="Fin_cerrado" />
+    <bpmn:textAnnotation id="Nota_H2"><bpmn:text>Menos de 15 minutos desde que el lote entró a la capa cruda (H2).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:association id="Nota_H2_a" sourceRef="Avisar" targetRef="Nota_H2" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagrama">
+    <bpmndi:BPMNPlane id="Plano" bpmnElement="Colab">
+      <bpmndi:BPMNShape id="Pool_di" bpmnElement="Pool" isHorizontal="true"><dc:Bounds x="100" y="40" width="1930" height="860" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_pla_di" bpmnElement="L_pla" isHorizontal="true"><dc:Bounds x="130" y="40" width="1900" height="160" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_ope_di" bpmnElement="L_ope" isHorizontal="true"><dc:Bounds x="130" y="200" width="1900" height="520" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_equ_di" bpmnElement="L_equ" isHorizontal="true"><dc:Bounds x="130" y="720" width="1900" height="180" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Inicio_di" bpmnElement="Inicio"><dc:Bounds x="172" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Registrar_di" bpmnElement="Registrar"><dc:Bounds x="270" y="80" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Avisar_di" bpmnElement="Avisar"><dc:Bounds x="430" y="80" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Revisar_di" bpmnElement="Revisar"><dc:Bounds x="590" y="260" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Diagnosticar_di" bpmnElement="Diagnosticar"><dc:Bounds x="750" y="260" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_causa_di" bpmnElement="G_causa" isMarkerVisible="true"><dc:Bounds x="935" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fuente_di" bpmnElement="Fuente"><dc:Bounds x="1070" y="260" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Aceptar_di" bpmnElement="Aceptar"><dc:Bounds x="1070" y="370" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Escalar_di" bpmnElement="Escalar"><dc:Bounds x="1070" y="470" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_asignado_di" bpmnElement="Fin_asignado"><dc:Bounds x="1272" y="492" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Proponer_di" bpmnElement="Proponer"><dc:Bounds x="1070" y="580" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Aprobar_di" bpmnElement="Aprobar"><dc:Bounds x="1230" y="770" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reprocesar_di" bpmnElement="Reprocesar"><dc:Bounds x="1390" y="580" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_union_di" bpmnElement="G_union" isMarkerVisible="true"><dc:Bounds x="1585" y="275" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cerrar_di" bpmnElement="Cerrar"><dc:Bounds x="1710" y="260" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_cerrado_di" bpmnElement="Fin_cerrado"><dc:Bounds x="1902" y="282" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="g01_di" bpmnElement="g01"><di:waypoint x="208" y="120" /><di:waypoint x="270" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g02_di" bpmnElement="g02"><di:waypoint x="390" y="120" /><di:waypoint x="430" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g03_di" bpmnElement="g03"><di:waypoint x="550" y="120" /><di:waypoint x="570" y="120" /><di:waypoint x="570" y="300" /><di:waypoint x="590" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g04_di" bpmnElement="g04"><di:waypoint x="710" y="300" /><di:waypoint x="750" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g05_di" bpmnElement="g05"><di:waypoint x="870" y="300" /><di:waypoint x="935" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g06_di" bpmnElement="g06"><di:waypoint x="985" y="300" /><di:waypoint x="1070" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g07_di" bpmnElement="g07"><di:waypoint x="960" y="325" /><di:waypoint x="960" y="410" /><di:waypoint x="1070" y="410" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g08_di" bpmnElement="g08"><di:waypoint x="960" y="325" /><di:waypoint x="960" y="510" /><di:waypoint x="1070" y="510" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g09_di" bpmnElement="g09"><di:waypoint x="960" y="325" /><di:waypoint x="960" y="620" /><di:waypoint x="1070" y="620" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g10_di" bpmnElement="g10"><di:waypoint x="1190" y="510" /><di:waypoint x="1272" y="510" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g11_di" bpmnElement="g11"><di:waypoint x="1190" y="620" /><di:waypoint x="1210" y="620" /><di:waypoint x="1210" y="810" /><di:waypoint x="1230" y="810" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g12_di" bpmnElement="g12"><di:waypoint x="1350" y="810" /><di:waypoint x="1370" y="810" /><di:waypoint x="1370" y="620" /><di:waypoint x="1390" y="620" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g13_di" bpmnElement="g13"><di:waypoint x="1190" y="300" /><di:waypoint x="1585" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g14_di" bpmnElement="g14"><di:waypoint x="1190" y="410" /><di:waypoint x="1610" y="410" /><di:waypoint x="1610" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g15_di" bpmnElement="g15"><di:waypoint x="1510" y="620" /><di:waypoint x="1610" y="620" /><di:waypoint x="1610" y="325" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g16_di" bpmnElement="g16"><di:waypoint x="1635" y="300" /><di:waypoint x="1710" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="g17_di" bpmnElement="g17"><di:waypoint x="1830" y="300" /><di:waypoint x="1902" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Nota_H2_di" bpmnElement="Nota_H2"><dc:Bounds x="600" y="58" width="230" height="46" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Nota_H2_a_di" bpmnElement="Nota_H2_a"><di:waypoint x="550" y="100" /><di:waypoint x="600" y="81" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
