@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Def_ingesta" targetNamespace="http://canastamx/bpmn" exporter="CanastaMX" exporterVersion="1.0">
+  <bpmn:collaboration id="Colab">
+    <bpmn:participant id="Pool" name="Plataforma de datos · ingesta de un lote" processRef="Proc" />
+  </bpmn:collaboration>
+  <bpmn:process id="Proc" isExecutable="false">
+    <bpmn:laneSet id="Carriles">
+      <bpmn:lane id="L_orq" name="Orquestador">
+        <bpmn:flowNodeRef>Inicio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Descargar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="L_ing" name="Ingesta y validación">
+        <bpmn:flowNodeRef>Leer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>G_legible</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_cuarentena</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Recortar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>G_quincena</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_quincena</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Cruda</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Validar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>G_columnas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_rechazo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Reparar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Clave</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Intermedia</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="L_alm" name="Almacén analítico">
+        <bpmn:flowNodeRef>Consumo</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Reconciliar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Indice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fin_ok</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Inicio" name="Quincena publicada por PROFECO">
+      <bpmn:outgoing>f01</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Inicio_def" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Descargar" name="Descargar el archivo de la quincena">
+      <bpmn:incoming>f01</bpmn:incoming>
+      <bpmn:outgoing>f02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Leer" name="Leer con la codificación y la fecha del contrato">
+      <bpmn:incoming>f02</bpmn:incoming>
+      <bpmn:outgoing>f03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="G_legible" name="¿Legible y sin controles C1?">
+      <bpmn:incoming>f03</bpmn:incoming>
+      <bpmn:outgoing>f04</bpmn:outgoing>
+      <bpmn:outgoing>f05</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Fin_cuarentena" name="Lote completo a cuarentena · incidente (CU-04)">
+      <bpmn:incoming>f05</bpmn:incoming>
+      <bpmn:messageEventDefinition id="Fin_cuarentena_def" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Recortar" name="Recortar al alcance: 7 entidades, 5 catálogos y la ventana">
+      <bpmn:incoming>f04</bpmn:incoming>
+      <bpmn:outgoing>f06</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="G_quincena" name="¿Todas las filas son de la quincena del lote?">
+      <bpmn:incoming>f06</bpmn:incoming>
+      <bpmn:outgoing>f07</bpmn:outgoing>
+      <bpmn:outgoing>f08</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Fin_quincena" name="Lote detenido · incidente (CU-04)">
+      <bpmn:incoming>f08</bpmn:incoming>
+      <bpmn:messageEventDefinition id="Fin_quincena_def" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Cruda" name="Escribir la capa cruda y comparar lo escrito con lo leído">
+      <bpmn:incoming>f07</bpmn:incoming>
+      <bpmn:outgoing>f09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Validar" name="Validar columnas y valores contra el contrato (CU-02)">
+      <bpmn:incoming>f09</bpmn:incoming>
+      <bpmn:outgoing>f10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="G_columnas" name="¿Falta una columna requerida?">
+      <bpmn:incoming>f10</bpmn:incoming>
+      <bpmn:outgoing>f11</bpmn:outgoing>
+      <bpmn:outgoing>f12</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Fin_rechazo" name="Lote rechazado · incidente (CU-04)">
+      <bpmn:incoming>f12</bpmn:incoming>
+      <bpmn:messageEventDefinition id="Fin_rechazo_def" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Reparar" name="Reparar el ? y normalizar el texto (CU-03)">
+      <bpmn:incoming>f11</bpmn:incoming>
+      <bpmn:outgoing>f13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Clave" name="Resolver la clave de fila; colisiones de más de $50 a cuarentena">
+      <bpmn:incoming>f13</bpmn:incoming>
+      <bpmn:outgoing>f14</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Intermedia" name="Cargar la capa intermedia y registrar la corrida">
+      <bpmn:incoming>f14</bpmn:incoming>
+      <bpmn:outgoing>f15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Consumo" name="Cargar la capa de consumo (esquema estrella)">
+      <bpmn:incoming>f15</bpmn:incoming>
+      <bpmn:outgoing>f16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Reconciliar" name="Reconciliar variantes de artículo (CU-06)">
+      <bpmn:incoming>f16</bpmn:incoming>
+      <bpmn:outgoing>f17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Indice" name="Recalcular agregados e índice de la canasta (CU-07)">
+      <bpmn:incoming>f17</bpmn:incoming>
+      <bpmn:outgoing>f18</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Fin_ok" name="Datos publicados">
+      <bpmn:incoming>f18</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="f01" sourceRef="Inicio" targetRef="Descargar" />
+    <bpmn:sequenceFlow id="f02" sourceRef="Descargar" targetRef="Leer" />
+    <bpmn:sequenceFlow id="f03" sourceRef="Leer" targetRef="G_legible" />
+    <bpmn:sequenceFlow id="f04" name="Sí" sourceRef="G_legible" targetRef="Recortar" />
+    <bpmn:sequenceFlow id="f05" name="No" sourceRef="G_legible" targetRef="Fin_cuarentena" />
+    <bpmn:sequenceFlow id="f06" sourceRef="Recortar" targetRef="G_quincena" />
+    <bpmn:sequenceFlow id="f07" name="Sí" sourceRef="G_quincena" targetRef="Cruda" />
+    <bpmn:sequenceFlow id="f08" name="No" sourceRef="G_quincena" targetRef="Fin_quincena" />
+    <bpmn:sequenceFlow id="f09" sourceRef="Cruda" targetRef="Validar" />
+    <bpmn:sequenceFlow id="f10" sourceRef="Validar" targetRef="G_columnas" />
+    <bpmn:sequenceFlow id="f11" name="No" sourceRef="G_columnas" targetRef="Reparar" />
+    <bpmn:sequenceFlow id="f12" name="Sí" sourceRef="G_columnas" targetRef="Fin_rechazo" />
+    <bpmn:sequenceFlow id="f13" sourceRef="Reparar" targetRef="Clave" />
+    <bpmn:sequenceFlow id="f14" sourceRef="Clave" targetRef="Intermedia" />
+    <bpmn:sequenceFlow id="f15" sourceRef="Intermedia" targetRef="Consumo" />
+    <bpmn:sequenceFlow id="f16" sourceRef="Consumo" targetRef="Reconciliar" />
+    <bpmn:sequenceFlow id="f17" sourceRef="Reconciliar" targetRef="Indice" />
+    <bpmn:sequenceFlow id="f18" sourceRef="Indice" targetRef="Fin_ok" />
+    <bpmn:textAnnotation id="Nota_H1"><bpmn:text>H1: al menos el 95% de las filas defectuosas queda contenido. H2: el incidente aparece en menos de 15 minutos.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:association id="Nota_H1_a" sourceRef="Validar" targetRef="Nota_H1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagrama">
+    <bpmndi:BPMNPlane id="Plano" bpmnElement="Colab">
+      <bpmndi:BPMNShape id="Pool_di" bpmnElement="Pool" isHorizontal="true"><dc:Bounds x="100" y="40" width="2490" height="660" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_orq_di" bpmnElement="L_orq" isHorizontal="true"><dc:Bounds x="130" y="40" width="2460" height="160" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_ing_di" bpmnElement="L_ing" isHorizontal="true"><dc:Bounds x="130" y="200" width="2460" height="300" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="L_alm_di" bpmnElement="L_alm" isHorizontal="true"><dc:Bounds x="130" y="500" width="2460" height="200" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Inicio_di" bpmnElement="Inicio"><dc:Bounds x="172" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Descargar_di" bpmnElement="Descargar"><dc:Bounds x="260" y="80" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Leer_di" bpmnElement="Leer"><dc:Bounds x="420" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_legible_di" bpmnElement="G_legible" isMarkerVisible="true"><dc:Bounds x="605" y="285" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_cuarentena_di" bpmnElement="Fin_cuarentena"><dc:Bounds x="612" y="412" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Recortar_di" bpmnElement="Recortar"><dc:Bounds x="720" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_quincena_di" bpmnElement="G_quincena" isMarkerVisible="true"><dc:Bounds x="905" y="285" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_quincena_di" bpmnElement="Fin_quincena"><dc:Bounds x="912" y="412" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Cruda_di" bpmnElement="Cruda"><dc:Bounds x="1020" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Validar_di" bpmnElement="Validar"><dc:Bounds x="1180" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="G_columnas_di" bpmnElement="G_columnas" isMarkerVisible="true"><dc:Bounds x="1365" y="285" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_rechazo_di" bpmnElement="Fin_rechazo"><dc:Bounds x="1372" y="412" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reparar_di" bpmnElement="Reparar"><dc:Bounds x="1480" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Clave_di" bpmnElement="Clave"><dc:Bounds x="1640" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Intermedia_di" bpmnElement="Intermedia"><dc:Bounds x="1800" y="270" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Consumo_di" bpmnElement="Consumo"><dc:Bounds x="1960" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Reconciliar_di" bpmnElement="Reconciliar"><dc:Bounds x="2120" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Indice_di" bpmnElement="Indice"><dc:Bounds x="2280" y="560" width="120" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fin_ok_di" bpmnElement="Fin_ok"><dc:Bounds x="2462" y="582" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="f01_di" bpmnElement="f01"><di:waypoint x="208" y="120" /><di:waypoint x="260" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f02_di" bpmnElement="f02"><di:waypoint x="380" y="120" /><di:waypoint x="400" y="120" /><di:waypoint x="400" y="310" /><di:waypoint x="420" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f03_di" bpmnElement="f03"><di:waypoint x="540" y="310" /><di:waypoint x="605" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f04_di" bpmnElement="f04"><di:waypoint x="655" y="310" /><di:waypoint x="720" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f05_di" bpmnElement="f05"><di:waypoint x="630" y="335" /><di:waypoint x="630" y="412" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f06_di" bpmnElement="f06"><di:waypoint x="840" y="310" /><di:waypoint x="905" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f07_di" bpmnElement="f07"><di:waypoint x="955" y="310" /><di:waypoint x="1020" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f08_di" bpmnElement="f08"><di:waypoint x="930" y="335" /><di:waypoint x="930" y="412" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f09_di" bpmnElement="f09"><di:waypoint x="1140" y="310" /><di:waypoint x="1180" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f10_di" bpmnElement="f10"><di:waypoint x="1300" y="310" /><di:waypoint x="1365" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f11_di" bpmnElement="f11"><di:waypoint x="1415" y="310" /><di:waypoint x="1480" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f12_di" bpmnElement="f12"><di:waypoint x="1390" y="335" /><di:waypoint x="1390" y="412" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f13_di" bpmnElement="f13"><di:waypoint x="1600" y="310" /><di:waypoint x="1640" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f14_di" bpmnElement="f14"><di:waypoint x="1760" y="310" /><di:waypoint x="1800" y="310" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f15_di" bpmnElement="f15"><di:waypoint x="1920" y="310" /><di:waypoint x="1940" y="310" /><di:waypoint x="1940" y="600" /><di:waypoint x="1960" y="600" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f16_di" bpmnElement="f16"><di:waypoint x="2080" y="600" /><di:waypoint x="2120" y="600" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f17_di" bpmnElement="f17"><di:waypoint x="2240" y="600" /><di:waypoint x="2280" y="600" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f18_di" bpmnElement="f18"><di:waypoint x="2400" y="600" /><di:waypoint x="2462" y="600" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Nota_H1_di" bpmnElement="Nota_H1"><dc:Bounds x="1300" y="208" width="300" height="52" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Nota_H1_a_di" bpmnElement="Nota_H1_a"><di:waypoint x="1270" y="270" /><di:waypoint x="1300" y="234" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
