@@ -1,7 +1,7 @@
 # ADR 014 · Recuento de la muestra de H3 · la rama vuelve a la primera
 
 - **Fecha:** 28 de septiembre de 2026
-- **Estado:** **propuesta** · la ratifica el equipo. El asesor tiene que
+- **Estado:** **aceptada** el 02-10-2026 por Ariadne (A), responsable del frente de datos, sin objeciones del equipo (§13)
   enterarse antes de la entrega del 9 de octubre
 - **Autora del recuento:** **Karen (D)** · segunda lectura independiente
 - **Redacta:** Ariadne (A), que es quien se equivocó
@@ -412,7 +412,7 @@ reportaría algo falso durante dos semanas, y el asesor lo leería antes.
 | **Volvió a leer 32 pares sin conocer el conteo, y encontró 12 «sí»** | **Karen (D) · 28 de septiembre** |
 | Aplicó la regla escrita a los nueve pares en duda | Ariadne (A) · 30 de septiembre |
 | Redacta este ADR | Ariadne (A) |
-| Ratifica | el equipo, pendiente |
+| Ratifica | Ariadne (A), 02-10-2026, sin objeciones del equipo (§13) |
 
 ## 12 · Limitaciones, escritas
 
@@ -427,3 +427,18 @@ reportaría algo falso durante dos semanas, y el asesor lo leería antes.
   ver los datos.
 - **Nada de esto mueve la rama.** Afecta la tasa de omisión (30 de cada 100), que
   importa para T053 en la semana 8, no para decidir cómo se mide H3.
+
+## 13 · Ratificación
+
+No hubo reunión con quórum: C1, C2 y D estaban ausentes por cuestiones de fuerza mayor 
+y B atrasado con tres tareas. Se decidió así, y queda escrito para que se pueda revisar:
+
+| Quién | Postura | Cómo consta | Fecha |
+|---|---|---|---|
+| A · Ariadne | a favor | este commit | 02-10-2026 |
+| C1 · Liseth | a favor de la decision del frente de data | mensaje en el grupo del equipo | 30-09-2026 |
+| C2 · Oscar | a favor de la decision del frente de data | mensaje en el grupo del equipo | 30-09-2026 |
+| B · Ari Adair | notificado, sin objeción en el plazo | aviso en el grupo del 30-sep-2026 | 02-10-2026 |
+| D · Karen | notificada, sin objeción en el plazo | aviso en el grupo del 30-sep-2026 | 02-10-2026 |
+
+Si alguien objeta después, no se edita este ADR: se abre el siguiente.
