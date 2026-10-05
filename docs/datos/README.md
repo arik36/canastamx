@@ -158,5 +158,7 @@ docs/datos/perfilado/
 └── salidas/                todo regenerable
 ```
 
-Lo hace `infra/scripts/ordenar-perfilado.py`, que mueve **y reescribe las
-referencias** en la misma pasada, con `--simular` primero.
+Lo haría un guion, `infra/scripts/ordenar-perfilado.py`, que moviera **y
+reescribiera las referencias** en la misma pasada, con `--simular` primero. **Ese
+guion todavía no existe, y la reorganización no se hizo:** al 5 de octubre sólo
+existe `salidas/`. Queda sin fecha; no conviene antes de la entrega del 9.

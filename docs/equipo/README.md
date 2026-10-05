@@ -20,10 +20,10 @@ Si sale algo en rojo, **no ramifiques: avísalo en el chat.** Qué tiene que exi
 | Si eres… | Lee, en este orden |
 |---|---|
 | **Alguien a punto de crear su primera rama** | **[La línea base](./linea-base.md).** Y corre `bash infra/scripts/verificar-base.sh <tu clave>` |
-| **Alguien que va a trabajar hoy** | **[La ficha de tu tarea](./fichas/semana-01.md).** Completa, antes de empezar. No a media tarea |
+| **Alguien que va a trabajar hoy** | **[La ficha de tu tarea](./fichas/)**, en el archivo de su semana. Completa, antes de empezar. No a media tarea |
 | **Nunca has trabajado con ramas** | **[El ciclo de trabajo](./ciclo-de-trabajo.md)**, completo. Se lee una vez, antes de empezar |
 | **Recién llegado, sin nada instalado** | **[La guía de tu sistema operativo](./instalar/)**. Windows, Linux o WSL |
-| **Nuevo en el equipo** | **[El video del ciclo completo](#enlaces)** → [La reunión de arranque](./reunion-de-arranque.md), actos 1 y 2 → [Cómo trabajamos](./como-trabajamos.md) → [tu ficha de hoy](./fichas/semana-01.md) |
+| **Nuevo en el equipo** | **[El video del ciclo completo](#enlaces)** → [La reunión de arranque](./reunion-de-arranque.md), actos 1 y 2 → [Cómo trabajamos](./como-trabajamos.md) → [tu ficha de hoy](./fichas/) |
 | **El que monta el tablero (A)** | [El tablero](./tablero-github.md), parte 1 |
 | **Alguien que va a subir código hoy** | [Git paso a paso](./git-paso-a-paso.md), secciones 2, 3 y 4 |
 | **Alguien atorado** | [Git paso a paso](./git-paso-a-paso.md), secciones 9 y 11 |
@@ -39,7 +39,7 @@ Cinco piezas con nombres parecidos. Esto las distingue.
 | | Qué es | Dónde vive | Quién lo abre | Para qué |
 |---|---|---|---|---|
 | **El panel** | Página web con enlace | Fuera del repositorio | Los cinco, a diario | Qué toca hoy, y la ficha de cada tarea desplegada |
-| **Las fichas** | Cómo se hace cada tarea | [`fichas/semana-01.md`](./fichas/semana-01.md) | Quien va a trabajar | Insumos, conceptos, paso a paso, errores frecuentes |
+| **Las fichas** | Cómo se hace cada tarea | [`fichas/`](./fichas/), un archivo por semana | Quien va a trabajar | Insumos, conceptos, paso a paso, errores frecuentes |
 | **El cronograma** | Las 14 semanas del semestre | [`cronograma.md`](./cronograma.md) | Quien planea | Qué pasa cuándo, de septiembre a diciembre |
 | **La bitácora** | El reporte con semáforo | `CanastaMX_Bitacora.xlsx`, en Drive | A, y el asesor | Evidencia de cumplimiento por integrante y por semana |
 | **El tablero** | Los issues | GitHub Projects | Los cinco | **La fuente de verdad del avance.** Si no está aquí, no existe |
@@ -56,7 +56,8 @@ Y el orden de uso, en un día normal: abres **el panel**, encuentras tu tarea, d
 |---|---|
 | [`fusion-con-el-repo.md`](./fusion-con-el-repo.md) | Qué diferencia hay entre el paquete y el repositorio que ya existía, y cómo se fusionan sin perder nada |
 | [`linea-base.md`](./linea-base.md) | **Qué debe existir en `main` antes de que nadie cree una rama.** Tres niveles y la etiqueta `base-v0` como señal de arranque |
-| [`fichas/semana-01.md`](./fichas/semana-01.md) | **Las 18 tareas de la semana 1, una ficha cada una**: qué entregas, qué verificar antes, de quién dependes, los conceptos explicados, paso a paso, cómo se ve terminado y errores frecuentes |
+| [`fichas/planeacion-semana-01.md`](./fichas/planeacion-semana-01.md) | **Las 18 tareas de la semana 1, una ficha cada una**: qué entregas, qué verificar antes, de quién dependes, los conceptos explicados, paso a paso, cómo se ve terminado y errores frecuentes |
+| [`planeacion-semana-02.md`](./fichas/planeacion-semana-02.md), [`-03`](./fichas/planeacion-semana-03.md) y [`-04`](./fichas/planeacion-semana-04.md) | Las fichas de las semanas 2, 3 y 4, con el mismo formato |
 | [`fichas/PLANTILLA-ficha.md`](./fichas/PLANTILLA-ficha.md) | Para escribir las fichas de la semana siguiente. Se llenan en la reunión, con todos presentes |
 | [`mapa-dependencias.md`](./mapa-dependencias.md) | Qué tarea bloquea a cuál, las tres cadenas críticas y a quién avisarle al terminar |
 | [`como-trabajamos.md`](./como-trabajamos.md) | El ritmo del equipo: reporte diario, reunión semanal, la regla de las 24 horas, qué significa "terminado", el semáforo y dónde se dice qué |
