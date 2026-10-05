@@ -46,7 +46,7 @@ Lo sube **A**, en un solo commit, **antes del arranque del lunes 7**. Sin excepc
 | **Las 14 plantillas-esqueleto** | Para que nadie parta de un archivo vacío |
 | **`.github/`** | Plantillas de issue y de solicitud, y el flujo de integración continua |
 | **`infra/scripts/`** | Los guiones de estructura, siembra y verificación |
-| **`main` protegida, etapa 1** | Requerir solicitud y una aprobación. Las verificaciones vienen en la etapa 2, ver abajo |
+| **`main` protegida, etapa 1** | Requerir solicitud. Las verificaciones vienen en la etapa 2, ver abajo. Las aprobaciones no se exigen: ver `estrategia-de-ramas.md` §5 |
 | **Los cuatro colaboradores aceptaron** | Una invitación sin aceptar se ve igual que un repositorio que no existe |
 
 Cuando esos diez puntos están, A marca el punto con una etiqueta:
@@ -85,7 +85,7 @@ Settings → Branches → Add branch protection rule
 
 - Branch name pattern: `main`
 - ☑ Require a pull request before merging
-- ☑ Require approvals: **1**
+- ☐ Require approvals — **apagada**, a propósito (`estrategia-de-ramas.md` §5)
 - ☐ Require status checks — **apagada.** No hay ninguna que seleccionar todavía
 - ☑ Do not allow bypassing the above settings
 

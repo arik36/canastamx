@@ -118,7 +118,7 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 ## Las reglas, en una pantalla
 
 1. **Si no está en el tablero, no existe.** No se evalúa y no se reclama.
-2. **Nadie escribe directo en `main`.** Rama por tarea, solicitud con una aprobación y la integración continua en verde.
+2. **Nadie escribe directo en `main`.** Rama por tarea, solicitud con revisión pedida y la integración continua en verde. La revisión no bloquea: [`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §5.
 3. **Ninguna tarea dura más de una semana.** Si dura más, son dos tareas.
 4. **24 horas atorado = pides ayuda.** No es opcional.
 5. **Terminado significa incorporado a `main` y aprobado por otro.** "Está en mi máquina" no es un estado.

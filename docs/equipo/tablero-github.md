@@ -28,7 +28,7 @@ Conviene saber cómo está armado, porque no es obvio: **las columnas no son col
 | **Backlog** | Todo lo que existe pero aún no toca |
 | **Esta semana** | Lo comprometido para la semana en curso |
 | **En curso** | Lo que alguien está haciendo *ahora*. Máximo dos tarjetas por persona |
-| **En revisión** | Solicitud abierta esperando aprobación |
+| **En revisión** | Solicitud abierta, con revisión pedida |
 | **Hecho** | Incorporado a `main` |
 
 El límite de **dos tarjetas en curso por persona** es lo único que impide que alguien tenga siete cosas empezadas y ninguna terminada.
@@ -142,13 +142,13 @@ Cuando se pueda, es esto:
 
 - Branch name pattern: `main`
 - ☑ Require a pull request before merging
-- ☑ Require approvals: **1**
+- ☐ Require approvals — **apagada**, a propósito (`estrategia-de-ramas.md` §5)
 - ☑ Require status checks to pass before merging
 - ☑ Do not allow bypassing the above settings
 
 Sin esto, la regla de «nadie escribe en `main`» es un acuerdo verbal que alguien va a romper sin querer un martes a las once de la noche.
 
-**Hoy no se puede.** GitHub no cobra por proteger ramas en repositorios **públicos**, pero sí en los **privados** de cuenta personal, y `arik36/canastamx` es privado. Mientras tanto se sostiene con tres cosas: los ganchos de `.githooks/` —que cada quien instala en su máquina—, la verificación **Higiene** de la canalización, y **una auditoría de dos comandos al inicio de cada reunión semanal**.
+**Ya está.** El repositorio es público y `main` tiene la regla «main protegida.»: ver [`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §7. *(Esta sección decía que no se podía porque el repositorio era privado.)* Mientras tanto se sostiene con tres cosas: los ganchos de `.githooks/` —que cada quien instala en su máquina—, la verificación **Higiene** de la canalización, y **una auditoría de dos comandos al inicio de cada reunión semanal**.
 
 Los tres caminos posibles, la auditoría y qué hay que decidir están en [`reunion-de-arranque.md`](./reunion-de-arranque.md), en la sección «Quién aprueba las solicitudes».
 
