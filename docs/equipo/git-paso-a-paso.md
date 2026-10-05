@@ -20,7 +20,7 @@ Nadie tiene que memorizar nada. Este archivo se abre mientras se trabaja.
 | 3 | [Guardar y subir tu avance](#3-guardar-y-subir-tu-avance) | Varias veces al día |
 | 4 | [Abrir la solicitud de incorporación](#4-abrir-la-solicitud-de-incorporación-pull-request) | Cuando terminas la tarea |
 | 5 | [Revisar la solicitud de otro](#5-revisar-la-solicitud-de-otro-integrante) | Cuando te etiquetan |
-| 6 | [Incorporar y limpiar](#6-incorporar-y-limpiar) | Cuando te aprueban |
+| 6 | [Incorporar y limpiar](#6-incorporar-y-limpiar) | Con la revisión o la constancia, y la CI en verde |
 | 7 | [Mi rama quedó vieja](#7-mi-rama-quedó-vieja) | Cuando GitHub dice que hay conflictos |
 | 8 | [Resolver un conflicto](#8-resolver-un-conflicto) | Cuando aparece `<<<<<<<` |
 | 9 | [La regué: cómo deshacer](#9-la-regué-cómo-deshacer) | Cuando entra el pánico |
@@ -364,7 +364,7 @@ Tres cosas que siempre se revisan en este proyecto:
 
 ## 6. Incorporar y limpiar
 
-Cuando tengas la aprobación y el verde de integración continua:
+Cuando tengas la revisión —o, si no llegó a tiempo, la constancia en la solicitud— y el verde de integración continua:
 
 1. Botón *Squash and merge*. Siempre *squash*: convierte tus quince commits en uno solo y deja el historial de `main` legible.
 2. *Confirm squash and merge*.
@@ -645,7 +645,7 @@ git stash / git stash pop
 1. **Nunca trabajes en `main`.** Rama por tarea, siempre.
 2. **`git pull` antes de ramificar.** Cada mañana.
 3. **Commits chicos y frecuentes**, con mensaje en formato.
-4. **Toda rama entra por solicitud** con una aprobación y la integración continua en verde.
+4. **Toda rama entra por solicitud**, con revisión pedida y la integración continua en verde. Si la revisión no llega a tiempo, se integra dejando constancia ([`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §5).
 5. **Si no sabes, pregunta antes de forzar.** Un `--force` a destiempo borra el trabajo de alguien más.
 
 ---

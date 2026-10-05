@@ -110,9 +110,9 @@ Un comando, una vez, después de clonar. Activa dos redes que viven versionadas 
 | `pre-commit` | Confirmar un `.env`, carpetas de dependencias (`node_modules/`, `.venv/`, `target/`) o archivos de más de 10 MB |
 | `pre-push` | Enviar directamente a `main` |
 
-**Por qué esto y no la protección de ramas de GitHub.** La protección de ramas en un repositorio privado exige plan de pago, y el nuestro es gratuito mientras llega el GitHub Student Pack. Estos ganchos son gratis, viven en el repositorio y atrapan **el error honesto**, que es el que de verdad ocurre: el `git push` a `main` de las once de la noche, o el `git add .` que se lleva un `.env`.
+**Por qué estos ganchos, si GitHub ya protege `main`.** Atrapan **el error honesto** antes de que salga de tu máquina: el `git push` a `main` de las once de la noche, o el `git add .` que se lleva un `.env`. La regla «main protegida.» de GitHub rechazaría el push de todos modos, pero el gancho te avisa antes, en tu terminal y con un mensaje claro. *(Hasta octubre este párrafo decía que la protección del servidor exigía plan de pago. Eso valía mientras el repositorio era privado.)*
 
-No son seguridad. Corren en tu máquina y quien quiera puede saltárselos con `--no-verify`. Son una red, no una reja. Cuando llegue el plan Pro, la protección del servidor se suma encima y entonces sí es una reja.
+No son seguridad. Corren en tu máquina y quien quiera puede saltárselos con `--no-verify`. Son una red; la reja es la regla del servidor, descrita en [`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §7.
 
 **Cada integrante los activa por su cuenta**, porque `core.hooksPath` es configuración local: no viaja con el clon. Compruébalo con:
 
@@ -262,7 +262,7 @@ El revisor mira la pestaña *Files changed*, comenta lo que no entienda, y al fi
 
 ### Paso 8 · Incorpora
 
-Con la aprobación y el verde, aparece habilitado el botón de incorporar. Elige **Squash and merge**.
+Con el verde de la integración continua se habilita el botón de incorporar. Espera la revisión que pediste; si no llega a tiempo, deja la constancia ([`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §5). Elige **Squash and merge**.
 
 > **Por qué squash:** junta tus cinco commits en uno solo dentro de `main`. El historial de `main` queda con un commit por tarea, legible. Sin squash, `main` acumula commits como "arregla typo" y "ahora sí" que no le dicen nada a nadie en diciembre.
 
@@ -476,7 +476,7 @@ Sí, las dos copias: la del servidor con el botón *Delete branch* de GitHub, y 
 Te está diciendo que esa rama tiene commits que no llegaron a `main`. **No uses `-D` mayúscula para forzar**: primero averigua qué se quedó fuera.
 
 **¿Puedo aprobar mi propia solicitud?**
-Ahora sí, porque `main` todavía no está protegida. En cuanto A la proteja, GitHub va a exigir la aprobación de otra persona. Ese es el punto.
+No: GitHub no deja que quien abre la solicitud la apruebe. Tampoco hace falta, porque la regla de `main` no exige aprobaciones, a propósito: el equipo trabaja en horarios distintos. Pide revisión siempre y, si no llega a tiempo, deja la constancia ([`estrategia-de-ramas.md`](./estrategia-de-ramas.md) §5).
 
 ---
 
@@ -572,7 +572,7 @@ git push -u origin feat/inic-descripcion # 4. subes
 
 # 5. abres la URL que imprimió el push
 # 6. llenas la solicitud, pones "Closes #NN", eliges revisor
-# 7. esperas verde + aprobación
+# 7. esperas el verde y la revisión que pediste (o dejas la constancia)
 # 8. Squash and merge → Delete branch
 
 git switch main && git pull              # 9. traes tu trabajo ya incorporado
@@ -597,7 +597,7 @@ git push origin entrega-2026-09-18       # sin esto, la etiqueta no sale de tu m
 2. **`git pull` antes de ramificar.** Cada vez.
 3. **Una rama por tarea, no por commit ni por semana.** Máximo una semana de vida.
 4. **Commits chicos y frecuentes**, con el formato `tipo(ámbito): descripción`.
-5. **Toda rama entra por solicitud**, con una aprobación y las verificaciones en verde.
+5. **Toda rama entra por solicitud**, con revisión pedida y las verificaciones en verde.
 6. **Después de incorporar: `pull` y borrar la rama.** Las dos copias.
 7. **Las etiquetas son excepcionales.** Bases compartidas y entregas institucionales. Nada más.
 

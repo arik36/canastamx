@@ -77,7 +77,7 @@ infra/        contenedores, puerta de enlace y guiones de operación
 
 - **Ramas:** `tipo/iniciales-descripcion-corta` — por ejemplo `feat/alm-ingesta-profeco`
 - **Commits:** `tipo(ámbito): descripción en presente`
-- **Nadie escribe directo en `main`.** Todo entra por solicitud con una aprobación.
+- **Nadie escribe directo en `main`.** Todo entra por solicitud, con revisión pedida y la integración continua en verde.
 - **Decisiones técnicas:** un archivo corto en `docs/adr/`.
 - **Si una tarea no está en el tablero, no existe.**
 
