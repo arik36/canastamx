@@ -111,3 +111,6 @@ docker-compose.override.yml
 # consolidada vive versionada en docs/datos/ingesta-capa-cruda.md.
 services/data-platform/ingestion/corridas/*
 !services/data-platform/ingestion/corridas/.gitkeep
+
+# Respaldos de editores y guiones
+*.bak

@@ -240,13 +240,18 @@ programa ya usa uno, cambia **sólo el número** en tu `.env`:
 
 | Síntoma | Qué cambias en tu `.env` |
 |---|---|
-| Tienes XAMPP, IIS u otro servidor web usando el 80 | `TRAEFIK_WEB_PORT=8081` |
+| Tienes XAMPP, IIS u otro servidor web usando el 80 | `TRAEFIK_WEB_PORT=8880` |
 | Tienes PostgreSQL instalado en Windows | `OLTP_PORT=5442` |
 | Otro programa usa el 8080 | `ADMINER_PORT=8088` |
 | Otro programa usa el 9000 | `S3_PORT=9010` **y también** `S3_ENDPOINT=http://localhost:9010` |
 
 La última fila es la única con trampa: `S3_ENDPOINT` repite el puerto de
 `S3_PORT`, así que se cambian juntos.
+
+> **El 8081, no.** Es el puerto del servicio de dominio
+> (`services/domain-service/src/main/resources/application.properties`). Hasta el
+> 5 de octubre esta guía lo sugería por error. Si lo pusiste, cámbialo a `8880` y
+> corre `docker compose up -d traefik`.
 
 Cambiar un puerto también cambia la dirección que abres en el navegador. Por eso
 el Paso 8 te imprime **tus** direcciones, leídas de tu `.env`.
@@ -403,7 +408,7 @@ Abre **MinIO · por nombre** y **Adminer · por nombre**. Tienen que mostrar lo
 mismo que los dos pasos anteriores.
 
 - **Si cambiaste `TRAEFIK_WEB_PORT`**, la dirección lleva el puerto, por ejemplo
-  `http://db.canastamx.localhost:8081`. Sin el puerto no llegas a Traefik.
+  `http://db.canastamx.localhost:8880`. Sin el puerto no llegas a Traefik.
 - **Si te lleva a otra página** (la bienvenida de XAMPP o de IIS), otro programa
   ya ocupa el 80. Ve a la tabla del Paso 5.
 
@@ -438,7 +443,7 @@ mismo que los dos pasos anteriores.
 | *Virtualization support not detected* | La virtualización está apagada en el BIOS | Enciéndela (Intel VT-x o AMD SVM). Si no sabes cómo, pide ayuda en el grupo |
 | `docker: command not found` | Ver la tabla del [Paso 3](#paso-3--comprueba-que-docker-responde) | |
 | `port is already allocated`, o `Ports are not available … forbidden by its access permissions` | Otro programa, o Windows, ya tiene ese puerto | Cambia el puerto en tu `.env` (Paso 5) y `docker compose up -d` |
-| `http://db.canastamx.localhost` abre XAMPP, IIS u otra cosa | El 80 está ocupado **y Docker no da error** | `TRAEFIK_WEB_PORT=8081`, `docker compose up -d`, y usa `:8081` en la dirección |
+| `http://db.canastamx.localhost` abre XAMPP, IIS u otra cosa | El 80 está ocupado **y Docker no da error** | `TRAEFIK_WEB_PORT=8880`, `docker compose up -d`, y usa `:8880` en la dirección |
 | Traefik responde *404 page not found* | Llegaste a Traefik sin un nombre que conozca | Usa las direcciones con nombre que imprime el Paso 8 |
 | Adminer: *password authentication failed* | La contraseña no coincide, o la cambiaste **después** de la primera vez | Vuelve a poner la anterior, o `docker compose down -v` y `docker compose up -d` |
 | Adminer: *could not translate host name* o *connection refused* | Escribiste `localhost` como servidor | Usa `postgres-oltp` o `postgres-analytics` |
