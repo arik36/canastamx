@@ -93,6 +93,19 @@ El detalle, con comandos para terminal y para GitHub Desktop, está en [`docs/eq
 | C2 | Fonseca Ríos Oscar Renato | `orf` | Cliente móvil |
 | D | Herrera Villalpando Karen Alejandra | `kah` | Cliente web y maquetación |
 
+**Ante la materia de Proyecto Integrador** hay tres estudiantes inscritas:
+
+| Inscrita | Responde por | Con apoyo de |
+|---|---|---|
+| Ariadne (A) | A · Datos y plataforma, y B · Infraestructura | Ari Adair (B), colaborador |
+| Liseth (C1) | C1 · Servicio de dominio, y C2 · Cliente móvil | Oscar Renato (C2), colaborador |
+| Karen (D) | D · Cliente web y diseño | — |
+
+Ari Adair y Oscar Renato son de otra especialidad y colaboran con el visto bueno
+del asesor. Los documentos de la materia nombran a las tres inscritas. El
+repositorio y el protocolo de investigación nombran a los cinco, porque registran
+quién hizo cada cosa.
+
 Quién hace qué cada semana, con su criterio de cierre: [`docs/equipo/cronograma.md`](docs/equipo/cronograma.md).
 
 ## Fuentes de datos
