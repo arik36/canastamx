@@ -57,6 +57,8 @@ clave de fila y separa la cuarentena con su motivo.
 | `es_generico` | `boolean` | `marca = 'S/M'`; las vistas lo mandan al final (ADR 002 §3) |
 | `catalogo` | `text` | El catálogo de **esa** observación |
 | `precio` | `numeric(12,2)` | **La medida**, en pesos |
+| `lote` | `text` | El lote de la fuente del que vino, como `07-2026_Q2` |
+| `ingerido_en` | `timestamptz` | Cuándo entró a la capa cruda, según el registro de la corrida |
 
 **Tres decisiones, con su porqué:**
 
@@ -153,6 +155,7 @@ Cada columna en una línea, con la tabla donde vive.
 | `marca` | hechos | Marca normalizada; `S/M` = sin marca |
 | `es_generico` | hechos | La observación es de un producto sin marca |
 | `catalogo` | hechos | Catálogo de PROFECO de esa observación |
+| `lote`, `ingerido_en` | hechos | De qué lote vino la observación y cuándo entró. Cumplen RNF-D05 del protocolo: cada registro de consumo conserva su lote, su fuente y la hora de su ingesta |
 | `articulo_key` | hechos, `dim_articulo` | Artículo = producto + presentación (ADR 002) |
 | `articulo_canonico_key` | `dim_articulo` | Artículo al que se reconcilia una variante (T053) |
 | `producto_c`, `presentacion_c` | `dim_articulo` | Forma canónica: sin acentos, sin signos, en minúsculas |
@@ -177,7 +180,8 @@ Cada columna en una línea, con la tabla donde vive.
 | **Completitud · valores** | **0 vacíos** en las columnas con `valor_requerido: true` | Conteo por columna en el alcance (§7) | Contrato · `columnas` |
 | **Completitud · cobertura** | **266 de 266** particiones de entidad × quincena (7 × 38) | Particiones con datos en los hechos (§7) | Ingesta T020 |
 | **Completitud · cuarentena** | Cada fila apartada lleva su motivo, y el total se reporta como porcentaje del alcance | Cuarentena total (§7) | Contrato · motivos |
-| **Latencia · ingesta** | Un lote nuevo llega a la capa de consumo en **menos de 15 minutos** | Del registro de la corrida a la carga | H2 |
+| **Detección · H2** | El incidente se señala en **menos de 15 minutos** desde el inicio de la ingesta | En el experimento: del inicio de la corrida al registro del incidente | Protocolo · RNF-D02 |
+| **Trazabilidad** | **El 100% de las filas** de `hechos_precio` lleva su `lote` y su `ingerido_en` | Conteo de vacíos en esas dos columnas | Protocolo · RNF-D05 |
 | **Latencia · consulta** | El tablero responde en **menos de 3 s** | Sobre los agregados, no sobre los hechos | CU-13 |
 | **Peso** | Bytes por fila y total de `hechos_precio` | Estimación con la fórmula de `medir-el-peso.py` (§7) | Para el presupuesto de memoria de B (ADR 008) |
 

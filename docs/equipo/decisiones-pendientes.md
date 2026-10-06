@@ -56,6 +56,10 @@
 
 **Decide:** C1 · **Queda en:** CU-11 · **Afecta:** RF-21.
 
+*Avance (#137): CU-11 ya dice que la alerta **permanece activa** después de
+notificar. Falta decir si vuelve a avisar en cada revisión mientras el precio siga
+por debajo del umbral, o sólo cuando vuelva a cruzarlo.*
+
 | Opción | Qué es | Consecuencia |
 |---|---|---|
 | **A** | Se dispara una vez y queda «disparada»; la persona la vuelve a armar | Un aviso por alerta, y nada más |
@@ -69,6 +73,22 @@
 
 Faltan el código de color del rojo y del naranja, que hoy sólo tienen nombre, y un
 color para «aviso», porque el contrato tiene tres niveles: ok, avisa y bloquea.
+
+---
+
+### D-07 · El umbral de rechazo por lote · antes del 1 de noviembre
+
+**Decide:** A · **Queda en:** el contrato · **Afecta:** RF-D07 del protocolo y el
+alterno 5b de CU-02.
+
+Si la proporción de filas en cuarentena de un lote pasa de este umbral, el lote
+entero no se promueve. El protocolo lo pide («el umbral acordado») y ningún
+documento le pone número todavía.
+
+| Opción | Qué es | Consecuencia |
+|---|---|---|
+| **A** | Un umbral fijo, por ejemplo el 5% de las filas del lote | Simple de explicar. Hay que medir antes cuánto rechaza un lote sano: hoy la cuarentena del alcance es como máximo del 0.225% (T031) |
+| **B** | Un umbral relativo a la historia, por ejemplo tres veces la mediana de rechazo de los lotes anteriores | Se adapta a cada fuente, pero tarda en tener historia y cuesta más explicarlo |
 
 ---
 

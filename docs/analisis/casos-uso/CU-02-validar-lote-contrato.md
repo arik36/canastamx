@@ -64,6 +64,12 @@
 2. Continúa en el paso 5. *En el alcance fueron 512 filas, 256 pares (medido en
    T031).*
 
+**5b · La proporción de filas en cuarentena del lote supera el umbral**
+1. El proceso no promueve el lote: la capa intermedia no recibe ninguna de sus filas.
+2. El proceso levanta un incidente (CU-04).
+3. El caso de uso termina sin éxito. *El umbral todavía no está decidido (RF-D07 del
+   protocolo; `docs/equipo/decisiones-pendientes.md`, D-07).*
+
 **6a · La capa intermedia no acepta la escritura**
 1. El proceso marca la corrida como fallida y no deja filas a medias.
 2. El proceso levanta un incidente (CU-04).
@@ -86,8 +92,7 @@
 
 ## Requisito no funcional asociado
 
-- El incidente queda señalado en la consola en **menos de 15 minutos** desde que
-  el lote entró a la capa cruda. *(Es la hipótesis H2.)*
+- El incidente queda señalado en la consola en **menos de 15 minutos** desde el **inicio de la ingesta** del lote. *(Es la hipótesis H2, como la mide el protocolo en RNF-D02.)*
 - **Al menos el 95%** de las filas defectuosas queda contenido y no llega a la capa
   de consumo. *(Es la hipótesis H1.)*
 
