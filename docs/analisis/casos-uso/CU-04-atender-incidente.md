@@ -58,8 +58,7 @@
 
 ## Requisito no funcional asociado
 
-- El incidente aparece en la consola en **menos de 15 minutos** desde que el lote
-  entró a la capa cruda. *(Es la hipótesis H2.)*
+- El incidente aparece en la consola en **menos de 15 minutos** desde el **inicio de la ingesta** del lote. *(Es la hipótesis H2, como la mide el protocolo en RNF-D02.)*
 - **El 100% de los incidentes cerrados** tiene su causa escrita.
 
 ## Notas

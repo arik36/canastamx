@@ -112,7 +112,7 @@
     <bpmn:sequenceFlow id="g15" sourceRef="Reprocesar" targetRef="G_union" />
     <bpmn:sequenceFlow id="g16" sourceRef="G_union" targetRef="Cerrar" />
     <bpmn:sequenceFlow id="g17" sourceRef="Cerrar" targetRef="Fin_cerrado" />
-    <bpmn:textAnnotation id="Nota_H2"><bpmn:text>Menos de 15 minutos desde que el lote entró a la capa cruda (H2).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="Nota_H2"><bpmn:text>Menos de 15 minutos desde el inicio de la ingesta (H2 · RNF-D02).</bpmn:text></bpmn:textAnnotation>
     <bpmn:association id="Nota_H2_a" sourceRef="Avisar" targetRef="Nota_H2" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="Diagrama">
