@@ -1,0 +1,7 @@
+# Configuración del validador de los contratos OpenAPI (T037).
+# Se lee sola al correr `npx @redocly/cli lint docs/analisis/openapi/*.yaml`
+# desde la raíz del repositorio.
+extends:
+  - recommended
+rules:
+  info-license: off   # el repositorio todavía no declara licencia; cuando la declare, se borra esta línea
