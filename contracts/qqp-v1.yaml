@@ -1,8 +1,21 @@
 contrato: qqp
-version: 1.3.3
+version: 1.3.4
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-09-30
+fecha: 2026-10-06
 autor: alm
+
+# ── Qué cambió en 1.3.4 ─────────────────────────────────────────────────────
+#
+# Dos decisiones del equipo del 6 de octubre (docs/equipo/decisiones-pendientes.md).
+# Ninguna de las 15 columnas cambia.
+#
+#   · D-03 · `reparar_interrogantes.ambiguo.poblacion: corpus`. La frecuencia que
+#     decide un `?` ambiguo se cuenta en el corpus completo, la misma población de
+#     la que salió el diccionario.
+#   · D-07 · `promocion_del_lote.rechazo_maximo: 0.05`. Si más del 5% de las filas
+#     de un lote va a cuarentena, el lote entero no se promueve (RF-D07 del
+#     protocolo, alterno 5b de CU-02). Se confirma midiendo los 38 lotes antes del
+#     1 de noviembre: ver `pendientes.rechazo_por_lote`.
 
 # ── Qué cambió en 1.3.3 ─────────────────────────────────────────────────────
 #
@@ -302,6 +315,7 @@ normalizacion:
       regla: por_frecuencia
       umbral: 10          # un gemelo que domina 10:1 en los datos limpios gana
       empate: revision_humana
+      poblacion: corpus   # 1.3.4 · D-03: la misma población del diccionario, con más datos
     sin_gemelo:
       accion: cuarentena
       motivo: codificacion_irrecuperable
@@ -493,6 +507,22 @@ clave_de_fila:                 # lo que la compuerta usa para detectar duplicado
     grupo_completo` la cuarentena por colisión alta pasa de 256 filas a todas
     las de esos grupos. Las dos cifras se vuelven a medir en la primera corrida
     de la compuerta de calidad.
+
+promocion_del_lote:              # 1.3.4 · D-07 · RF-D07 del protocolo · CU-02, alterno 5b
+  rechazo_maximo: 0.05           # proporción de filas del lote en cuarentena
+  que_se_hace: >
+    Si más del 5% de las filas de un lote termina en cuarentena, el lote ENTERO
+    no se promueve a la capa intermedia y se levanta un incidente. Un lote así no
+    está «casi bien»: algo cambió en el archivo, y conviene verlo completo antes de
+    publicar la parte que sí pasó.
+
+    Por qué 5%: hoy la cuarentena del alcance completo es como máximo del 0.225%
+    (T031), unas veinte veces menos. El número se confirma midiendo los 38 lotes
+    uno por uno (`pendientes.rechazo_por_lote`).
+
+    Para el experimento de H1: un lote al que se le inyecte más del 5% de filas
+    malas se bloquea completo. Cuenta como contención, pero se registra como
+    «lote bloqueado», no como «filas en cuarentena».
 
 columnas:
   # `columna_requerida`  : el archivo tiene que traer la columna. Si no, es
@@ -766,3 +796,8 @@ pendientes:
       todo lo medido sobre ellos es válido. Si algún día la lista cambia, se
       vuelven a medir `medicion`, `clave_de_fila`, `maximo_por_catalogo` y el
       porcentaje de S/M -esa regla sigue en pie-.
+  - id: rechazo_por_lote
+    que: >
+      Medir el porcentaje de filas en cuarentena de cada uno de los 38 lotes,
+      antes del 1 de noviembre de 2026. Si algún lote sano pasa del 1%, se
+      revisa `promocion_del_lote.rechazo_maximo` antes de construir la compuerta.

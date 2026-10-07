@@ -67,8 +67,9 @@
 **5b · La proporción de filas en cuarentena del lote supera el umbral**
 1. El proceso no promueve el lote: la capa intermedia no recibe ninguna de sus filas.
 2. El proceso levanta un incidente (CU-04).
-3. El caso de uso termina sin éxito. *El umbral todavía no está decidido (RF-D07 del
-   protocolo; `docs/equipo/decisiones-pendientes.md`, D-07).*
+3. El caso de uso termina sin éxito. *El umbral es el **5% de las filas del lote**
+   (contrato 1.3.4; D-07, RF-D07 del protocolo). Se confirma midiendo los 38 lotes
+   antes del 1 de noviembre.*
 
 **6a · La capa intermedia no acepta la escritura**
 1. El proceso marca la corrida como fallida y no deja filas a medias.

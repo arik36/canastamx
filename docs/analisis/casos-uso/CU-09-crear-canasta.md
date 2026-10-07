@@ -24,6 +24,15 @@
 
 ## Flujos alternos
 
+**1a · La persona no inició sesión**
+1. La app guarda la canasta en el teléfono, con sus líneas y cantidades. El sistema
+   todavía no registra nada.
+2. Cuando la persona solicita guardar la canasta, la app le pide iniciar sesión o
+   crear una cuenta (CU-08).
+3. Con la sesión iniciada, la app crea la canasta y le agrega sus líneas.
+4. Continúa en el paso 9 del flujo principal. *Si el inicio de sesión falla, la
+   canasta sigue en el teléfono y no se pierde nada (D-04, 6 de octubre de 2026).*
+
 **6a · La cantidad indicada no es válida**
 1. El sistema rechaza la cantidad porque no es un número entero mayor que cero.
 2. El sistema solicita una cantidad válida.
@@ -62,3 +71,4 @@
 - Al agregar un artículo que ya existe, se suma la cantidad en lugar de crear una línea duplicada.
 - La identidad de un artículo se determina mediante producto + presentación.
 - El costo estimado se calcula, pero no se almacena.
+- Sin sesión, la canasta vive en el teléfono hasta que la persona inicia sesión (D-04). El flujo está en `docs/analisis/navegacion.md` §4.
