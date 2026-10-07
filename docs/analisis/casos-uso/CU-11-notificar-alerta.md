@@ -21,10 +21,10 @@
 2. El proceso obtiene el precio observado de cada artículo asociado a una alerta.
 3. El proceso compara el precio observado con el umbral configurado.
 4. El proceso evalúa si el precio observado es menor o igual al umbral configurado.
-5. Si el precio observado es menor o igual al umbral, el proceso obtiene los datos necesarios para enviar la notificación a la persona consumidora.
+5. Si el precio observado es menor o igual al umbral **y en la revisión anterior estaba por encima**, el proceso obtiene los datos necesarios para enviar la notificación a la persona consumidora.
 6. El proceso envía la notificación por correo electrónico.
 7. El proceso registra la notificación con estado **ENVIADA**.
-8. El proceso mantiene la alerta activa para que pueda ser evaluada nuevamente en la siguiente revisión quincenal.
+8. El proceso registra que la alerta quedó **debajo** del umbral y la mantiene activa para que pueda ser evaluada nuevamente en la siguiente revisión quincenal.
 
 ## Flujos alternos
 
@@ -39,8 +39,15 @@
 
 1. El proceso determina que la condición de la alerta no se cumple.
 2. El proceso no envía ninguna notificación.
-3. La alerta permanece activa para una revisión posterior.
-4. El proceso continúa con la siguiente alerta.
+3. El proceso registra que la alerta quedó **arriba** del umbral: si en una revisión posterior vuelve a bajar, avisa otra vez.
+4. La alerta permanece activa para una revisión posterior.
+5. El proceso continúa con la siguiente alerta.
+
+**5a · El precio ya estaba debajo del umbral en la revisión anterior**
+
+1. El proceso no envía una notificación nueva: ya avisó cuando el precio cruzó.
+2. La alerta sigue activa y debajo del umbral.
+3. El proceso continúa con la siguiente alerta.
 
 **6a · El correo electrónico no puede enviarse**
 
@@ -79,7 +86,8 @@ Una alerta que genera una notificación **no se desactiva ni se marca como dispa
 ## Notas
 
 * La persona consumidora es interesada en el caso de uso, pero no es el actor primario.
-* La alerta se dispara cuando el precio observado es menor o igual al umbral configurado.
+* La alerta se dispara cuando el precio observado es menor o igual al umbral configurado, **y sólo al cruzarlo**: no repite mientras el precio siga abajo, y se vuelve a armar cuando sube (D-05, 6 de octubre de 2026).
+* Además del correo, la app muestra los precios que bajaron. Está en `docs/analisis/navegacion.md` §3.
 * Si el precio no cumple la condición, no se envía una notificación y la alerta permanece activa para una revisión posterior.
 * Una notificación exitosa se registra con estado **ENVIADA**.
 * Si el envío falla, la notificación se registra con estado **FALLIDA** y la alerta permanece pendiente de notificación para un nuevo intento.

@@ -12,85 +12,58 @@
 
 ## Para decidir
 
-### D-01 · Las pestañas de la app · antes del 9 de octubre
+### D-08 · ¿La web es responsiva en tres puntos de quiebre? · antes del 9 de octubre
 
-**Deciden:** C2 y D · **Queda en:** ADR 007 · **Por qué urge:** el prototipo es parte de la entrega del 9.
+**Decide:** D, con A · **Queda en:** `docs/analisis/puntos-de-quiebre.md` y `docs/entregas/diseno.md`.
 
-| Opción | Qué es | Consecuencia |
-|---|---|---|
-| **A** | Tres pestañas: Búsqueda, Mi canasta y Alertas | Es lo que dicen el ADR 007 y la app. Cambia el prototipo |
-| **B** | Cuatro pestañas: Inicio, Descubrir, Canasta y Cuenta | Es lo que tiene el prototipo. Se reescribe el ADR 007 y cambia la navegación de la app |
-
-### D-02 · La canasta del índice (H4) · antes del 25 de octubre
-
-**Decide:** A, con el equipo · **Queda en:** un ADR nuevo · **Afecta:** CU-07, RF-11.
+La propuesta entregada (E1) compromete una «aplicación web responsiva en tres
+puntos de quiebre». `puntos-de-quiebre.md` dice que las consolas son sólo de
+escritorio, con un aviso de ancho mínimo.
 
 | Opción | Qué es | Consecuencia |
 |---|---|---|
-| **A** | Los artículos con precio en las 38 quincenas y las 7 entidades, sin alcohol ni tabaco, con el mismo peso y base 100 en 2025-01-Q1 | Fácil de calcular y de explicar. Sus pesos no se parecen a los del INPC |
-| **B** | Los mismos artículos, ponderados con los pesos del INPC por categoría | Más comparable con INEGI. Hay que relacionar las categorías de PROFECO con las del INPC |
+| **A** | Responsiva en los tres: tres columnas de tarjetas en escritorio, dos en tableta y una en teléfono; las tablas se desplazan de lado dentro de su tarjeta | Cumple lo entregado en E1. Es más trabajo de maquetación |
+| **B** | Sólo escritorio, con aviso de ancho mínimo | Cambia lo entregado en E1, y hay que decírselo al asesor |
 
-*Recomendación de A: la opción A, que es la propuesta de CU-07.*
+*Recomendación de A: la opción A, con la regla mínima de `diseno.md` §4.*
 
-### D-03 · Dónde se cuenta la frecuencia del `?` ambiguo · antes del 25 de octubre (T048)
+### Contratos OpenAPI
 
-**Decide:** A · **Queda en:** el contrato · **Afecta:** CU-03, RF-05.
-
-| Opción | Qué es | Consecuencia |
-|---|---|---|
-| **A** | En el corpus completo | La misma población de la que salió el diccionario, y con más datos |
-| **B** | Sólo en el alcance | La población que se publica, aunque con menos datos |
-
-*Recomendación de A: la opción A.*
-
-### D-04 · La canasta del invitado
-
-**Deciden:** C1 y C2 · **Queda en:** CU-09 · **Afecta:** RF-22.
-
-| Opción | Qué es | Consecuencia |
-|---|---|---|
-| **A** | Vive en el teléfono hasta que la persona inicia sesión, y entonces se sube | El dominio no cambia: la canasta sigue siendo de un solo usuario |
-| **B** | Una sesión anónima en el servidor | Contradice el modelo de dominio, en el que toda canasta tiene dueño |
-
-### D-05 · Qué pasa con una alerta después de dispararse
-
-**Decide:** C1 · **Queda en:** CU-11 · **Afecta:** RF-21.
-
-*Avance (#137): CU-11 ya dice que la alerta **permanece activa** después de
-notificar. Falta decir si vuelve a avisar en cada revisión mientras el precio siga
-por debajo del umbral, o sólo cuando vuelva a cruzarlo.*
-
-| Opción | Qué es | Consecuencia |
-|---|---|---|
-| **A** | Se dispara una vez y queda «disparada»; la persona la vuelve a armar | Un aviso por alerta, y nada más |
-| **B** | Se vuelve a armar sola cuando el precio sube otra vez por encima del umbral | Avisa en cada bajada, sin repetir mientras el precio siga bajo |
-
-*Si no se decide, una alerta que sigue activa avisa cada quincena mientras el precio siga bajo.*
-
-### D-06 · Los colores del sistema de diseño
-
-**Decide:** D, y C2 copia los valores · **Queda en:** `docs/entregas/diseno.md` y `clients/mobile/theme/design-system.ts`.
-
-Faltan el código de color del rojo y del naranja, que hoy sólo tienen nombre, y un
-color para «aviso», porque el contrato tiene tres niveles: ok, avisa y bloquea.
+Las convenciones y preguntas de arquitectura de los contratos (P-01 a P-15) están
+en el PR de T037, en `docs/analisis/openapi/README.md`.
 
 ---
 
-### D-07 · El umbral de rechazo por lote · antes del 1 de noviembre
+## Decididas el 6 de octubre de 2026
 
-**Decide:** A · **Queda en:** el contrato · **Afecta:** RF-D07 del protocolo y el
-alterno 5b de CU-02.
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| D-01 | Las pestañas de la app | **B · cuatro pestañas:** Inicio, Descubrir, Canasta y Cuenta | C2 y D | `navegacion.md` §1. El ADR 007 lleva una nota y C2 lo reescribe |
+| D-02 | La canasta del índice (H4) | **A:** precio en las 38 quincenas y las 7 entidades, sin alcohol ni tabaco, mismo peso, base 100 en 2025-01-Q1 | A, con el equipo | ADR 015 |
+| D-03 | Dónde se cuenta la frecuencia del `?` ambiguo | **A · en el corpus** | A | Contrato 1.3.4 |
+| D-04 | La canasta del invitado | **A · en el teléfono** hasta que inicia sesión | C1, C2 y D | CU-09, alterno 1a · `navegacion.md` §4 |
+| D-05 | Qué pasa con una alerta después de dispararse | **B, ajustada:** avisa cuando el precio cruza el umbral hacia abajo, no repite mientras siga abajo y se vuelve a armar cuando sube. Más la idea de Renato: aviso en Inicio y «Precios que bajaron» en Descubrir, con su tabla por quincena. Los dos botones de modo quedan como trabajo futuro | C1, C2 y D | CU-11 · `navegacion.md` §3 |
+| D-06 | Los colores | Los tonos de Figma: rojo `#d32f2f`, naranja `#f2a900`. Aviso en azul `#89ccff`, con texto `#0b5394`. Más variantes oscuras para que el texto se lea | D | `diseno.md` §1 |
+| D-07 | El umbral de rechazo por lote | **A · 5% de las filas del lote.** Se confirma midiendo los 38 lotes antes del 1 de noviembre | A | Contrato 1.3.4 · CU-02, alterno 5b |
 
-Si la proporción de filas en cuarentena de un lote pasa de este umbral, el lote
-entero no se promueve. El protocolo lo pide («el umbral acordado») y ningún
-documento le pone número todavía.
+## Decididas antes
 
-| Opción | Qué es | Consecuencia |
+| Decisión | Resultado | Dónde quedó |
 |---|---|---|
-| **A** | Un umbral fijo, por ejemplo el 5% de las filas del lote | Simple de explicar. Hay que medir antes cuánto rechaza un lote sano: hoy la cuarentena del alcance es como máximo del 0.225% (T031) |
-| **B** | Un umbral relativo a la historia, por ejemplo tres veces la mediana de rechazo de los lotes anteriores | Se adapta a cada fuente, pero tarda en tener historia y cuesta más explicarlo |
+| Colisión de precio de más de $50 | Va a cuarentena el grupo completo. Unanimidad | Contrato 1.3.3 (#124) |
+| H3 | Se mide como está enunciada, con 30 «sí» | ADR 014 (#135) |
+| Precio de una cadena en Mi canasta | Mediana de sus tiendas en la entidad | Modelo dimensional (T031) |
+| Revisión de los PR | Se pide siempre y no bloquea | `estrategia-de-ramas.md` §5 (#134) |
+| Iniciales de D en las ramas | `kah` | `estrategia-de-ramas.md` (#134) |
 
 ---
+
+## Por medir
+
+| Qué | Para qué | Quién | Antes de |
+|---|---|---|---|
+| El porcentaje de cuarentena de cada uno de los 38 lotes | Confirmar el 5% de D-07 | A | 1 de noviembre |
+| Cuántos artículos cumplen la canasta del ADR 015 | Saber si la canasta representa algo | A | T069 |
 
 ## Por escribir
 
@@ -107,15 +80,6 @@ Son decisiones que ya se tomaron, pero sin ADR.
 
 | ADR | Estado | Quién |
 |---|---|---|
-| 006, 007 y 011 · móvil | En propuesta, aunque ya se siguen. El 007 depende de D-01 | C2 |
+| 007 · navegación de la app | En propuesta, y con D-01 hay que reescribirlo: cuatro pestañas | C2 |
+| 006 y 011 · entorno y diseño de la app | En propuesta, aunque ya se siguen | C2 |
 | 008 · dónde vive la base | En propuesta; su título dice «ADR 006» y su peso no dice de qué población es | B |
-
-## Decididas hace poco
-
-| Decisión | Resultado | Dónde quedó |
-|---|---|---|
-| Colisión de precio de más de $50 | Va a cuarentena el grupo completo. Unanimidad | Contrato 1.3.3 (#124) |
-| H3 | Se mide como está enunciada, con 30 «sí» | ADR 014 (#135) |
-| Precio de una cadena en Mi canasta | Mediana de sus tiendas en la entidad | Modelo dimensional (T031) |
-| Revisión de los PR | Se pide siempre y no bloquea | `estrategia-de-ramas.md` §5 (#134) |
-| Iniciales de D en las ramas | `kah` | `estrategia-de-ramas.md` (#134) |

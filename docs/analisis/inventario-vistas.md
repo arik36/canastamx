@@ -1,76 +1,126 @@
 # Inventario de vistas
 
-<!-- Lo llena D (Karen) en T015 · lunes 7 de septiembre.
-     LAS OCHO VISTAS YA ESTÁN DEFINIDAS EN EL PROTOCOLO. No las inventes: si propones otras, el prototipo del 18 de septiembre no va a corresponder al documento entregado el mismo día.
-     Tu trabajo es decidir QUÉ CONTIENE CADA UNA Y EN QUÉ ORDEN, que es donde está el diseño de verdad. -->
+**Prototipo:** [CanastaMX 3.0 en Figma](https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0) ·
+**Autora:** D, con C2 para la app · **Actualizado:** 6 de octubre de 2026
 
-**Archivo de Figma:** [Prototipo en Figma](https://www.figma.com/make/yUK7s2m2NoGCHGk6vAkSTZ/CanastaMX-3.0) <!-- compartido con permiso de lectura para cualquiera con el enlace; pruébalo en incógnito --> 
-**Autora:** D · **Fecha:** 20 de septiembre de 2026
+Las ocho vistas son las del protocolo. Este documento dice qué contiene cada una,
+qué puede hacer quien la usa y qué datos pide.
+- **Cómo se pasa de una a otra, y sus estados:** [`navegacion.md`](./navegacion.md).
+- **Cómo se ve:** [`docs/entregas/diseno.md`](../entregas/diseno.md).
+- **De qué ruta sale cada dato:** los contratos de `docs/analisis/openapi/`, que siguen en borrador.
 
----
-
-| # | Vista | Cliente | Dueño del dato | A quién le pregunto |
+| # | Vista | Cliente | Dónde vive | Dueño del dato |
 |---|---|---|---|---|
-| 1 | Acceso | Web y móvil | Servicio de dominio | C1 |
-| 2 | Tablero analítico | Web | Interfaz analítica | A |
-| 3 | Detalle de artículo | Web | Interfaz analítica | A |
-| 4 | Consola de observabilidad | Web | Interfaz analítica | A |
-| 5 | Cola de reconciliación | Web | Interfaz analítica | A |
-| 6 | Búsqueda y Catálogos | Móvil | Interfaz analítica | A |
-| 7 | Mi canasta | Móvil | Dominio y analítica | C1 y A |
-| 8 | Cuenta y Alertas | Móvil | Servicio de dominio | C1 |
+| 1 | Acceso | Web y app | Primera pantalla | Dominio |
+| 2 | Tablero analítico | Web | Barra lateral del analista | Analítica |
+| 3 | Detalle de artículo | Web | Desde el tablero | Analítica |
+| 4 | Consola de observabilidad | Web | Barra lateral del operador | Analítica |
+| 5 | Cola de reconciliación | Web | Barra lateral del operador | Analítica |
+| 6 | Búsqueda y catálogos | App | Pestañas **Inicio** y **Descubrir** (D-01) | Analítica |
+| 7 | Mi canasta | App | Pestaña **Canasta** | Dominio y analítica |
+| 8 | Cuenta y alertas | App | Pestaña **Cuenta** y la campana | Dominio y analítica |
 
 ---
 
 ## 1 · Acceso
-- **Qué contiene:** Versión Web dividida con carrusel fotográfico. Versión Móvil en capas con fondo de mercado. Ambos utilizan la paleta Turquesa/Crema. Botones de "Explorar artículos" (modo invitado) e "Iniciar sesión".
-- **Qué puede hacer el usuario:** Entrar a navegar directamente o iniciar sesión. NO hay selectores de rol de usuario visibles.
-- **Qué necesita del sistema:** Conexión a la base transaccional para validación de credenciales.
-- **Nota legal:** No somos PROFECO.
+
+- **Qué contiene:**
+  - en la web, pantalla dividida con carrusel de mercado; en la app, capas sobre un fondo de mercado;
+  - formulario de correo y contraseña;
+  - en la app, el botón «Explorar artículos», que entra sin sesión;
+  - **«No somos PROFECO»** y la fuente: datos abiertos de PROFECO.
+- **Qué puede hacer:** entrar sin sesión (sólo la app), iniciar sesión o crear una cuenta.
+- **Qué pide del sistema:** dominio · `POST /api/v1/cuentas` y `POST /api/v1/sesiones`.
+- **Nota:** la barra de módulos de arriba del prototipo sólo sirve para recorrerlo.
 
 ## 2 · Tablero analítico
-- **Qué contiene:** Filtros superiores separados (Desde/Hasta, Categoría por 5 catálogos oficiales, Entidad Federativa indicando que Colima/Nayarit no tienen datos en fuente, y Cadena). Gráficos de líneas y dispersión.
-- **Qué puede hacer el usuario:** Contrastar evolución vs INPC y detectar variaciones extremas. Al hacer clic en la tabla de artículos anómalos, navega directo al detalle.
-- **Qué necesita del sistema:** Métricas pre-agregadas desde la capa de consumo en esquema estrella.
 
-## 3 · Detalle de artículo
-- **Qué contiene:** Ícono de su catálogo (ADR 010 · 6), ID Canónico y precio promedio regional (NO nacional). Gráfico histórico a 12 meses y tabla comparativa de precios exactos desglosados por establecimientos.
-- **Qué puede hacer el usuario:** Inspeccionar el comportamiento en el tiempo de un artículo puntual y exportar datos a CSV.
-- **Qué necesita del sistema:** Extracción de la serie histórica del almacén analítico para un artículo específico.
+- **Qué contiene:**
+  - filtros: desde, hasta, catálogo, entidad y cadena. En entidad, Colima y Nayarit aparecen como «sin datos en la fuente»;
+  - el índice de la canasta contra el INPC, con base 100 en la primera quincena de enero de 2025 (ADR 015);
+  - la dispersión de precio contra variación;
+  - las variaciones extremas por cadena;
+  - la tabla de artículos anómalos.
+- **Qué puede hacer:** contrastar el índice con el INPC y abrir el detalle de un artículo anómalo.
+- **Qué pide del sistema:** analítica · `GET /api/v1/indice` y `GET /api/v1/anomalias`. Qué cuenta como «anómalo» está pendiente (P-15).
+
+## 3 · Detalle de artículo (web)
+
+- **Qué contiene:**
+  - el ícono del catálogo y la llave canónica del artículo;
+  - cuatro indicadores: **precio típico** en el estado (la mediana), variación contra la quincena anterior, mínimo y máximo, todos con su población;
+  - la serie histórica por entidad;
+  - el precio por establecimiento.
+- **Qué puede hacer:** recorrer la serie y exportar las observaciones a CSV.
+- **Qué pide del sistema:** analítica · `GET /api/v1/articulos/serie`, `/establecimientos` y `/exportacion`.
 
 ## 4 · Consola de observabilidad
-- **Qué contiene:** Los seis indicadores clave. Destaca el volumen en cuarentena del alcance, que se mide en la compuerta de calidad, y el historial de avisos (Aviso: Deriva de esquema · 18 columnas detectadas vs. 15 esperadas, el lote entra completo).
-- **Qué puede hacer el usuario:** Confirmar en 3 segundos el estado de la ingesta (frescura por lote, no por cadena).
-- **Qué necesita del sistema:** Logs del orquestador, metadatos y registros directos de la tabla de cuarentena.
+
+- **Qué contiene:** los seis indicadores (CU-05):
+  1. última corrida;
+  2. frescura, en «no aplica» mientras la fuente no publique;
+  3. filas procesadas;
+  4. volumen en cuarentena del alcance, con su porcentaje;
+  5. avisos de esquema;
+  6. incidentes abiertos.
+
+  Además, el linaje entre capas y el historial, donde los avisos van en azul y los incidentes en rojo.
+- **Qué puede hacer:** confirmar el estado en menos de 3 segundos, abrir un incidente y cerrarlo con su causa (CU-04).
+- **Qué pide del sistema:** analítica · `GET /api/v1/operacion/estado`, `/corridas`, `/cuarentena` e `/incidentes`, y `POST …/incidentes/{id}/cierre`. Quién guarda el cierre está pendiente (P-08).
+- **Cifras de hoy:** la cuarentena del alcance es como máximo de 5,992 filas, el 0.23%, en julio de 2026 (T031).
 
 ## 5 · Cola de reconciliación
-- **Qué contiene:** Título estricto "Revisión de Diccionario" (Se descarta el término "comparación difusa"). Tabla con nombres originales, cadena y coincidencia sugerida. La tarjeta de cobertura muestra el porcentaje sin una meta estática grabada.
-- **Qué puede hacer el usuario:** Aprobar, rechazar o asignar manualmente sin mezclar gramajes distintos.
-- **Qué necesita del sistema:** Vocabulario canónico y los algoritmos de normalización del proceso de transformación.
 
-## 6 · Búsqueda y Catálogos (Inicio / Descubrir)
-- **Qué contiene:** Barra de búsqueda sin escáner de código de barras. Filtros deslizables para los 5 catálogos oficiales (Básicos, PACIC, Frutas y Legumbres, Mercados, Pescados y Mariscos). Cuadrícula de resultados.
-- **Qué puede hacer el usuario:** Buscar artículos, ordenar por precio/marca. Los artículos "S/m" (Sin marca) se envían al final de la lista por omisión.
-- **Qué necesita del sistema:** Catálogo limpio unificado y consulta ágil a los últimos precios de la capa oro.
+- **Qué contiene:** el título «Revisión de diccionario»; la tabla con la variante, la cadena, la sugerencia y su parecido; la cobertura de normalización.
+- **Qué puede hacer:** aprobar, rechazar o asignar a mano, sin mezclar gramajes distintos (CU-14).
+- **Qué pide del sistema:** analítica · `GET /api/v1/reconciliacion/cola` y `POST …/resolucion`. Quién guarda la decisión está pendiente (P-08).
 
-## 7 · Mi canasta
-- **Qué contiene:** Selector de "Mis Canastas". Lista de artículos dividida ESTRICTAMENTE por cadena comercial para el cálculo de subtotales.
-- **Qué puede hacer el usuario:** Sumar los costos, ver cuánto cuesta el súper en cada establecimiento y gestionar cantidades. Si reduce un artículo a 0, recibe alerta de confirmación.
-- **Qué necesita del sistema:** Cruce del carrito de compras transaccional con la tabla de hechos (precios vigentes).
+## 6 · Búsqueda y catálogos · pestañas Inicio y Descubrir
 
-## 8 · Cuenta y Alertas
-- **Qué contiene:** Perfil de usuario, información sobre el uso de datos abiertos PROFECO y un menú/resumen independiente de alertas activas.
-- **Qué puede hacer el usuario:** Administrar su sesión y configurar notificaciones (ej. "Avisarme si la pechuga baja de $85.00").
-- **Qué necesita del sistema:** Servicio de dominio para cruzar las reglas guardadas con la última corrida de datos.
+**Inicio**
+- **Qué contiene:**
+  - el buscador, sin escáner de código de barras;
+  - los chips de los 5 catálogos;
+  - ordenar por precio o por marca;
+  - la cuadrícula de tarjetas, con el **ícono de su catálogo** (ADR 010 · 6) o foto marcada como ilustrativa;
+  - el aviso «Bajaron {n} precios que vigilas» (D-05), sólo con sesión.
+- **Qué puede hacer:** buscar, filtrar, ordenar, abrir el detalle y agregar a la canasta con el botón +. Los artículos «S/m» van al final por omisión.
+- **Qué pide del sistema:** analítica · `GET /api/v1/entidades` y `GET /api/v1/articulos`.
+
+**Descubrir**
+- **Qué contiene:**
+  - el panorama del estado: el índice por cadena del mes (1.000 es el precio típico) y la media por catálogo, cada uno con su población;
+  - hasta abajo, **«Precios que bajaron»** (D-05).
+- **Qué puede hacer:** ver cómo se comparan las cadenas, y desplegar la tabla por quincena de cada alerta que bajó.
+- **Qué pide del sistema:** analítica (panorama y serie) y dominio · `GET /api/v1/alertas`.
+
+**Detalle de artículo (app).** Es una hoja sobre la pestaña.
+- **Qué contiene:** el precio típico con estado, quincena y observaciones, y los precios por establecimiento.
+- **Qué puede hacer:**
+  - elegir la cantidad y agregar a la canasta;
+  - «Vigilar este precio», que pide un umbral **dentro del rango histórico** (CU-10).
+- **Qué pide del sistema:** analítica · `GET /api/v1/precios` y `/rango-historico`; dominio · `POST /api/v1/alertas`.
+
+## 7 · Mi canasta · pestaña Canasta
+
+- **Qué contiene:** el selector de «Mis canastas»; los artículos **agrupados por cadena comercial**, con el subtotal de cada una; y un panel fijo con el costo estimado por cadena.
+- **Qué puede hacer:**
+  - cambiar cantidades (si una llega a 0, pide confirmación) y quitar artículos;
+  - crear, renombrar y borrar canastas;
+  - guardar. Sin sesión, la canasta vive en el teléfono hasta que inicia sesión (D-04).
+- **Qué pide del sistema:**
+  - dominio · `/api/v1/canastas` y sus líneas;
+  - analítica · `POST /api/v1/canastas/costo`: precio por cadena como mediana de sus tiendas, «sin precio» cuando no hay dato, y cuántos faltan.
+
+## 8 · Cuenta y alertas · pestaña Cuenta y la campana
+
+- **Qué contiene:** el perfil; **Mis alertas** (cada una con su umbral y si está arriba o debajo); «Sobre nosotros», con «No somos PROFECO»; y cerrar sesión.
+- **Qué puede hacer:** cambiar o borrar alertas y cerrar sesión. Una alerta avisa por correo cuando el precio cruza el umbral hacia abajo, y no repite mientras siga abajo (D-05).
+- **Qué pide del sistema:** dominio · `/api/v1/alertas` y sus notificaciones; analítica · `/rango-historico` para cambiar el umbral.
 
 ---
 
-## Dudas para la reunión del lunes
+## Dudas resueltas
 
-1. Puesto que vamos a mostrar fotos en los resultados de búsqueda (Vista 6), ¿cómo se manejará si en los datos abiertos de la fuente algún artículo no trae fotografía oficial asociada? ¿Tendremos algún icono por defecto o conectaremos un banco de imágenes externo?
-
-Ícono genérico por catálogo (ADR 010 · 6). La fuente no trae foto de ningún artículo.
-
-2. Al integrar el modo "Explorar artículos" sin inicio de sesión en la vista de Acceso, ¿en qué momento exacto le pediremos al usuario que se registre? ¿Al darle "+ Agregar" a la canasta, o al intentar "Guardar canasta"?
-
-Al guardar canasta
+1. **¿Fotos de los artículos?** Ícono genérico por catálogo (ADR 010 · 6). La fuente no trae foto de ningún artículo.
+2. **¿Cuándo se pide el registro al invitado?** Al guardar la canasta o al vigilar un precio. Mientras tanto, la canasta vive en el teléfono (D-04).

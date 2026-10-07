@@ -4,6 +4,13 @@
 - **Estado:** propuesta, pendiente de revisión del equipo
 - **Participantes:** Oscar (C2); revisión pendiente
 
+> **Nota · 6 de octubre de 2026 · D-01.** El equipo votó **cuatro pestañas:
+> Inicio, Descubrir, Canasta y Cuenta** (opción B), que son las del prototipo. Este
+> ADR dice tres (Búsqueda, Mi canasta y Alertas), y descartaba cuatro con otra
+> composición. C2 lo reescribe con esa decisión antes de ratificarlo: las cuatro
+> pestañas, el detalle de artículo como ruta de la pila, y Mis alertas detrás de la
+> campana y de Cuenta. La navegación completa está en `docs/analisis/navegacion.md`.
+
 ## Contexto
 
 T014 dejó la base de Expo SDK 55 y dos pantallas. La tarea de navegación de
