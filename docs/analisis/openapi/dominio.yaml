@@ -1,0 +1,510 @@
+openapi: 3.1.0
+info:
+  title: CanastaMX · Servicio de dominio
+  version: 0.1.0-borrador
+  summary: Cuentas, canastas y alertas de la persona consumidora.
+  description: |
+    **Borrador** armado el 6 de octubre de 2026 con lo que ya está en `main`:
+    CU-08 a CU-11, `docs/analisis/modelo-er.md` y el código de
+    `services/domain-service`. Lo escribe C1 con B; lo aprueban en el PR C2 y D.
+
+    Las convenciones que todavía no se votan van con la opción propuesta y
+    marcadas con `x-pendiente`. La lista completa está en
+    `docs/analisis/openapi/README.md`.
+
+    Es el único servicio que escribe en la base transaccional.
+  contact:
+    name: Equipo CanastaMX
+    url: https://github.com/arik36/canastamx
+servers:
+  - url: http://localhost:8081
+    description: Desarrollo, directo al servicio (application.properties)
+security:
+  - sesion: []
+tags:
+  - name: Salud
+    description: Si el servicio está arriba. La consume T039.
+  - name: Cuentas
+    description: Registro e inicio de sesión (CU-08).
+  - name: Canastas
+    description: Crear y editar canastas (CU-09). El costo estimado no se guarda aquí.
+  - name: Alertas
+    description: Configurar alertas de precio (CU-10) y ver sus notificaciones (CU-11).
+paths:
+  /health:
+    get:
+      tags: [Salud]
+      operationId: salud
+      summary: Estado del servicio
+      description: Ya existe (`HealthController`). Va fuera de `/api/v1`, a propósito.
+      security: []
+      responses:
+        "200":
+          description: El servicio está arriba
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Salud" }
+              example: { status: UP, service: domain-service, time: "2026-10-06T18:00:00Z" }
+  /api/v1/cuentas:
+    post:
+      tags: [Cuentas]
+      operationId: registrarCuenta
+      summary: Registrar una cuenta (CU-08, pasos 1 a 5)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Registro" }
+      responses:
+        "201":
+          description: Cuenta registrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cuenta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "409":
+          description: Ya existe una cuenta con ese correo
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problema" }
+  /api/v1/sesiones:
+    post:
+      tags: [Cuentas]
+      operationId: iniciarSesion
+      summary: Iniciar sesión y recibir un token (CU-08, pasos 6 a 8)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Credenciales" }
+      responses:
+        "200":
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Sesion" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/canastas:
+    get:
+      tags: [Canastas]
+      operationId: listarCanastas
+      summary: Las canastas de la persona que inició sesión
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Sus canastas, con sus líneas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [canastas, total]
+                properties:
+                  canastas: { type: array, items: { $ref: "#/components/schemas/Canasta" } }
+                  total: { type: integer, minimum: 0 }
+        "401": { $ref: "#/components/responses/SinSesion" }
+    post:
+      tags: [Canastas]
+      operationId: crearCanasta
+      summary: Crear una canasta con su nombre (CU-09, pasos 1 a 4)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NombreDeCanasta" }
+      responses:
+        "201":
+          description: Canasta creada, todavía sin líneas
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/canastas/{canastaId}:
+    parameters:
+      - $ref: "#/components/parameters/canastaId"
+    get:
+      tags: [Canastas]
+      operationId: obtenerCanasta
+      summary: Una canasta
+      responses:
+        "200":
+          description: La canasta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+    patch:
+      tags: [Canastas]
+      operationId: renombrarCanasta
+      summary: Cambiar el nombre
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NombreDeCanasta" }
+      responses:
+        "200":
+          description: Canasta renombrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+    delete:
+      tags: [Canastas]
+      operationId: borrarCanasta
+      summary: Borrar la canasta
+      responses:
+        "204": { description: Canasta borrada }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+  /api/v1/canastas/{canastaId}/lineas:
+    parameters:
+      - $ref: "#/components/parameters/canastaId"
+    post:
+      tags: [Canastas]
+      operationId: agregarArticulo
+      summary: Agregar un artículo (CU-09, pasos 5 y 6)
+      description: Si el artículo ya está en la canasta, **suma** la cantidad y conserva una sola línea (alterno 6b; `Canasta.agregar`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LineaDeCanasta" }
+      responses:
+        "200":
+          description: La canasta, con la línea agregada o sumada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+    put:
+      tags: [Canastas]
+      operationId: fijarCantidad
+      summary: Fijar la cantidad de un artículo que ya está en la canasta (CU-09, paso 7)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LineaDeCanasta" }
+      responses:
+        "200":
+          description: La canasta, con la cantidad nueva
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+    delete:
+      tags: [Canastas]
+      operationId: quitarArticulo
+      summary: Quitar un artículo (CU-09, paso 8)
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+      responses:
+        "200":
+          description: La canasta, sin ese artículo
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Canasta" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404":
+          description: La canasta no existe, o el artículo no está en ella (alterno 8a)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problema" }
+  /api/v1/alertas:
+    get:
+      tags: [Alertas]
+      operationId: listarAlertas
+      summary: Las alertas de la persona que inició sesión
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Sus alertas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [alertas, total]
+                properties:
+                  alertas: { type: array, items: { $ref: "#/components/schemas/Alerta" } }
+                  total: { type: integer, minimum: 0 }
+        "401": { $ref: "#/components/responses/SinSesion" }
+    post:
+      tags: [Alertas]
+      operationId: crearAlerta
+      summary: Configurar una alerta de precio (CU-10)
+      description: |
+        El servicio valida el umbral contra el **rango histórico** del artículo
+        en la entidad: el mínimo y el máximo de sus medianas quincenales (T031).
+        Lo obtiene de la interfaz analítica
+        (`GET /api/v1/articulos/rango-historico` en `analitica.yaml`).
+      x-pendiente: [P-09, P-14]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NuevaAlerta" }
+      responses:
+        "201":
+          description: Alerta creada y activa (pasos 6 a 8)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Alerta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "422":
+          description: |
+            No se puede crear. El problema dice por qué: `sin-historial` (alterno
+            2a) o `umbral-fuera-de-rango` (alterno 5a, que trae el rango permitido).
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/ProblemaDeUmbral" }
+  /api/v1/alertas/{alertaId}:
+    parameters:
+      - $ref: "#/components/parameters/alertaId"
+    delete:
+      tags: [Alertas]
+      operationId: borrarAlerta
+      summary: Borrar una alerta
+      responses:
+        "204": { description: Alerta borrada }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+  /api/v1/alertas/{alertaId}/notificaciones:
+    parameters:
+      - $ref: "#/components/parameters/alertaId"
+    get:
+      tags: [Alertas]
+      operationId: listarNotificaciones
+      summary: Los intentos de notificación de una alerta (CU-11)
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Cada intento, con su estado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [notificaciones, total]
+                properties:
+                  notificaciones: { type: array, items: { $ref: "#/components/schemas/Notificacion" } }
+                  total: { type: integer, minimum: 0 }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/NoExiste" }
+components:
+  securitySchemes:
+    sesion:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de `POST /api/v1/sesiones`, firmado con `JWT_SECRET` (`.env.example`).
+  parameters:
+    canastaId:
+      name: canastaId
+      in: path
+      required: true
+      schema: { type: string }
+    alertaId:
+      name: alertaId
+      in: path
+      required: true
+      schema: { type: string }
+    producto:
+      name: producto
+      in: query
+      required: true
+      description: Producto en su forma canónica (`ReferenciaDeArticulo`).
+      schema: { type: string, minLength: 1 }
+    presentacion:
+      name: presentacion
+      in: query
+      required: true
+      description: Presentación en su forma canónica.
+      schema: { type: string, minLength: 1 }
+    limit:
+      name: limit
+      in: query
+      description: Cuántos elementos devolver. *Propuesta (P-05).*
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    offset:
+      name: offset
+      in: query
+      description: Cuántos saltar. *Propuesta (P-05).*
+      schema: { type: integer, minimum: 0, default: 0 }
+  responses:
+    DatosInvalidos:
+      description: Algún dato no cumple las reglas (formato de correo, contraseña, cantidad, nombre…)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+    SinSesion:
+      description: Falta la sesión, venció o las credenciales no coinciden
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+    NoExiste:
+      description: No existe, o no es de la persona que inició sesión
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+  schemas:
+    Salud:
+      type: object
+      required: [status, service, time]
+      properties:
+        status: { type: string, enum: [UP] }
+        service: { type: string }
+        time: { type: string, format: date-time }
+    Problema:
+      type: object
+      description: Formato único de error, RFC 9457 (`application/problem+json`). *Propuesta (P-03).*
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri-reference, examples: ["/problemas/correo-invalido"] }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+    ProblemaDeUmbral:
+      allOf:
+        - $ref: "#/components/schemas/Problema"
+        - type: object
+          properties:
+            rangoPermitido: { $ref: "#/components/schemas/RangoDePrecio" }
+    Articulo:
+      type: object
+      description: La identidad del artículo, el par canónico (ADR 002, `ReferenciaDeArticulo`). Nunca un id del almacén.
+      required: [producto, presentacion]
+      properties:
+        producto: { type: string, minLength: 1, examples: ["leche ultrapasteurizada"] }
+        presentacion: { type: string, minLength: 1, examples: ["1 l"] }
+    Dinero:
+      type: object
+      description: Monto como texto con dos decimales, para no perder centavos. *Propuesta (P-02).*
+      required: [monto, moneda]
+      properties:
+        monto: { type: string, pattern: '^\d+\.\d{2}$', examples: ["24.50"] }
+        moneda: { type: string, enum: [MXN] }
+    RangoDePrecio:
+      type: object
+      required: [desde, hasta]
+      properties:
+        desde: { $ref: "#/components/schemas/Dinero" }
+        hasta: { $ref: "#/components/schemas/Dinero" }
+    Entidad:
+      type: string
+      description: Una de las 7 entidades del alcance (contrato · `alcance.entidades`).
+      enum: [Aguascalientes, Guanajuato, Jalisco, Michoacán, Querétaro, San Luis Potosí, Zacatecas]
+    Quincena:
+      type: string
+      pattern: '^\d{4}-(0[1-9]|1[0-2])-Q[12]$'
+      examples: ["2026-07-Q2"]
+    Registro:
+      type: object
+      required: [correo, contrasena]
+      properties:
+        correo: { type: string, format: email }
+        contrasena:
+          type: string
+          writeOnly: true
+          minLength: 8
+          pattern: '^(?=.*[A-Z])(?=.*\d).{8,}$'
+          description: Mínimo 8 caracteres, una mayúscula y un número (CU-08). Se guarda cifrada con BCrypt.
+        nombre:
+          type: string
+          description: El modelo ER lo pide obligatorio, pero CU-08 no lo pide y `Usuario.java` no lo tiene (P-13).
+          x-pendiente: [P-13]
+    Credenciales:
+      type: object
+      required: [correo, contrasena]
+      properties:
+        correo: { type: string, format: email }
+        contrasena: { type: string, writeOnly: true }
+    Cuenta:
+      type: object
+      required: [id, correo, fechaDeRegistro]
+      properties:
+        id: { type: string }
+        correo: { type: string, format: email }
+        fechaDeRegistro: { type: string, format: date-time }
+    Sesion:
+      type: object
+      required: [token, expiraEn]
+      properties:
+        token: { type: string }
+        expiraEn: { type: string, format: date-time }
+    NombreDeCanasta:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, minLength: 1, examples: ["Súper de la quincena"] }
+    LineaDeCanasta:
+      type: object
+      required: [articulo, cantidad]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        cantidad: { type: integer, minimum: 1, description: Entero mayor que cero (`Cantidad`). }
+    Canasta:
+      type: object
+      description: El costo estimado no viene aquí, porque no se guarda (modelo ER). Lo calcula la interfaz analítica (P-10).
+      required: [id, nombre, lineas]
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        lineas: { type: array, items: { $ref: "#/components/schemas/LineaDeCanasta" } }
+    NuevaAlerta:
+      type: object
+      required: [articulo, entidad, umbral]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad:
+          $ref: "#/components/schemas/Entidad"
+        umbral: { $ref: "#/components/schemas/Dinero" }
+    Alerta:
+      type: object
+      required: [id, articulo, entidad, umbral, estado]
+      properties:
+        id: { type: string }
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad: { $ref: "#/components/schemas/Entidad" }
+        umbral: { $ref: "#/components/schemas/Dinero" }
+        estado:
+          type: string
+          enum: [ACTIVA]
+          description: Sigue ACTIVA después de notificar (modelo ER).
+        posicion:
+          type: string
+          enum: [ARRIBA, DEBAJO]
+          description: Dónde quedó el precio típico en la última revisión. Avisa sólo al pasar de ARRIBA a DEBAJO, y no repite mientras siga DEBAJO (D-05, CU-11).
+        ultimaRevision:
+          oneOf:
+            - { $ref: "#/components/schemas/Quincena" }
+            - { type: "null" }
+          description: La quincena de la última revisión; null si todavía no se revisa.
+    Notificacion:
+      type: object
+      required: [id, estado, fechaHora]
+      properties:
+        id: { type: string }
+        estado: { type: string, enum: [ENVIADA, FALLIDA] }
+        fechaHora: { type: string, format: date-time }
+        motivo:
+          type: string
+          description: Sólo cuando falló. CU-11 lo pide; el modelo ER todavía no tiene la columna.
+x-pendientes: [P-02, P-03, P-04, P-05, P-07, P-09, P-13, P-14]

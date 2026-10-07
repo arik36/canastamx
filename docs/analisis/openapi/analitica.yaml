@@ -1,0 +1,850 @@
+openapi: 3.1.0
+info:
+  title: CanastaMX · Interfaz analítica
+  version: 0.1.0-borrador
+  summary: Lo que es del dato. Precios, índice, operación de la plataforma y cola de reconciliación.
+  description: |
+    **Borrador** armado el 6 de octubre de 2026 con lo que ya está en `main`: los
+    casos de uso CU-04 a CU-07 y CU-10 a CU-14, el inventario de vistas y el modelo
+    dimensional (T031). Lo escribe A con B; lo aprueban en el PR D, C2 y C1.
+
+    **Toda cifra agregada dice su población:** de qué entidades, de qué periodo y
+    cuántas observaciones. El artículo viaja siempre por su par canónico, nunca por
+    `articulo_key`, que cambia al recargar el almacén.
+
+    Lee la capa de consumo (`postgres-analytics`). Las únicas escrituras son las de
+    la consola (cerrar un incidente y resolver una variante), y dónde viven está
+    pendiente (`x-pendiente: P-08`). La lista de pendientes está en
+    `docs/analisis/openapi/README.md`.
+  contact:
+    name: Equipo CanastaMX
+    url: https://github.com/arik36/canastamx
+servers:
+  - url: http://localhost:8000
+    description: Desarrollo. El puerto es el que usa FastAPI por omisión; todavía no está en el compose.
+security: []
+tags:
+  - name: Salud
+    description: Si el servicio está arriba.
+  - name: Consumo
+    description: Búsqueda, precios y costo de la canasta. Sin sesión, porque también los usa el modo invitado.
+  - name: Para el dominio
+    description: Lo que el servicio de dominio necesita para las alertas (CU-10 y CU-11).
+  - name: Análisis
+    description: El tablero y el detalle de artículo del analista (CU-07 y CU-13).
+  - name: Operación
+    description: La consola de observabilidad del operador (CU-04 y CU-05).
+  - name: Reconciliación
+    description: La cola de variantes del operador (CU-06 y CU-14).
+paths:
+  /health:
+    get:
+      tags: [Salud]
+      operationId: salud
+      summary: Estado del servicio
+      responses:
+        "200":
+          description: El servicio está arriba
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Salud" }
+  /api/v1/entidades:
+    get:
+      tags: [Consumo]
+      operationId: listarEntidades
+      summary: Las 7 entidades del alcance, con la quincena más reciente de cada una
+      responses:
+        "200":
+          description: Entidades con datos
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [entidades]
+                properties:
+                  entidades:
+                    type: array
+                    items: { $ref: "#/components/schemas/EntidadConDatos" }
+  /api/v1/articulos:
+    get:
+      tags: [Consumo]
+      operationId: buscarArticulos
+      summary: Buscar artículos en una entidad (CU-12, pasos 1 y 2)
+      description: |
+        Si la entidad no está en el alcance, responde **200 con `cobertura: false`** y
+        la lista de entidades cubiertas, porque es el alterno 2b de CU-12, no un error.
+        *Propuesta (P-06).*
+      x-pendiente: [P-06]
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2 }, description: Lo que escribe la persona }
+        - { name: entidad, in: query, required: true, schema: { type: string } }
+        - { name: catalogo, in: query, schema: { $ref: "#/components/schemas/Catalogo" } }
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Resultados, o el aviso de cobertura
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ResultadoDeBusqueda" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+  /api/v1/precios:
+    get:
+      tags: [Consumo]
+      operationId: compararPrecios
+      summary: El precio de un artículo en cada establecimiento de la entidad (CU-12, paso 4)
+      description: Con un solo establecimiento también responde 200, y lo dice (alterno 4a).
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+        - $ref: "#/components/parameters/entidad"
+      responses:
+        "200":
+          description: Precios de la quincena más reciente, por establecimiento
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ComparacionDePrecios" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+  /api/v1/canastas/costo:
+    post:
+      tags: [Consumo]
+      operationId: costearCanasta
+      summary: El costo estimado de una lista de artículos, por cadena (Mi canasta)
+      description: |
+        Recibe las líneas y no guarda nada: sirve igual para una canasta guardada en
+        el dominio que para la canasta del invitado. El precio de un artículo en una
+        cadena es la **mediana de sus tiendas** en la entidad, en la quincena más
+        reciente (T031). Sin dato dice `null`, nunca un monto, y el total dice
+        cuántos faltan. *Propuesta (P-10).*
+      x-pendiente: [P-10]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PedidoDeCosto" }
+      responses:
+        "200":
+          description: Costo por cadena
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CostoPorCadena" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+  /api/v1/articulos/rango-historico:
+    get:
+      tags: [Para el dominio]
+      operationId: rangoHistorico
+      summary: El rango válido para el umbral de una alerta (CU-10, pasos 2 y 3)
+      description: El mínimo y el máximo de las medianas quincenales del artículo en la entidad (T031 · `rango_historico`). *Lo llama el dominio (P-09).*
+      x-pendiente: [P-09]
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+        - $ref: "#/components/parameters/entidad"
+      responses:
+        "200":
+          description: El rango y cuántas quincenas lo sostienen
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RangoHistorico" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+  /api/v1/precios/vigentes:
+    post:
+      tags: [Para el dominio]
+      operationId: preciosVigentes
+      summary: El precio típico vigente de muchos artículos a la vez (CU-11)
+      description: Para evaluar las alertas en una sola llamada. Es POST porque la lista puede ser larga; no escribe nada. *Lo llama el dominio (P-09).*
+      x-pendiente: [P-09]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consultas]
+              properties:
+                consultas:
+                  type: array
+                  maxItems: 500
+                  items: { $ref: "#/components/schemas/ArticuloEnEntidad" }
+      responses:
+        "200":
+          description: Un resultado por consulta, en el mismo orden
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resultados]
+                properties:
+                  resultados:
+                    type: array
+                    items: { $ref: "#/components/schemas/PrecioVigente" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+  /api/v1/indice:
+    get:
+      tags: [Análisis]
+      operationId: indiceContraInpc
+      summary: El índice de la canasta contra el INPC (CU-07 y CU-13, paso 2)
+      description: La canasta del índice todavía no está definida (D-02).
+      x-pendiente: [P-07, D-02]
+      security:
+        - sesion: []
+      parameters:
+        - { name: entidad, in: query, schema: { type: string }, description: "Sin entidad: el alcance completo" }
+        - $ref: "#/components/parameters/desde"
+        - $ref: "#/components/parameters/hasta"
+      responses:
+        "200":
+          description: La serie y la correlación
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IndiceContraInpc" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/anomalias:
+    get:
+      tags: [Análisis]
+      operationId: articulosAnomalos
+      summary: Artículos con variación extrema, para la tabla del tablero (CU-13, paso 3)
+      description: Falta definir qué es «anómalo» (P-15).
+      x-pendiente: [P-07, P-15]
+      security:
+        - sesion: []
+      parameters:
+        - { name: entidad, in: query, schema: { type: string } }
+        - { name: catalogo, in: query, schema: { $ref: "#/components/schemas/Catalogo" } }
+        - $ref: "#/components/parameters/desde"
+        - $ref: "#/components/parameters/hasta"
+        - $ref: "#/components/parameters/limit"
+      responses:
+        "200":
+          description: Los artículos, con su variación y su población
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [articulos, poblacion]
+                properties:
+                  articulos:
+                    type: array
+                    items:
+                      type: object
+                      required: [articulo, entidad, variacion]
+                      properties:
+                        articulo: { $ref: "#/components/schemas/Articulo" }
+                        entidad: { type: string }
+                        variacion: { type: number, description: "Variación relativa: 0.27 es 27%" }
+                  poblacion: { $ref: "#/components/schemas/Poblacion" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/articulos/serie:
+    get:
+      tags: [Análisis]
+      operationId: serieDeArticulo
+      summary: La serie histórica de un artículo, por quincena y entidad (vista 3, CU-13 paso 5)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+        - { name: entidad, in: query, schema: { type: string }, description: "Sin entidad: todas las del alcance" }
+        - $ref: "#/components/parameters/desde"
+        - $ref: "#/components/parameters/hasta"
+      responses:
+        "200":
+          description: Un punto por quincena y entidad
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [articulo, puntos]
+                properties:
+                  articulo: { $ref: "#/components/schemas/Articulo" }
+                  puntos:
+                    type: array
+                    items: { $ref: "#/components/schemas/PuntoDeSerie" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+  /api/v1/articulos/establecimientos:
+    get:
+      tags: [Análisis]
+      operationId: desgloseDeArticulo
+      summary: Máximo, mínimo y promedio de un artículo por establecimiento (CU-13, paso 5)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+        - $ref: "#/components/parameters/entidad"
+        - $ref: "#/components/parameters/desde"
+        - $ref: "#/components/parameters/hasta"
+      responses:
+        "200":
+          description: Un renglón por establecimiento
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [establecimientos, poblacion]
+                properties:
+                  establecimientos:
+                    type: array
+                    items: { $ref: "#/components/schemas/DesgloseDeEstablecimiento" }
+                  poblacion: { $ref: "#/components/schemas/Poblacion" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/articulos/exportacion:
+    get:
+      tags: [Análisis]
+      operationId: exportarArticulo
+      summary: Las observaciones de un artículo en CSV (CU-13, pasos 6 y 7)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - $ref: "#/components/parameters/producto"
+        - $ref: "#/components/parameters/presentacion"
+        - { name: entidad, in: query, schema: { type: string } }
+        - $ref: "#/components/parameters/desde"
+        - $ref: "#/components/parameters/hasta"
+      responses:
+        "200":
+          description: Una fila por observación de `hechos_precio`
+          content:
+            text/csv:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "500":
+          description: No se pudo construir el archivo (alterno 6a)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problema" }
+  /api/v1/operacion/estado:
+    get:
+      tags: [Operación]
+      operationId: estadoDeLaPlataforma
+      summary: Los seis indicadores de la consola (CU-05)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      responses:
+        "200":
+          description: Calculados sobre los registros de las corridas, no sobre los datos
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EstadoDeLaPlataforma" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/operacion/corridas:
+    get:
+      tags: [Operación]
+      operationId: listarCorridas
+      summary: Las corridas, de la más reciente a la más antigua
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Corridas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [corridas, total]
+                properties:
+                  corridas: { type: array, items: { $ref: "#/components/schemas/Corrida" } }
+                  total: { type: integer }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/operacion/corridas/{lote}:
+    get:
+      tags: [Operación]
+      operationId: linajeDeLote
+      summary: El linaje de un lote, capa por capa (CU-05, paso 5)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - { name: lote, in: path, required: true, schema: { type: string, examples: ["07-2026_Q2"] } }
+      responses:
+        "200":
+          description: Todas las corridas del lote, la última como vigente (alterno 5a)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [lote, corridas]
+                properties:
+                  lote: { type: string }
+                  corridas: { type: array, items: { $ref: "#/components/schemas/Corrida" } }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+  /api/v1/operacion/cuarentena:
+    get:
+      tags: [Operación]
+      operationId: listarCuarentena
+      summary: Filas en cuarentena, con su motivo
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - { name: lote, in: query, schema: { type: string } }
+        - { name: motivo, in: query, schema: { $ref: "#/components/schemas/MotivoDeCuarentena" } }
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Filas apartadas
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [filas, total]
+                properties:
+                  filas: { type: array, items: { $ref: "#/components/schemas/FilaEnCuarentena" } }
+                  total: { type: integer }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/operacion/incidentes:
+    get:
+      tags: [Operación]
+      operationId: listarIncidentes
+      summary: Incidentes, abiertos o cerrados (CU-04)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - { name: estado, in: query, schema: { type: string, enum: [ABIERTO, CERRADO] } }
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Incidentes
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [incidentes, total]
+                properties:
+                  incidentes: { type: array, items: { $ref: "#/components/schemas/Incidente" } }
+                  total: { type: integer }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/operacion/incidentes/{incidenteId}/cierre:
+    post:
+      tags: [Operación]
+      operationId: cerrarIncidente
+      summary: Cerrar un incidente con su causa y su decisión (CU-04, pasos 5 y 6)
+      description: Es una **escritura**. Si la hace esta interfaz o la plataforma de datos es P-08.
+      x-pendiente: [P-07, P-08]
+      security:
+        - sesion: []
+      parameters:
+        - { name: incidenteId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [causa, decision]
+              properties:
+                causa: { type: string, enum: [ARCHIVO_DE_LA_FUENTE, REGLA_DEL_CONTRATO, DATO_REAL_ATIPICO, INFRAESTRUCTURA] }
+                decision: { type: string, description: "Qué se hizo, en una o dos frases" }
+      responses:
+        "200":
+          description: El incidente, cerrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Incidente" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+  /api/v1/reconciliacion/cola:
+    get:
+      tags: [Reconciliación]
+      operationId: colaDeVariantes
+      summary: Las variantes pendientes, con su sugerencia y su parecido (CU-14, paso 2)
+      x-pendiente: [P-07]
+      security:
+        - sesion: []
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+      responses:
+        "200":
+          description: Variantes por resolver
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [variantes, total]
+                properties:
+                  variantes: { type: array, items: { $ref: "#/components/schemas/Variante" } }
+                  total: { type: integer }
+        "401": { $ref: "#/components/responses/SinSesion" }
+  /api/v1/reconciliacion/cola/{varianteId}/resolucion:
+    post:
+      tags: [Reconciliación]
+      operationId: resolverVariante
+      summary: Aprobar, rechazar o asignar a mano una variante (CU-14, paso 4 y alternos 4a y 4b)
+      description: Es una **escritura**. Si la hace esta interfaz o la plataforma de datos es P-08.
+      x-pendiente: [P-07, P-08]
+      security:
+        - sesion: []
+      parameters:
+        - { name: varianteId, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [APROBAR, RECHAZAR, ASIGNAR] }
+                articuloCanonico:
+                  $ref: "#/components/schemas/Articulo"
+                  description: Sólo con ASIGNAR
+      responses:
+        "200":
+          description: La variante, resuelta
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Variante" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
+        "401": { $ref: "#/components/responses/SinSesion" }
+        "404": { $ref: "#/components/responses/SinDatos" }
+components:
+  securitySchemes:
+    sesion:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Sesión del analista o del operador. Quién emite ese token y con qué rol es P-07.
+  parameters:
+    producto:
+      name: producto
+      in: query
+      required: true
+      description: Producto en su forma canónica (`ReferenciaDeArticulo`, `dim_articulo.producto_c`).
+      schema: { type: string, minLength: 1 }
+    presentacion:
+      name: presentacion
+      in: query
+      required: true
+      description: Presentación en su forma canónica.
+      schema: { type: string, minLength: 1 }
+    entidad:
+      name: entidad
+      in: query
+      required: true
+      schema: { type: string }
+    desde:
+      name: desde
+      in: query
+      description: Quincena inicial, `AAAA-MM-Q1` o `-Q2`. Por omisión, la primera del alcance.
+      schema: { $ref: "#/components/schemas/Quincena" }
+    hasta:
+      name: hasta
+      in: query
+      description: Quincena final. Por omisión, la más reciente.
+      schema: { $ref: "#/components/schemas/Quincena" }
+    limit:
+      name: limit
+      in: query
+      description: Cuántos elementos devolver. *Propuesta (P-05).*
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    offset:
+      name: offset
+      in: query
+      description: Cuántos saltar. *Propuesta (P-05).*
+      schema: { type: integer, minimum: 0, default: 0 }
+  responses:
+    DatosInvalidos:
+      description: Algún parámetro no cumple su formato
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+    SinSesion:
+      description: Falta la sesión o no tiene el rol que pide la ruta
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+    SinDatos:
+      description: No hay datos para esa combinación (por ejemplo, el alterno 2a de CU-10)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+  schemas:
+    Salud:
+      type: object
+      required: [status, service, time]
+      properties:
+        status: { type: string, enum: [UP] }
+        service: { type: string }
+        time: { type: string, format: date-time }
+    Problema:
+      type: object
+      description: Formato único de error, RFC 9457 (`application/problem+json`). *Propuesta (P-03).*
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri-reference }
+    Articulo:
+      type: object
+      description: La identidad del artículo, el par canónico (ADR 002). Nunca `articulo_key`.
+      required: [producto, presentacion]
+      properties:
+        producto: { type: string, examples: ["huevo"] }
+        presentacion: { type: string, examples: ["paquete c 30 blanco"] }
+    ArticuloEnEntidad:
+      type: object
+      required: [articulo, entidad]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad: { type: string }
+    Dinero:
+      type: object
+      description: Monto como texto con dos decimales. *Propuesta (P-02).*
+      required: [monto, moneda]
+      properties:
+        monto: { type: string, pattern: '^\d+\.\d{2}$', examples: ["65.00"] }
+        moneda: { type: string, enum: [MXN] }
+    Quincena:
+      type: string
+      pattern: '^\d{4}-(0[1-9]|1[0-2])-Q[12]$'
+      examples: ["2026-07-Q2"]
+    Catalogo:
+      type: string
+      enum: [BASICOS, PACIC, FRUTAS Y LEGUMBRES, MERCADOS, PESCADOS Y MARISCOS]
+    Poblacion:
+      type: object
+      description: De dónde sale una cifra agregada. Va en toda respuesta con agregados.
+      required: [entidades, desde, hasta, observaciones]
+      properties:
+        entidades: { type: array, items: { type: string } }
+        desde: { $ref: "#/components/schemas/Quincena" }
+        hasta: { $ref: "#/components/schemas/Quincena" }
+        observaciones: { type: integer, minimum: 0 }
+    EntidadConDatos:
+      type: object
+      required: [entidad, ultimaQuincena]
+      properties:
+        entidad: { type: string }
+        ultimaQuincena: { $ref: "#/components/schemas/Quincena" }
+    ResultadoDeBusqueda:
+      type: object
+      required: [cobertura, entidad]
+      properties:
+        cobertura: { type: boolean }
+        entidad: { type: string }
+        entidadesCubiertas:
+          type: array
+          items: { type: string }
+          description: Sólo cuando `cobertura` es false (CU-12, alterno 2b)
+        quincena: { $ref: "#/components/schemas/Quincena" }
+        total: { type: integer, minimum: 0 }
+        resultados:
+          type: array
+          items:
+            type: object
+            required: [articulo, nombre, catalogo, precioTipico, observaciones]
+            properties:
+              articulo: { $ref: "#/components/schemas/Articulo" }
+              nombre: { type: string, description: "Cómo se muestra: la escritura más frecuente" }
+              catalogo: { $ref: "#/components/schemas/Catalogo" }
+              precioTipico: { $ref: "#/components/schemas/Dinero" }
+              observaciones: { type: integer, minimum: 1 }
+    ComparacionDePrecios:
+      type: object
+      required: [articulo, entidad, quincena, establecimientos]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad: { type: string }
+        quincena: { $ref: "#/components/schemas/Quincena" }
+        establecimientos:
+          type: array
+          items:
+            type: object
+            required: [nombre, cadena, marca, precio, fechaRegistro]
+            properties:
+              nombre: { type: string }
+              direccion: { type: string }
+              municipio: { type: string }
+              cadena: { type: string }
+              marca: { type: string, description: "`S/M` es genérico y va al final (ADR 002)" }
+              precio: { $ref: "#/components/schemas/Dinero" }
+              fechaRegistro: { type: string, format: date }
+    PedidoDeCosto:
+      type: object
+      required: [entidad, lineas]
+      properties:
+        entidad: { type: string }
+        lineas:
+          type: array
+          maxItems: 200
+          items:
+            type: object
+            required: [articulo, cantidad]
+            properties:
+              articulo: { $ref: "#/components/schemas/Articulo" }
+              cantidad: { type: integer, minimum: 1 }
+    CostoPorCadena:
+      type: object
+      required: [entidad, quincena, cadenas]
+      properties:
+        entidad: { type: string }
+        quincena: { $ref: "#/components/schemas/Quincena" }
+        cadenas:
+          type: array
+          items:
+            type: object
+            required: [cadena, total, faltan, lineas]
+            properties:
+              cadena: { type: string }
+              total: { $ref: "#/components/schemas/Dinero" }
+              faltan: { type: integer, minimum: 0, description: Artículos sin precio en esta cadena; su total no los incluye }
+              lineas:
+                type: array
+                items:
+                  type: object
+                  required: [articulo, cantidad, precio]
+                  properties:
+                    articulo: { $ref: "#/components/schemas/Articulo" }
+                    cantidad: { type: integer }
+                    precio:
+                      oneOf:
+                        - { $ref: "#/components/schemas/Dinero" }
+                        - { type: "null" }
+                      description: Mediana de las tiendas de la cadena; null es «sin precio»
+    RangoHistorico:
+      type: object
+      required: [articulo, entidad, desde, hasta, quincenas]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad: { type: string }
+        desde: { $ref: "#/components/schemas/Dinero" }
+        hasta: { $ref: "#/components/schemas/Dinero" }
+        quincenas: { type: integer, minimum: 1, description: Cuántas medianas quincenales sostienen el rango }
+    PrecioVigente:
+      type: object
+      required: [articulo, entidad, precioTipico]
+      properties:
+        articulo: { $ref: "#/components/schemas/Articulo" }
+        entidad: { type: string }
+        quincena: { $ref: "#/components/schemas/Quincena" }
+        precioTipico:
+          oneOf:
+            - { $ref: "#/components/schemas/Dinero" }
+            - { type: "null" }
+        observaciones: { type: integer, minimum: 0 }
+    IndiceContraInpc:
+      type: object
+      required: [serie, poblacion]
+      properties:
+        serie:
+          type: array
+          items:
+            type: object
+            required: [quincena, indice]
+            properties:
+              quincena: { $ref: "#/components/schemas/Quincena" }
+              indice: { type: number, description: Base 100 en la quincena base (D-02) }
+              inpc: { type: [number, "null"], description: "null si INEGI no ha publicado ese periodo (CU-07 · alterno 3a)" }
+        correlacion:
+          type: object
+          properties:
+            r: { type: number }
+            p: { type: number }
+            n: { type: integer }
+        poblacion: { $ref: "#/components/schemas/Poblacion" }
+    PuntoDeSerie:
+      type: object
+      required: [quincena, entidad, mediana, observaciones]
+      properties:
+        quincena: { $ref: "#/components/schemas/Quincena" }
+        entidad: { type: string }
+        mediana: { $ref: "#/components/schemas/Dinero" }
+        p25: { $ref: "#/components/schemas/Dinero" }
+        p75: { $ref: "#/components/schemas/Dinero" }
+        minimo: { $ref: "#/components/schemas/Dinero" }
+        maximo: { $ref: "#/components/schemas/Dinero" }
+        observaciones: { type: integer, minimum: 1 }
+    DesgloseDeEstablecimiento:
+      type: object
+      required: [nombre, cadena, maximo, minimo, promedio, observaciones]
+      properties:
+        nombre: { type: string }
+        cadena: { type: string }
+        maximo: { $ref: "#/components/schemas/Dinero" }
+        minimo: { $ref: "#/components/schemas/Dinero" }
+        promedio: { $ref: "#/components/schemas/Dinero" }
+        observaciones: { type: integer, minimum: 1 }
+    EstadoDeLaPlataforma:
+      type: object
+      required: [ultimoDato, frescura, ultimaCorrida, filasProcesadas, cuarentena, avisosDeEsquema, incidentesAbiertos]
+      properties:
+        ultimoDato: { $ref: "#/components/schemas/Quincena" }
+        frescura:
+          type: object
+          required: [estado]
+          properties:
+            estado: { type: string, enum: [OK, AVISA, BLOQUEA, NO_APLICA], description: NO_APLICA mientras el corpus esté congelado (contrato 1.3.3) }
+            dias: { type: [integer, "null"] }
+        ultimaCorrida: { $ref: "#/components/schemas/Corrida" }
+        filasProcesadas: { type: integer }
+        cuarentena:
+          type: object
+          required: [filas, porcentaje, poblacion]
+          properties:
+            filas: { type: integer }
+            porcentaje: { type: number }
+            poblacion: { type: string, examples: ["alcance del contrato"] }
+        avisosDeEsquema: { type: integer }
+        incidentesAbiertos: { type: integer }
+    Corrida:
+      type: object
+      required: [lote, fecha, resultado, filasLeidas, filasAceptadas, filasEnCuarentena]
+      properties:
+        lote: { type: string, examples: ["07-2026_Q2"] }
+        fecha: { type: string, format: date-time }
+        resultado: { type: string, enum: [CORRECTA, CON_AVISOS, RECHAZADA, FALLIDA] }
+        filasLeidas: { type: integer }
+        filasAceptadas: { type: integer }
+        filasEnCuarentena: { type: integer }
+        duracionSegundos: { type: number }
+    MotivoDeCuarentena:
+      type: string
+      enum: [codificacion_irrecuperable, revision_humana, colision_precio_alta, precio_fuera_de_rango, valor_requerido_vacio]
+    FilaEnCuarentena:
+      type: object
+      required: [lote, motivo, fila]
+      properties:
+        lote: { type: string }
+        motivo: { $ref: "#/components/schemas/MotivoDeCuarentena" }
+        compuerta: { type: string }
+        fila: { type: object, description: "La fila completa, tal como llegó" }
+    Incidente:
+      type: object
+      required: [id, lote, compuerta, motivo, filas, estado, abiertoEn]
+      properties:
+        id: { type: string }
+        lote: { type: string }
+        compuerta: { type: string }
+        motivo: { type: string }
+        filas: { type: integer }
+        estado: { type: string, enum: [ABIERTO, CERRADO] }
+        abiertoEn: { type: string, format: date-time }
+        cerradoEn: { type: [string, "null"], format: date-time }
+        causa: { type: [string, "null"] }
+        decision: { type: [string, "null"] }
+    Variante:
+      type: object
+      required: [id, original, sugerido, parecido, estado]
+      properties:
+        id: { type: string }
+        original: { $ref: "#/components/schemas/Articulo" }
+        sugerido: { $ref: "#/components/schemas/Articulo" }
+        parecido: { type: number, minimum: 0, maximum: 1 }
+        estado: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA, ASIGNADA] }
+x-pendientes: [P-02, P-03, P-04, P-05, P-06, P-07, P-08, P-09, P-10, P-15, D-02]
