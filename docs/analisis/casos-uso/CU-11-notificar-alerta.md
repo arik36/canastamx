@@ -21,10 +21,10 @@
 2. El proceso obtiene el precio observado de cada artículo asociado a una alerta.
 3. El proceso compara el precio observado con el umbral configurado.
 4. El proceso evalúa si el precio observado es menor o igual al umbral configurado.
-5. Si el precio observado es menor o igual al umbral **y en la revisión anterior estaba por encima**, el proceso obtiene los datos necesarios para enviar la notificación a la persona consumidora.
+5. Si el precio observado es menor o igual al umbral **y en la revisión anterior estaba por encima, o es su primera revisión**, el proceso obtiene los datos necesarios para enviar la notificación a la persona consumidora.
 6. El proceso envía la notificación por correo electrónico.
 7. El proceso registra la notificación con estado **ENVIADA**.
-8. El proceso registra que la alerta quedó **debajo** del umbral y la mantiene activa para que pueda ser evaluada nuevamente en la siguiente revisión quincenal.
+8. El proceso registra que la alerta quedó **debajo** del umbral, la quincena de la revisión y la del cruce, y la mantiene activa para que pueda ser evaluada nuevamente en la siguiente revisión quincenal.
 
 ## Flujos alternos
 
@@ -46,8 +46,9 @@
 **5a · El precio ya estaba debajo del umbral en la revisión anterior**
 
 1. El proceso no envía una notificación nueva: ya avisó cuando el precio cruzó.
-2. La alerta sigue activa y debajo del umbral.
-3. El proceso continúa con la siguiente alerta.
+2. Si la notificación de ese cruce quedó **FALLIDA** o **PENDIENTE**, el proceso la reintenta: el reintento no es un aviso nuevo.
+3. La alerta sigue activa y debajo del umbral.
+4. El proceso continúa con la siguiente alerta.
 
 **6a · El correo electrónico no puede enviarse**
 
@@ -59,7 +60,7 @@
 
 ## Postcondiciones
 
-* **De éxito:** La persona consumidora recibe una notificación por correo electrónico, la notificación queda registrada con estado **ENVIADA** y la alerta permanece activa para futuras revisiones quincenales mientras el precio observado sea menor o igual al umbral configurado.
+* **De éxito:** La persona consumidora recibe una notificación por correo electrónico, la notificación queda registrada con estado **ENVIADA** y la alerta permanece activa: volverá a avisar sólo si el precio sube por encima del umbral y vuelve a cruzarlo hacia abajo.
 
 * **De fallo:** La notificación queda registrada con estado **FALLIDA**, el fallo queda registrado y la alerta permanece pendiente de notificación para permitir un nuevo intento de envío.
 
@@ -81,7 +82,7 @@ El registro debe conservar, como mínimo, el identificador de la alerta, la fech
 
 ## Decisión sobre el ciclo de vida de la alerta
 
-Una alerta que genera una notificación **no se desactiva ni se marca como disparada de forma permanente**. La alerta permanece **activa** y puede volver a generar una notificación en cada nueva revisión quincenal mientras el precio observado sea menor o igual al umbral configurado.
+Una alerta que genera una notificación **no se desactiva ni se marca como disparada de forma permanente**. La alerta permanece **activa**, recuerda si quedó arriba o debajo del umbral, y vuelve a generar una notificación sólo cuando el precio cruza el umbral hacia abajo otra vez (D-05, 6 de octubre de 2026).
 
 ## Notas
 
@@ -91,4 +92,4 @@ Una alerta que genera una notificación **no se desactiva ni se marca como dispa
 * Si el precio no cumple la condición, no se envía una notificación y la alerta permanece activa para una revisión posterior.
 * Una notificación exitosa se registra con estado **ENVIADA**.
 * Si el envío falla, la notificación se registra con estado **FALLIDA** y la alerta permanece pendiente de notificación para un nuevo intento.
-* Después de una notificación exitosa, la alerta permanece activa y puede volver a notificar en cada nueva revisión quincenal mientras el precio observado sea menor o igual al umbral configurado.
+* Después de una notificación exitosa, la alerta permanece activa y no vuelve a notificar mientras el precio siga debajo del umbral.
