@@ -1,20 +1,24 @@
 openapi: 3.1.0
 info:
   title: CanastaMX · Interfaz analítica
-  version: 0.1.0-borrador
+  version: 0.2.0
   summary: Lo que es del dato. Precios, índice, operación de la plataforma y cola de reconciliación.
   description: |
-    **Borrador** armado el 6 de octubre de 2026 con lo que ya está en `main`: los
-    casos de uso CU-04 a CU-07 y CU-10 a CU-14, el inventario de vistas y el modelo
-    dimensional (T031). Lo escribe A con B; lo aprueban en el PR D, C2 y C1.
+    **Versión 0.2**, revisada por el equipo el 7 de octubre de 2026. Sale de los casos
+    de uso CU-04 a CU-07 y CU-10 a CU-14, el inventario de vistas y el modelo
+    dimensional (T031). La publica A, con B.
 
     **Toda cifra agregada dice su población:** de qué entidades, de qué periodo y
     cuántas observaciones. El artículo viaja siempre por su par canónico, nunca por
     `articulo_key`, que cambia al recargar el almacén.
 
-    Lee la capa de consumo (`postgres-analytics`). Las únicas escrituras son las de
-    la consola (cerrar un incidente y resolver una variante), y dónde viven está
-    pendiente (`x-pendiente: P-08`). La lista de pendientes está en
+    Lee la capa de consumo (`postgres-analytics`), que sólo escribe la plataforma de
+    datos. Las únicas escrituras de esta interfaz son las dos de la consola (cerrar
+    un incidente y resolver una variante), y van al **esquema de operación**, aparte
+    de la capa de consumo (P-08).
+
+    Las rutas del analista y del operador piden la sesión del servicio de dominio con
+    el rol que dice `x-rol` en cada una (P-07). Las decisiones están en
     `docs/analisis/openapi/README.md`.
   contact:
     name: Equipo CanastaMX
@@ -72,9 +76,8 @@ paths:
       summary: Buscar artículos en una entidad (CU-12, pasos 1 y 2)
       description: |
         Si la entidad no está en el alcance, responde **200 con `cobertura: false`** y
-        la lista de entidades cubiertas, porque es el alterno 2b de CU-12, no un error.
-        *Propuesta (P-06).*
-      x-pendiente: [P-06]
+        la lista de entidades cubiertas, porque es el alterno 2b de CU-12, no un error
+        (P-06).
       parameters:
         - { name: q, in: query, required: true, schema: { type: string, minLength: 2 }, description: Lo que escribe la persona }
         - { name: entidad, in: query, required: true, schema: { type: string } }
@@ -115,8 +118,8 @@ paths:
         el dominio que para la canasta del invitado. El precio de un artículo en una
         cadena es la **mediana de sus tiendas** en la entidad, en la quincena más
         reciente (T031). Sin dato dice `null`, nunca un monto, y el total dice
-        cuántos faltan. *Propuesta (P-10).*
-      x-pendiente: [P-10]
+        cuántos faltan. Es la única regla de costo del sistema: la app y la web no
+        suman precios por su cuenta (P-10).
       requestBody:
         required: true
         content:
@@ -134,8 +137,7 @@ paths:
       tags: [Para el dominio]
       operationId: rangoHistorico
       summary: El rango válido para el umbral de una alerta (CU-10, pasos 2 y 3)
-      description: El mínimo y el máximo de las medianas quincenales del artículo en la entidad (T031 · `rango_historico`). *Lo llama el dominio (P-09).*
-      x-pendiente: [P-09]
+      description: El mínimo y el máximo de las medianas quincenales del artículo en la entidad (T031 · `rango_historico`). Lo llama el dominio para validar el umbral (P-09).
       parameters:
         - $ref: "#/components/parameters/producto"
         - $ref: "#/components/parameters/presentacion"
@@ -152,8 +154,7 @@ paths:
       tags: [Para el dominio]
       operationId: preciosVigentes
       summary: El precio típico vigente de muchos artículos a la vez (CU-11)
-      description: Para evaluar las alertas en una sola llamada. Es POST porque la lista puede ser larga; no escribe nada. *Lo llama el dominio (P-09).*
-      x-pendiente: [P-09]
+      description: Para evaluar las alertas en una sola llamada. Es POST porque la lista puede ser larga; no escribe nada. Lo llama el dominio en cada revisión de alertas (P-09).
       requestBody:
         required: true
         content:
@@ -184,8 +185,11 @@ paths:
       tags: [Análisis]
       operationId: indiceContraInpc
       summary: El índice de la canasta contra el INPC (CU-07 y CU-13, paso 2)
-      description: La canasta del índice todavía no está definida (D-02).
-      x-pendiente: [P-07, D-02]
+      description: |
+        La canasta del ADR 015: los artículos con precio en las 38 quincenas y las 7
+        entidades, sin alcohol ni tabaco, con el mismo peso y base 100 en 2025-01-Q1.
+        La respuesta dice siempre la base, la fórmula y cuántos artículos tiene.
+      x-rol: ANALISTA
       security:
         - sesion: []
       parameters:
@@ -204,8 +208,12 @@ paths:
       tags: [Análisis]
       operationId: articulosAnomalos
       summary: Artículos con variación extrema, para la tabla del tablero (CU-13, paso 3)
-      description: Falta definir qué es «anómalo» (P-15).
-      x-pendiente: [P-07, P-15]
+      description: |
+        Un artículo es anómalo cuando la variación quincenal de su precio típico, en
+        valor absoluto, pasa del umbral: 20% por omisión (P-15). Para no marcar
+        artículos por una sola tienda, cuenta sólo si tiene al menos
+        `minimoDeObservaciones` en cada una de las dos quincenas.
+      x-rol: ANALISTA
       security:
         - sesion: []
       parameters:
@@ -213,6 +221,8 @@ paths:
         - { name: catalogo, in: query, schema: { $ref: "#/components/schemas/Catalogo" } }
         - $ref: "#/components/parameters/desde"
         - $ref: "#/components/parameters/hasta"
+        - { name: umbral, in: query, schema: { type: number, minimum: 0, default: 0.2 }, description: "Variación mínima, en proporción: 0.2 es 20% (P-15)" }
+        - { name: minimoDeObservaciones, in: query, schema: { type: integer, minimum: 1, default: 5 }, description: "Observaciones mínimas en cada quincena" }
         - $ref: "#/components/parameters/limit"
       responses:
         "200":
@@ -227,11 +237,13 @@ paths:
                     type: array
                     items:
                       type: object
-                      required: [articulo, entidad, variacion]
+                      required: [articulo, entidad, quincena, variacion, observaciones]
                       properties:
                         articulo: { $ref: "#/components/schemas/Articulo" }
                         entidad: { type: string }
-                        variacion: { type: number, description: "Variación relativa: 0.27 es 27%" }
+                        quincena: { $ref: "#/components/schemas/Quincena" }
+                        variacion: { type: number, description: "Variación contra la quincena anterior: 0.27 es 27%" }
+                        observaciones: { type: integer, description: "Las menos de las dos quincenas" }
                   poblacion: { $ref: "#/components/schemas/Poblacion" }
         "401": { $ref: "#/components/responses/SinSesion" }
   /api/v1/articulos/serie:
@@ -239,7 +251,7 @@ paths:
       tags: [Análisis]
       operationId: serieDeArticulo
       summary: La serie histórica de un artículo, por quincena y entidad (vista 3, CU-13 paso 5)
-      x-pendiente: [P-07]
+      x-rol: ANALISTA
       security:
         - sesion: []
       parameters:
@@ -268,7 +280,7 @@ paths:
       tags: [Análisis]
       operationId: desgloseDeArticulo
       summary: Máximo, mínimo y promedio de un artículo por establecimiento (CU-13, paso 5)
-      x-pendiente: [P-07]
+      x-rol: ANALISTA
       security:
         - sesion: []
       parameters:
@@ -296,7 +308,7 @@ paths:
       tags: [Análisis]
       operationId: exportarArticulo
       summary: Las observaciones de un artículo en CSV (CU-13, pasos 6 y 7)
-      x-pendiente: [P-07]
+      x-rol: ANALISTA
       security:
         - sesion: []
       parameters:
@@ -322,7 +334,7 @@ paths:
       tags: [Operación]
       operationId: estadoDeLaPlataforma
       summary: Los seis indicadores de la consola (CU-05)
-      x-pendiente: [P-07]
+      x-rol: OPERADOR
       security:
         - sesion: []
       responses:
@@ -337,7 +349,7 @@ paths:
       tags: [Operación]
       operationId: listarCorridas
       summary: Las corridas, de la más reciente a la más antigua
-      x-pendiente: [P-07]
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -360,7 +372,7 @@ paths:
       tags: [Operación]
       operationId: linajeDeLote
       summary: El linaje de un lote, capa por capa (CU-05, paso 5)
-      x-pendiente: [P-07]
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -383,7 +395,7 @@ paths:
       tags: [Operación]
       operationId: listarCuarentena
       summary: Filas en cuarentena, con su motivo
-      x-pendiente: [P-07]
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -407,12 +419,13 @@ paths:
     get:
       tags: [Operación]
       operationId: listarIncidentes
-      summary: Incidentes, abiertos o cerrados (CU-04)
-      x-pendiente: [P-07]
+      summary: Incidentes y avisos, con su lote, compuerta y motivo (CU-04, RF-13)
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
         - { name: estado, in: query, schema: { type: string, enum: [ABIERTO, CERRADO] } }
+        - { name: severidad, in: query, schema: { type: string, enum: [AVISO, INCIDENTE] } }
         - $ref: "#/components/parameters/limit"
         - $ref: "#/components/parameters/offset"
       responses:
@@ -432,8 +445,10 @@ paths:
       tags: [Operación]
       operationId: cerrarIncidente
       summary: Cerrar un incidente con su causa y su decisión (CU-04, pasos 5 y 6)
-      description: Es una **escritura**. Si la hace esta interfaz o la plataforma de datos es P-08.
-      x-pendiente: [P-07, P-08]
+      description: |
+        Es una **escritura**: va al esquema de operación, no a la capa de consumo
+        (P-08). Sólo se cierran los incidentes; los avisos no se cierran.
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -456,12 +471,17 @@ paths:
               schema: { $ref: "#/components/schemas/Incidente" }
         "401": { $ref: "#/components/responses/SinSesion" }
         "404": { $ref: "#/components/responses/SinDatos" }
+        "409":
+          description: Es un aviso, o el incidente ya estaba cerrado
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problema" }
   /api/v1/reconciliacion/cola:
     get:
       tags: [Reconciliación]
       operationId: colaDeVariantes
       summary: Las variantes pendientes, con su sugerencia y su parecido (CU-14, paso 2)
-      x-pendiente: [P-07]
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -474,18 +494,24 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [variantes, total]
+                required: [variantes, total, cobertura, precision]
                 properties:
                   variantes: { type: array, items: { $ref: "#/components/schemas/Variante" } }
-                  total: { type: integer }
+                  total: { type: integer, description: Variantes en cola }
+                  cobertura:
+                    $ref: "#/components/schemas/MetricaDeNormalizacion"
+                    description: Variantes detectadas que ya tienen artículo canónico, entre todas las detectadas
+                  precision:
+                    $ref: "#/components/schemas/MetricaDeNormalizacion"
+                    description: Sugerencias automáticas que el operador aprobó, entre las que revisó
         "401": { $ref: "#/components/responses/SinSesion" }
   /api/v1/reconciliacion/cola/{varianteId}/resolucion:
     post:
       tags: [Reconciliación]
       operationId: resolverVariante
       summary: Aprobar, rechazar o asignar a mano una variante (CU-14, paso 4 y alternos 4a y 4b)
-      description: Es una **escritura**. Si la hace esta interfaz o la plataforma de datos es P-08.
-      x-pendiente: [P-07, P-08]
+      description: Es una **escritura**, y va al esquema de operación (P-08). Queda registrada en el diccionario (RF-D10).
+      x-rol: OPERADOR
       security:
         - sesion: []
       parameters:
@@ -517,7 +543,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Sesión del analista o del operador. Quién emite ese token y con qué rol es P-07.
+      description: |
+        Token del servicio de dominio (`POST /api/v1/sesiones` de `dominio.yaml`),
+        con el rol de la cuenta. Cada ruta protegida dice en `x-rol` qué rol pide (P-07).
   parameters:
     producto:
       name: producto
@@ -549,12 +577,12 @@ components:
     limit:
       name: limit
       in: query
-      description: Cuántos elementos devolver. *Propuesta (P-05).*
+      description: Cuántos elementos devolver (P-05).
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
     offset:
       name: offset
       in: query
-      description: Cuántos saltar. *Propuesta (P-05).*
+      description: Cuántos saltar (P-05).
       schema: { type: integer, minimum: 0, default: 0 }
   responses:
     DatosInvalidos:
@@ -582,7 +610,7 @@ components:
         time: { type: string, format: date-time }
     Problema:
       type: object
-      description: Formato único de error, RFC 9457 (`application/problem+json`). *Propuesta (P-03).*
+      description: Formato único de error, RFC 9457 (`application/problem+json`) (P-03).
       required: [type, title, status]
       properties:
         type: { type: string, format: uri-reference }
@@ -605,7 +633,7 @@ components:
         entidad: { type: string }
     Dinero:
       type: object
-      description: Monto como texto con dos decimales. *Propuesta (P-02).*
+      description: Monto como texto con dos decimales (P-02). Para sumar o comparar se pasa a centavos enteros o a decimal exacto, **nunca a punto flotante**.
       required: [monto, moneda]
       properties:
         monto: { type: string, pattern: '^\d+\.\d{2}$', examples: ["65.00"] }
@@ -740,8 +768,16 @@ components:
         observaciones: { type: integer, minimum: 0 }
     IndiceContraInpc:
       type: object
-      required: [serie, poblacion]
+      required: [canasta, serie, poblacion]
       properties:
+        canasta:
+          type: object
+          description: Cómo se calculó (ADR 015)
+          required: [articulos, base, formula]
+          properties:
+            articulos: { type: integer, minimum: 1, description: Cuántos artículos tiene la canasta }
+            base: { $ref: "#/components/schemas/Quincena" }
+            formula: { type: string, enum: [JEVONS], description: Media geométrica de los precios relativos }
         serie:
           type: array
           items:
@@ -749,7 +785,7 @@ components:
             required: [quincena, indice]
             properties:
               quincena: { $ref: "#/components/schemas/Quincena" }
-              indice: { type: number, description: Base 100 en la quincena base (D-02) }
+              indice: { type: number, description: Base 100 en 2025-01-Q1 (ADR 015) }
               inpc: { type: [number, "null"], description: "null si INEGI no ha publicado ese periodo (CU-07 · alterno 3a)" }
         correlacion:
           type: object
@@ -826,9 +862,11 @@ components:
         fila: { type: object, description: "La fila completa, tal como llegó" }
     Incidente:
       type: object
-      required: [id, lote, compuerta, motivo, filas, estado, abiertoEn]
+      description: Un incidente detiene algo y se cierra con causa; un aviso sólo informa, como la deriva de esquema (RF-13).
+      required: [id, severidad, lote, compuerta, motivo, filas, estado, abiertoEn]
       properties:
         id: { type: string }
+        severidad: { type: string, enum: [AVISO, INCIDENTE] }
         lote: { type: string }
         compuerta: { type: string }
         motivo: { type: string }
@@ -838,6 +876,18 @@ components:
         cerradoEn: { type: [string, "null"], format: date-time }
         causa: { type: [string, "null"] }
         decision: { type: [string, "null"] }
+    MetricaDeNormalizacion:
+      type: object
+      description: |
+        Una proporción con su población (RNF-16). `porcentaje` es null mientras el
+        denominador sea 0. La medición formal de H3 es otra: la de T058, sobre la
+        muestra calificada de 200 pares (ADR 014).
+      required: [porcentaje, numerador, denominador, poblacion]
+      properties:
+        porcentaje: { type: [number, "null"], minimum: 0, maximum: 100 }
+        numerador: { type: integer, minimum: 0 }
+        denominador: { type: integer, minimum: 0 }
+        poblacion: { type: string, examples: ["variantes del alcance · julio de 2026"] }
     Variante:
       type: object
       required: [id, original, sugerido, parecido, estado]
@@ -847,4 +897,3 @@ components:
         sugerido: { $ref: "#/components/schemas/Articulo" }
         parecido: { type: number, minimum: 0, maximum: 1 }
         estado: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA, ASIGNADA] }
-x-pendientes: [P-02, P-03, P-04, P-05, P-06, P-07, P-08, P-09, P-10, P-15, D-02]
