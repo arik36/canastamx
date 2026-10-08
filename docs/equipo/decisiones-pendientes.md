@@ -12,27 +12,20 @@
 
 ## Para decidir
 
-### D-08 · ¿La web es responsiva en tres puntos de quiebre? · antes del 9 de octubre
-
-**Decide:** D, con A · **Queda en:** `docs/analisis/puntos-de-quiebre.md` y `docs/entregas/diseno.md`.
-
-La propuesta entregada (E1) compromete una «aplicación web responsiva en tres
-puntos de quiebre». `puntos-de-quiebre.md` dice que las consolas son sólo de
-escritorio, con un aviso de ancho mínimo.
-
-| Opción | Qué es | Consecuencia |
-|---|---|---|
-| **A** | Responsiva en los tres: tres columnas de tarjetas en escritorio, dos en tableta y una en teléfono; las tablas se desplazan de lado dentro de su tarjeta | Cumple lo entregado en E1. Es más trabajo de maquetación |
-| **B** | Sólo escritorio, con aviso de ancho mínimo | Cambia lo entregado en E1, y hay que decírselo al asesor |
-
-*Recomendación de A: la opción A, con la regla mínima de `diseno.md` §4.*
-
-### Contratos OpenAPI
-
-Las convenciones y preguntas de arquitectura de los contratos (P-01 a P-15) están
-en el PR de T037, en `docs/analisis/openapi/README.md`.
+Nada por votar al 7 de octubre de 2026. Lo que sigue abierto se mide o se escribe:
+ver «Por medir» y «Por escribir».
 
 ---
+
+## Decididas el 7 de octubre de 2026
+
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| D-08 | ¿La web es responsiva en tres puntos de quiebre? | **B · las consolas son sólo de escritorio,** con aviso de ancho mínimo; el acceso web se adapta a los tres anchos. El cambio frente a la propuesta E1 se explica al asesor en la entrega 2 | D, con A y C1 | `puntos-de-quiebre.md` (#125) · `diseno.md` §4 |
+| P-01 a P-10 | Convenciones y arquitectura de los contratos | Todas en **A**: `camelCase`, dinero como texto, `problem+json`, `/api/v1`, `limit` y `offset`, cobertura como respuesta normal, sesión con rol, esquema de operación, el dominio consulta a la analítica, y la analítica calcula el costo de la canasta | Todo el equipo | `docs/analisis/openapi/README.md` |
+| P-13 | ¿El usuario tiene nombre? | **B · no:** se identifica con su correo | C1 | Modelo ER · `dominio.yaml` |
+| P-14 | ¿De qué entidad es el precio de una alerta? | **A · la alerta guarda su entidad** | C1 | Modelo ER · CU-10 · `dominio.yaml` |
+| P-15 | ¿Qué es un artículo «anómalo»? | **A · variación quincenal mayor al 20%.** Se calibra con el volumen real | A y D | `analitica.yaml` |
 
 ## Decididas el 6 de octubre de 2026
 
@@ -64,6 +57,7 @@ en el PR de T037, en `docs/analisis/openapi/README.md`.
 |---|---|---|---|
 | El porcentaje de cuarentena de cada uno de los 38 lotes | Confirmar el 5% de D-07 | A | 1 de noviembre |
 | Cuántos artículos cumplen la canasta del ADR 015 | Saber si la canasta representa algo | A | T069 |
+| Cuántos artículos marca como anómalos el 20%, y con qué mínimo de observaciones | Calibrar P-15 | A y D | Antes de construir el tablero |
 
 ## Por escribir
 
@@ -83,3 +77,11 @@ Son decisiones que ya se tomaron, pero sin ADR.
 | 007 · navegación de la app | En propuesta, y con D-01 hay que reescribirlo: cuatro pestañas | C2 |
 | 006 y 011 · entorno y diseño de la app | En propuesta, aunque ya se siguen | C2 |
 | 008 · dónde vive la base | En propuesta; su título dice «ADR 006» y su peso no dice de qué población es | B |
+
+## Lo que dejan las decisiones
+
+| Qué | Quién | Antes de |
+|---|---|---|
+| Explicar en el documento de la entrega 2 los dos cambios frente a la propuesta E1: las consolas son de escritorio (D-08), y el dominio sí consulta a la analítica (P-09) | A | 9 de octubre |
+| Modelo ER, modelo de dominio, CU-09 a CU-11 y el BPMN de alertas, con P-07, P-13, P-14 y D-05 | C1 | 9 de octubre |
+| Cuenta con el correo en lugar del nombre; la barra del analista con correo y rol; las métricas de la cola con su población (`diseno.md` §7, puntos 12 a 14) | D y C2 | 9 de octubre |

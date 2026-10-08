@@ -42,6 +42,7 @@ Integra dos decisiones del 6 de octubre (`docs/equipo/decisiones-pendientes.md`)
 | **Aviso** *(D-06)* | `#89ccff` *(nuevo)* | `#0b5394` *(nuevo)* | El contrato dice «avisa»: deriva de esquema, frescura de 20 a 45 días, lote con avisos |
 | **Incidente** | `#d32f2f` (`--color-danger`) | `#d32f2f` sobre blanco; `#c62828` *(nuevo)* sobre crema | El contrato dice «bloquea»: lote rechazado, compuerta caída, cuarentena que exige intervención |
 | **Anomalía de mercado** | `#f2a900` (`--color-market`) | `#8a6100` (ya está en el prototipo) | El precio es raro, pero el dato está bien: «el huevo subió 27% en Jalisco» |
+| **No aplica** | `#e7dfd0` (`--color-cream-200`) | `#5b5b5b` (`--color-ink-soft`) | La regla no corre: la frescura mientras la fuente no publique, que es el estado de hoy (`NO_APLICA`) |
 
 **Reglas que no se rompen:**
 1. **El rojo es sólo para lo que el sistema bloquea.** Un precio máximo, una
@@ -143,9 +144,9 @@ en un teléfono.
 
 | Nombre | Ancho | Dónde se usa |
 |---|---|---|
-| Teléfono | hasta 768 px | La app |
-| Tableta | de 769 a 1024 px | La web (ver D-08) |
-| Escritorio | desde 1025 px | La web |
+| Teléfono | hasta 768 px | La app, y el acceso web |
+| Tableta | de 769 a 1024 px | El acceso web. Las consolas muestran el aviso de ancho mínimo |
+| Escritorio | desde 1025 px | Las consolas del analista y del operador |
 
 **Implementación.** Los valores por omisión de Tailwind son 768 y 1024, un píxel
 distintos de la tabla. Para que el código diga lo mismo que este documento:
@@ -157,12 +158,14 @@ distintos de la tabla. Para que el código diga lo mismo que este documento:
 }
 ```
 
-**Pendiente D-08.** La propuesta entregada (E1) compromete una «aplicación web
-responsiva en tres puntos de quiebre». `puntos-de-quiebre.md` dice que las consolas
-son sólo de escritorio. Mientras se decide, la regla mínima para la web es:
-- **escritorio:** tres columnas de tarjetas;
-- **tableta:** dos;
-- **teléfono:** una, y las tablas se desplazan de lado dentro de su tarjeta.
+**D-08 (7 de octubre): las consolas son sólo de escritorio,** como define
+`puntos-de-quiebre.md` (#125). Por su densidad de datos, una consola en una columna
+dejaría de servir. Debajo de 1025 px muestran un aviso de ancho mínimo y permiten
+desplazarse de lado. **El acceso web sí se adapta a los tres anchos.**
+
+La propuesta entregada (E1) prometía una «aplicación web responsiva en tres puntos
+de quiebre». El cambio de alcance se le explica al asesor en el documento de la
+entrega 2.
 
 ---
 
@@ -194,10 +197,12 @@ son sólo de escritorio. Mientras se decide, la regla mínima para la web es:
 |---|---|---|
 | **Barra lateral** | Navegación de cada consola | El analista: Tablero y Detalle. El operador: Consola y Cola |
 | **Tarjeta de indicador** | Una cifra grande con su rótulo | **Siempre con su población**, por ejemplo «del alcance · julio de 2026» |
-| **Semáforo** | Estado de la última corrida | Verde OK, azul aviso, rojo incidente. Nunca naranja |
+| **Semáforo** | Estado de la última corrida y de la frescura | Verde OK, azul aviso, rojo incidente, gris «no aplica». Nunca naranja |
+| **Historial** | Avisos e incidentes de la consola (RF-13) | Los avisos en azul, sin botón de cerrar; los incidentes en rojo, con «Cerrar con causa» |
 | **Dona** | Una proporción | Con su número al centro y su población debajo |
 | **Linaje** | Archivo → cruda → compuerta → intermedia → consumo | Cada nodo con sus filas |
 | **Barra de parecido** | El parecido de una variante en la cola | Del 0 al 100%, en turquesa |
+| **Métricas de la cola** | Cobertura de normalización, precisión y variantes en cola | Cada porcentaje con su población («412 de 506 variantes»). Hasta medirse, «se mide en T058» |
 | **Tabla** | Cola, cuarentena, precios por establecimiento | Encabezado fijo; desplazamiento lateral dentro de su tarjeta |
 
 ---
@@ -228,3 +233,6 @@ Vienen de los datos y del contrato:
 | 9 | Web · Detalle | «Precio promedio regional · media ponderada»; el máximo en rojo | «Precio típico (mediana)»; el máximo en tinta | D |
 | 10 | Datos de ejemplo | Fechas «11 sep 2026» | Fechas hasta julio de 2026 | D |
 | 11 | App · Descubrir | Listas «Despensa Quincenal», «Fiesta Navidad» y «Desayunos» | No las pide ningún caso de uso ni requerimiento. Se definen o se quitan | D y C2 |
+| 12 | App · Cuenta | El nombre «Karen Alejandra» y una foto de perfil | El correo de la cuenta y un avatar con su inicial: la cuenta no tiene nombre ni foto (P-13) | D y C2 |
+| 13 | Web · Barra lateral | «Analista Ruiz» | El correo y el rol de la sesión (P-07 y P-13) | D |
+| 14 | Web · Cola | Cobertura 81.4% y precisión 97.3% | Son inventadas, y la cobertura queda por debajo de la meta de H3 (85%). «Se mide en T058», o la cifra real con su población | D |
