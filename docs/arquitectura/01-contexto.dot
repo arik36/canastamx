@@ -1,0 +1,23 @@
+digraph contexto {
+  graph [rankdir=TB, fontname="Inter", bgcolor="white", pad=0.35, nodesep=0.7, ranksep=0.9, splines=true]
+  node  [fontname="Inter", fontsize=11, shape=box, style="rounded,filled", color="#2f2f2f", fillcolor="white", penwidth=1.1, margin="0.18,0.10"]
+  edge  [fontname="Inter", fontsize=9, color="#5b5b5b", fontcolor="#2f2f2f", arrowsize=0.7]
+
+  { rank=same;
+    consumidora [label=<<b>Persona consumidora</b><br/><font point-size="9">App móvil · teléfono</font>>, fillcolor="#e9f8f7"]
+    analista    [label=<<b>Analista</b><br/><font point-size="9">Consola web · escritorio</font>>, fillcolor="#e9f8f7"]
+    operador    [label=<<b>Operador de datos</b><br/><font point-size="9">Consola web · escritorio</font>>, fillcolor="#e9f8f7"]
+  }
+  sistema [label=<<b>CanastaMX</b><br/><font point-size="10">Precios de la canasta básica con<br/>validación automática de calidad de datos</font>>, fillcolor="#23bbb7", fontcolor="white", penwidth=0, margin="0.35,0.22"]
+  { rank=same;
+    profeco [label=<<b>PROFECO</b><br/><font point-size="9">Quién es Quién en los Precios<br/>datos abiertos · un CSV por quincena</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+    inegi   [label=<<b>INEGI</b><br/><font point-size="9">Índice Nacional de Precios<br/>al Consumidor (INPC)</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+    correo  [label=<<b>Servicio de correo</b><br/><font point-size="9">SMTP · por decidir (D-09)</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+  }
+  consumidora -> sistema [label="  busca y compara precios,\n  arma canastas, vigila precios"]
+  analista    -> sistema [label="  estudia la evolución\n  contra el INPC"]
+  operador    -> sistema [label="  vigila las corridas, atiende\n  incidentes, revisa la cola"]
+  sistema -> profeco [label="  descarga cada lote"]
+  sistema -> inegi   [label="  descarga el INPC"]
+  sistema -> correo  [label="  envía los avisos de precio"]
+}

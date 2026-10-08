@@ -29,6 +29,8 @@ Componentes desplegables de forma independiente detrás de una puerta de enlace:
 | Cliente móvil | `clients/mobile` | React Native, Expo | C2 |
 | Infraestructura | `infra/`, `docker-compose.yml` | Docker, Traefik, GitHub Actions | B |
 
+El diseño arquitectónico completo, con sus cinco vistas y sus atributos de calidad, está en [`docs/arquitectura/`](docs/arquitectura/README.md).
+
 ## Cómo levantarlo
 
 Requisitos: Docker Desktop y Git. En Windows, Docker Desktop con backend WSL2.

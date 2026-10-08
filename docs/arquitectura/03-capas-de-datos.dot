@@ -1,0 +1,26 @@
+digraph capas {
+  graph [rankdir=TB, fontname="Inter", bgcolor="white", pad=0.3, nodesep=0.5, ranksep=0.42, splines=true, newrank=true]
+  node  [fontname="Inter", fontsize=10, shape=box, style="rounded,filled", color="#2f2f2f", fillcolor="white", penwidth=1.0, margin="0.12,0.08"]
+  edge  [fontname="Inter", fontsize=8, color="#5b5b5b", fontcolor="#2f2f2f", arrowsize=0.6]
+
+  archivo [label=<<b>Archivo de PROFECO</b><br/><font point-size="8">CSV de la quincena<br/>15 columnas</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+  ingesta [label=<<b>Ingesta</b> · CU-01<br/><font point-size="8">codificación y fecha declaradas<br/>controles C1 · recorte del alcance<br/>completo o nada (RF-01)</font>>, fillcolor="#d5f2f1"]
+  cruda [label=<<b>Capa cruda</b><br/><font point-size="8">MinIO · Parquet por<br/>entidad × quincena<br/>inmutable (RF-25)</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+  compuerta [label=<<b>Compuerta del contrato</b> · CU-02, CU-03<br/><font point-size="8">tipos, requeridos, techos de precio<br/>reparación del «?» · clave de fila<br/>más del 5% → el lote no pasa</font>>, fillcolor="#d5f2f1"]
+  intermedia [label=<<b>Capa intermedia</b><br/><font point-size="8">PostgreSQL analítico<br/>filas válidas y normalizadas</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+  transformacion [label=<<b>Transformación</b> · CU-06, CU-07<br/><font point-size="8">reconciliación con el diccionario<br/>agregados · índice (ADR 015)</font>>, fillcolor="#d5f2f1"]
+  consumo [label=<<b>Capa de consumo</b><br/><font point-size="8">esquema estrella: hechos_precio<br/>+ 4 dimensiones + 3 agregados</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+  api [label=<<b>Interfaz analítica</b><br/><font point-size="8">app, consolas y dominio</font>>, fillcolor="#e9f8f7"]
+  operacion [label=<<b>Esquema de operación</b><br/><font point-size="8">corridas y linaje · cuarentena<br/>incidentes y avisos · cola · diccionario</font>>, shape=cylinder, style=filled, fillcolor="#fff8e1"]
+  inpc [label=<<b>INEGI</b><br/><font point-size="8">INPC</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+
+  archivo -> ingesta -> cruda -> compuerta -> intermedia -> transformacion -> consumo -> api
+  inpc -> transformacion [label=" H4"]
+  ingesta -> operacion [label=" corrida y pasos", style=dashed, color="#8a6100", fontcolor="#8a6100"]
+  compuerta -> operacion [label=" filas en cuarentena\n incidentes y avisos", style=dashed, color="#8a6100", fontcolor="#8a6100"]
+  transformacion -> operacion [label=" variantes dudosas", style=dashed, color="#8a6100", fontcolor="#8a6100"]
+  operacion -> transformacion [label=" decisiones del operador\n (CU-06 · 3a)", style=dotted]
+  operacion -> api [label=" consola y cola", style=dashed]
+  { rank=same; compuerta; operacion }
+  { rank=same; transformacion; inpc }
+}

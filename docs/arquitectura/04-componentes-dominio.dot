@@ -1,0 +1,36 @@
+digraph hexagonal {
+  graph [rankdir=LR, fontname="Inter", bgcolor="white", pad=0.3, nodesep=0.3, ranksep=0.55, splines=true, compound=true]
+  node  [fontname="Inter", fontsize=9.5, shape=box, style="rounded,filled", color="#2f2f2f", fillcolor="white", penwidth=1.0, margin="0.12,0.06"]
+  edge  [fontname="Inter", fontsize=8, color="#5b5b5b", arrowsize=0.6]
+
+  subgraph cluster_entrada { label=<<b>Adaptadores de entrada</b>>; fontname="Inter"; fontsize=10; style="rounded"; color="#9aa5ad";
+    rest [label=<API REST · <font point-size="8">/api/v1</font><br/><font point-size="8">cuentas, sesiones, canastas,<br/>alertas, notificaciones</font>>]
+    salud [label=<HealthController<br/><font point-size="8">GET /health · <b>existe</b></font>>, fillcolor="#e6f4ea"]
+    programador [label=<Revisión quincenal<br/><font point-size="8">dispara CU-11</font>>]
+  }
+  subgraph cluster_app { label=<<b>Aplicación · casos de uso</b>>; fontname="Inter"; fontsize=10; style="rounded"; color="#9aa5ad";
+    cu08 [label="Registrar e iniciar sesión · CU-08"]
+    cu09 [label="Crear y editar canasta · CU-09"]
+    cu10 [label="Configurar alerta · CU-10"]
+    cu11 [label="Notificar alerta · CU-11"]
+  }
+  subgraph cluster_dominio { label=<<b>Dominio</b>>; fontname="Inter"; fontsize=10; style="rounded,filled"; fillcolor="#f3fbfb"; color="#23bbb7";
+    usuario [label=<Usuario<br/><font point-size="8">CorreoElectronico · <b>existe</b><br/>falta el Rol (P-07)</font>>, fillcolor="#e6f4ea"]
+    canasta [label=<Canasta<br/><font point-size="8">LineaDeCanasta · Cantidad<br/>ReferenciaDeArticulo · <b>existe</b></font>>, fillcolor="#e6f4ea"]
+    alerta [label=<Alerta<br/><font point-size="8">UmbralDePrecio · Posicion</font>>]
+  }
+  subgraph cluster_puertos { label=<<b>Puertos de salida</b>>; fontname="Inter"; fontsize=10; style="rounded"; color="#9aa5ad";
+    repos [label="Repositorios\n(usuarios, canastas, alertas)"]
+    precios [label="Precios analíticos\n(rango y vigentes)"]
+    notificador [label="Notificador"]
+  }
+  subgraph cluster_salida { label=<<b>Adaptadores de salida</b>>; fontname="Inter"; fontsize=10; style="rounded"; color="#9aa5ad";
+    jpa [label="PostgreSQL\ntransaccional", shape=cylinder, style=filled, fillcolor="#eef3f8"]
+    http [label="Cliente HTTP de la\ninterfaz analítica (P-09)"]
+    smtp [label="Correo (SMTP · D-09)"]
+  }
+  rest -> cu08; rest -> cu09; rest -> cu10; programador -> cu11
+  cu08 -> usuario; cu09 -> canasta; cu10 -> alerta; cu11 -> alerta
+  cu08 -> repos [style=dashed]; cu10 -> precios [style=dashed]; cu11 -> precios [style=dashed]; cu11 -> notificador [style=dashed]
+  repos -> jpa; precios -> http; notificador -> smtp
+}
