@@ -30,7 +30,8 @@ qué puede hacer quien la usa y qué datos pide.
   - en la app, el botón «Explorar artículos», que entra sin sesión;
   - **«No somos PROFECO»** y la fuente: datos abiertos de PROFECO.
 - **Qué puede hacer:** entrar sin sesión (sólo la app), iniciar sesión o crear una cuenta.
-- **Qué pide del sistema:** dominio · `POST /api/v1/cuentas` y `POST /api/v1/sesiones`.
+- **Qué pide del sistema:** dominio · `POST /api/v1/cuentas` y `POST /api/v1/sesiones`. La sesión trae el **rol** de la cuenta y la web abre la consola que le toca: el tablero al analista, la consola al operador (P-07). Las cuentas de analista y operador no se crean desde la app.
+- **Puntos de quiebre:** el acceso se adapta a los tres anchos (D-08).
 - **Nota:** la barra de módulos de arriba del prototipo sólo sirve para recorrerlo.
 
 ## 2 · Tablero analítico
@@ -42,7 +43,7 @@ qué puede hacer quien la usa y qué datos pide.
   - las variaciones extremas por cadena;
   - la tabla de artículos anómalos.
 - **Qué puede hacer:** contrastar el índice con el INPC y abrir el detalle de un artículo anómalo.
-- **Qué pide del sistema:** analítica · `GET /api/v1/indice` y `GET /api/v1/anomalias`. Qué cuenta como «anómalo» está pendiente (P-15).
+- **Qué pide del sistema:** analítica · `GET /api/v1/indice` y `GET /api/v1/anomalias`, con sesión de analista. «Anómalo» es una variación quincenal de su precio típico mayor al 20%, con al menos 5 observaciones en cada quincena (P-15).
 
 ## 3 · Detalle de artículo (web)
 
@@ -64,16 +65,19 @@ qué puede hacer quien la usa y qué datos pide.
   5. avisos de esquema;
   6. incidentes abiertos.
 
-  Además, el linaje entre capas y el historial, donde los avisos van en azul y los incidentes en rojo.
+  Además, el linaje entre capas y el historial de avisos e incidentes (RF-13): los avisos van en azul y no se cierran; los incidentes, en rojo. La frescura «no aplica» va en gris.
 - **Qué puede hacer:** confirmar el estado en menos de 3 segundos, abrir un incidente y cerrarlo con su causa (CU-04).
-- **Qué pide del sistema:** analítica · `GET /api/v1/operacion/estado`, `/corridas`, `/cuarentena` e `/incidentes`, y `POST …/incidentes/{id}/cierre`. Quién guarda el cierre está pendiente (P-08).
+- **Qué pide del sistema:** analítica · `GET /api/v1/operacion/estado`, `/corridas`, `/cuarentena` e `/incidentes`, y `POST …/incidentes/{id}/cierre`, con sesión de operador. El cierre se guarda en el esquema de operación (P-08).
 - **Cifras de hoy:** la cuarentena del alcance es como máximo de 5,992 filas, el 0.23%, en julio de 2026 (T031).
 
 ## 5 · Cola de reconciliación
 
-- **Qué contiene:** el título «Revisión de diccionario»; la tabla con la variante, la cadena, la sugerencia y su parecido; la cobertura de normalización.
+- **Qué contiene:**
+  - el título «Revisión de diccionario»;
+  - tres métricas: la cobertura de normalización, la precisión y las variantes en cola. Cada porcentaje lleva su población; hasta medirse dice «se mide en T058»;
+  - la tabla con la variante, la cadena, la sugerencia y su parecido.
 - **Qué puede hacer:** aprobar, rechazar o asignar a mano, sin mezclar gramajes distintos (CU-14).
-- **Qué pide del sistema:** analítica · `GET /api/v1/reconciliacion/cola` y `POST …/resolucion`. Quién guarda la decisión está pendiente (P-08).
+- **Qué pide del sistema:** analítica · `GET /api/v1/reconciliacion/cola`, que trae `cobertura` y `precision`, y `POST …/resolucion`, con sesión de operador. La decisión se guarda en el esquema de operación (P-08).
 
 ## 6 · Búsqueda y catálogos · pestañas Inicio y Descubrir
 
@@ -114,7 +118,7 @@ qué puede hacer quien la usa y qué datos pide.
 
 ## 8 · Cuenta y alertas · pestaña Cuenta y la campana
 
-- **Qué contiene:** el perfil; **Mis alertas** (cada una con su umbral y si está arriba o debajo); «Sobre nosotros», con «No somos PROFECO»; y cerrar sesión.
+- **Qué contiene:** el perfil, con el **correo** de la cuenta (no tiene nombre, P-13); **Mis alertas** (cada una con su entidad, su umbral y si está arriba o debajo); «Sobre nosotros», con «No somos PROFECO»; y cerrar sesión.
 - **Qué puede hacer:** cambiar o borrar alertas y cerrar sesión. Una alerta avisa por correo cuando el precio cruza el umbral hacia abajo, y no repite mientras siga abajo (D-05).
 - **Qué pide del sistema:** dominio · `/api/v1/alertas` y sus notificaciones; analítica · `/rango-historico` para cambiar el umbral.
 

@@ -80,8 +80,11 @@ flowchart LR
 - **Analista:** su barra lateral tiene «Tablero analítico» y «Detalle de artículo».
 - **Operador:** «Consola» y «Cola de reconciliación».
 - **La barra de módulos de arriba del prototipo** (Acceso · Operador · Analista ·
-  App) existe sólo para recorrerlo. El producto no tiene selector de rol: el rol
-  lo da la sesión, y cómo se da está pendiente (P-07 de los contratos OpenAPI).
+  App) existe sólo para recorrerlo. El producto no tiene selector de rol: **el rol
+  lo da la sesión** que emite el servicio de dominio (P-07). Las cuentas de analista
+  y operador se crean por configuración.
+- **Las consolas son de escritorio** (D-08). Debajo de 1025 px muestran un aviso de
+  ancho mínimo; el acceso web se adapta a los tres anchos.
 
 ---
 
@@ -102,14 +105,17 @@ Por eso, **la tabla de cambios es por quincena**, y el precio que se compara es 
 ### 3.2 · La regla
 
 La alerta recuerda si en la revisión anterior el precio estaba **arriba** o
-**debajo** del umbral, y avisa sólo cuando pasa de arriba a debajo:
+**debajo** del umbral, y avisa sólo cuando pasa de arriba a debajo. **Una alerta
+recién creada todavía no tiene posición:** su primera revisión cuenta como si
+hubiera estado arriba, así que si el precio ya está debajo, avisa. Si el correo de
+un cruce falla, se reintenta en la siguiente revisión, y eso no es un aviso nuevo.
 
 ```mermaid
 flowchart LR
   REV["Revisión de la quincena"] --> Q{"¿Precio típico menor o igual al umbral?"}
   Q -->|"no"| ARR["Queda arriba · no avisa"]
   Q -->|"sí"| P{"¿En la revisión anterior estaba arriba?"}
-  P -->|"sí"| CRUZA["Cruzó: un correo y el aviso en la app · queda debajo"]
+  P -->|"sí, o es su primera revisión"| CRUZA["Cruzó: un correo y el aviso en la app · queda debajo"]
   P -->|"no"| SIGUE["Sigue debajo · no avisa otra vez"]
 ```
 
@@ -130,9 +136,12 @@ Con el ejemplo de la pechuga, «avísame si baja de **$85**»:
 
 1. **El correo.** Uno cada vez que una alerta cruza hacia abajo (CU-11).
 2. **El aviso en Inicio.** Una franja arriba de la barra inferior: «Bajaron 2 precios
-   que vigilas». Sólo aparece con sesión y si hubo cruces en la última revisión que
-   la persona no ha visto. Al tocarla, abre Descubrir en la sección «Precios que
-   bajaron». Es turquesa, no roja: una baja de precio es una buena noticia.
+   que vigilas». Sólo aparece con sesión y si hay cruces que la persona no ha visto.
+   **Cómo lo sabe la app:** cada alerta trae `ultimoCruce`, la quincena de su último
+   cruce, y la app guarda en el teléfono la última quincena que mostró. Son nuevos
+   los cruces posteriores a esa quincena. Al tocar la franja, se abre Descubrir en la
+   sección «Precios que bajaron», y la app guarda la quincena. Es turquesa, no roja:
+   una baja de precio es una buena noticia.
 3. **«Precios que bajaron», hasta abajo de Descubrir.** Una tarjeta por alerta que
    está **debajo** de su umbral:
    - el artículo, con su ícono de catálogo;
@@ -162,7 +171,7 @@ La regla de §3.2 ya evita el fastidio que motivó la propuesta.
 
 | Pantalla | Dato | De dónde |
 |---|---|---|
-| Aviso, Precios que bajaron y Mis alertas | Las alertas, su posición (arriba o debajo) y su última revisión | Dominio · `GET /api/v1/alertas` |
+| Aviso, Precios que bajaron y Mis alertas | Las alertas, su entidad, su posición (arriba, debajo o sin revisar), su última revisión y su último cruce | Dominio · `GET /api/v1/alertas` |
 | Tabla por quincena | El precio típico del artículo en el estado, quincena por quincena | Analítica · `GET /api/v1/articulos/serie` |
 | Cambiar umbral | El rango permitido | Analítica · `GET /api/v1/articulos/rango-historico` |
 

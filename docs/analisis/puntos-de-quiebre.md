@@ -8,7 +8,7 @@ El sistema se adapta mediante tres puntos de quiebre principales:
 - **Tableta:** 769 px a 1024 px.
 - **Escritorio (Web):** Desde 1025 px.
 
-*Nota sobre consolas (pantallas menores a 1025 px):* Las consolas de Operador y Analista son exclusivas de escritorio. En resoluciones menores a 1025 px, el sistema muestra un aviso de ancho mínimo requerido y habilita el desplazamiento horizontal.
+*Nota sobre consolas (pantallas menores a 1025 px):* Las consolas de Operador y Analista son exclusivas de escritorio. En resoluciones menores a 1025 px, el sistema muestra un aviso de ancho mínimo requerido y habilita el desplazamiento horizontal. *Ratificado en D-08 (7 de octubre de 2026). Como la propuesta E1 prometía una web responsiva en los tres puntos de quiebre, el cambio se explica en el documento de la entrega 2.*
 
 ## Comportamiento por Vista
 
@@ -30,7 +30,7 @@ El sistema se adapta mediante tres puntos de quiebre principales:
 
 ### 6 · Búsqueda y Catálogos (Móvil)
 - **Comportamiento:** Exclusivo móvil (hasta 768 px).
-- **Detalle de artículo (App):** Se abre como pantalla dentro de esta misma vista. Despliega el ícono de su catálogo (ADR 010 · 6). El interruptor de monitoreo abre el umbral de precio dentro del rango histórico (CU-10) y la alerta se dispara cuando el precio es menor o igual.
+- **Detalle de artículo (App):** Se abre como pantalla dentro de esta misma vista. Despliega el ícono de su catálogo (ADR 010 · 6). El interruptor de monitoreo abre el umbral de precio dentro del rango histórico (CU-10) y la alerta avisa cuando el precio cruza el umbral hacia abajo: no repite mientras siga abajo (D-05).
 
 ### 7 · Mi canasta (Móvil)
 - **Comportamiento:** Exclusivo móvil. La lista de artículos se divide por cadena comercial.
