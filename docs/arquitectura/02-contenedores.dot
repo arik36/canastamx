@@ -1,0 +1,41 @@
+digraph contenedores {
+  graph [rankdir=TB, fontname="Inter", bgcolor="white", pad=0.3, nodesep=0.45, ranksep=0.75, splines=true, compound=true, newrank=true]
+  node  [fontname="Inter", fontsize=10, shape=box, style="rounded,filled", color="#2f2f2f", fillcolor="white", penwidth=1.0, margin="0.14,0.08"]
+  edge  [fontname="Inter", fontsize=8, color="#5b5b5b", fontcolor="#2f2f2f", arrowsize=0.6]
+
+  movil [label=<<b>App móvil</b><br/><font point-size="8">React Native · Expo · C2<br/>en el teléfono</font>>, fillcolor="#e9f8f7"]
+  navegador [label=<<b>Navegador</b><br/><font point-size="8">analista y operador</font>>, fillcolor="#e9f8f7"]
+
+  subgraph cluster_sistema {
+    label=<<b>CanastaMX</b> · Docker Compose>; fontname="Inter"; fontsize=11; style="rounded,dashed"; color="#23bbb7"; penwidth=1.4; margin=14
+    traefik [label=<<b>Traefik</b><br/><font point-size="8">puerta de enlace · HTTPS<br/>certificados automáticos · B</font>>, fillcolor="#fff8e1"]
+    web [label=<<b>Cliente web</b><br/><font point-size="8">acceso, tablero, detalle,<br/>consola y cola · D</font>>, fillcolor="#e9f8f7"]
+    dominio [label=<<b>Servicio de dominio</b><br/><font point-size="8">Java 21 · Spring Boot 4.1 · hexagonal<br/>cuentas, roles, canastas, alertas · C1</font>>, fillcolor="#d5f2f1"]
+    analitica [label=<<b>Interfaz analítica</b><br/><font point-size="8">Python · FastAPI · A<br/>lee consumo y operación</font>>, fillcolor="#d5f2f1"]
+    plataforma [label=<<b>Plataforma de datos</b><br/><font point-size="8">Dagster · DuckDB · Pandera · A<br/>ingesta, compuertas, transformación</font>>, fillcolor="#d5f2f1"]
+    oltp [label=<<b>PostgreSQL transaccional</b><br/><font point-size="8">usuarios, canastas,<br/>alertas, notificaciones</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+    analitico [label=<<b>PostgreSQL analítico</b><br/><font point-size="8">intermedia · consumo (estrella)<br/>· operación</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+    minio [label=<<b>MinIO</b><br/><font point-size="8">capa cruda · Parquet<br/>por entidad y quincena</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+  }
+  profeco [label=<<b>PROFECO</b><br/><font point-size="8">CSV quincenal</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+  inegi [label=<<b>INEGI</b><br/><font point-size="8">INPC</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+  correo [label=<<b>Correo</b><br/><font point-size="8">SMTP · D-09</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+
+  movil -> traefik [label=" HTTPS · JSON"]
+  navegador -> traefik [label=" HTTPS"]
+  traefik -> web
+  traefik -> dominio [label=" dominio.yaml"]
+  traefik -> analitica [label=" analitica.yaml"]
+  web -> dominio [label=" sesión con rol\n (P-07)", style=dashed]
+  web -> analitica [label=" tablero, consola, cola\n cierres y resoluciones (P-08)", style=dashed]
+  dominio -> analitica [label=" rango histórico y\n precios vigentes (P-09)", color="#158683", fontcolor="#158683"]
+  dominio -> oltp [label=" SQL"]
+  dominio -> correo [label=" avisos (CU-11)"]
+  analitica -> analitico [label=" lee consumo;\n escribe sólo operación"]
+  plataforma -> minio [label=" escribe la capa cruda"]
+  plataforma -> analitico [label=" escribe intermedia,\n consumo y operación"]
+  plataforma -> profeco [label=" descarga"]
+  plataforma -> inegi [label=" descarga"]
+  { rank=same; oltp; analitico; minio }
+  { rank=same; profeco; inegi; correo }
+}

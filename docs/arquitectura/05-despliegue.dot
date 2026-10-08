@@ -1,0 +1,32 @@
+digraph despliegue {
+  graph [rankdir=TB, fontname="Inter", bgcolor="white", pad=0.3, nodesep=0.35, ranksep=0.6, splines=true, compound=true, newrank=true]
+  node  [fontname="Inter", fontsize=9.5, shape=box, style="rounded,filled", color="#2f2f2f", fillcolor="white", penwidth=1.0, margin="0.12,0.06"]
+  edge  [fontname="Inter", fontsize=8, color="#5b5b5b", arrowsize=0.6]
+
+  telefono [label=<<b>Teléfono</b><br/><font point-size="8">app (Expo) · hasta 768 px</font>>, shape=box3d, fillcolor="#e9f8f7"]
+  escritorio [label=<<b>Computadora</b><br/><font point-size="8">navegador · consolas desde 1025 px</font>>, shape=box3d, fillcolor="#e9f8f7"]
+
+  subgraph cluster_oracle {
+    label=<<b>Oracle Cloud · Ampere A1</b> · capa gratuita · 2 OCPU · 12 GB (ADR 008)>; fontname="Inter"; fontsize=10.5; style="rounded"; color="#2f2f2f"; penwidth=1.3; margin=14
+    subgraph cluster_compose {
+      label=<<b>Docker Compose</b> · red <i>canastamx</i>>; fontname="Inter"; fontsize=10; style="rounded,dashed"; color="#23bbb7"
+      traefik [label=<<b>traefik</b><br/><font point-size="8">80 · 443 · Let's Encrypt</font>>, fillcolor="#fff8e1"]
+      web [label=<<b>web</b>>, fillcolor="#e9f8f7"]
+      dominio [label=<<b>domain-service</b><br/><font point-size="8">8081</font>>, fillcolor="#d5f2f1"]
+      analitica [label=<<b>analytics-api</b>>, fillcolor="#d5f2f1"]
+      dagster [label=<<b>data-platform</b><br/><font point-size="8">Dagster: servidor y daemon</font>>, fillcolor="#d5f2f1"]
+      pg1 [label=<<b>postgres-oltp</b><br/><font point-size="8">PostgreSQL 16 · vol. oltp-data</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+      pg2 [label=<<b>postgres-analytics</b><br/><font point-size="8">PostgreSQL 16 · vol. analytics-data</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+      minio [label=<<b>minio</b><br/><font point-size="8">vol. minio-data</font>>, shape=cylinder, style=filled, fillcolor="#eef3f8"]
+    }
+  }
+  github [label=<<b>GitHub</b><br/><font point-size="8">repositorio · Actions: Dominio (Java),<br/>Datos (Python) e Higiene</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+  entornos [label=<<b>Otros entornos</b><br/><font point-size="8">desarrollo: cada computadora del equipo<br/>pruebas: canastamx_test, aislado (#129)</font>>, fillcolor="#f2f2f2", style="rounded,filled,dashed"]
+
+  telefono -> traefik [label=" HTTPS"]
+  escritorio -> traefik [label=" HTTPS"]
+  traefik -> web; traefik -> dominio; traefik -> analitica
+  dominio -> pg1; dominio -> analitica [style=dashed, label=" red interna"]
+  analitica -> pg2; dagster -> pg2; dagster -> minio
+  github -> entornos [style=dotted, label=" integración continua"]
+}
