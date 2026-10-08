@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: CanastaMX · Interfaz analítica
-  version: 0.2.0
+  version: 0.2.1
   summary: Lo que es del dato. Precios, índice, operación de la plataforma y cola de reconciliación.
   description: |
     **Versión 0.2**, revisada por el equipo el 7 de octubre de 2026. Sale de los casos
@@ -13,7 +13,7 @@ info:
     `articulo_key`, que cambia al recargar el almacén.
 
     Lee la capa de consumo (`postgres-analytics`), que sólo escribe la plataforma de
-    datos. Las únicas escrituras de esta interfaz son las dos de la consola (cerrar
+    datos, y el esquema de operación (`docs/datos/esquema-de-operacion.md`). Las únicas escrituras de esta interfaz son las dos de la consola (cerrar
     un incidente y resolver una variante), y van al **esquema de operación**, aparte
     de la capa de consumo (P-08).
 
@@ -463,6 +463,7 @@ paths:
               properties:
                 causa: { type: string, enum: [ARCHIVO_DE_LA_FUENTE, REGLA_DEL_CONTRATO, DATO_REAL_ATIPICO, INFRAESTRUCTURA] }
                 decision: { type: string, description: "Qué se hizo, en una o dos frases" }
+                reprocesarLote: { type: boolean, default: false, description: "Deja el lote marcado para reprocesarse cuando la fuente lo corrija (CU-04 · 5)" }
       responses:
         "200":
           description: El incidente, cerrado
@@ -851,7 +852,8 @@ components:
         duracionSegundos: { type: number }
     MotivoDeCuarentena:
       type: string
-      enum: [codificacion_irrecuperable, revision_humana, colision_precio_alta, precio_fuera_de_rango, valor_requerido_vacio]
+      description: Los motivos de nivel FILA del catálogo `operacion.motivo`. Los tres últimos todavía no tienen nombre en el contrato.
+      enum: [codificacion_irrecuperable, revision_humana, fecha_fuera_de_ventana, precio_fuera_de_rango, colision_precio_alta, valor_requerido_vacio, largo_excedido, tipo_invalido]
     FilaEnCuarentena:
       type: object
       required: [lote, motivo, fila]
@@ -871,11 +873,13 @@ components:
         compuerta: { type: string }
         motivo: { type: string }
         filas: { type: integer }
-        estado: { type: string, enum: [ABIERTO, CERRADO] }
+        estado: { type: string, enum: [ABIERTO, CERRADO, INFORMATIVO], description: "Los avisos son siempre INFORMATIVO" }
         abiertoEn: { type: string, format: date-time }
         cerradoEn: { type: [string, "null"], format: date-time }
+        cerradoPor: { type: [string, "null"], description: "Correo del operador que lo cerró" }
         causa: { type: [string, "null"] }
         decision: { type: [string, "null"] }
+        reprocesarLote: { type: boolean }
     MetricaDeNormalizacion:
       type: object
       description: |
@@ -896,4 +900,12 @@ components:
         original: { $ref: "#/components/schemas/Articulo" }
         sugerido: { $ref: "#/components/schemas/Articulo" }
         parecido: { type: number, minimum: 0, maximum: 1 }
+        cadena: { type: [string, "null"], description: "Dónde apareció la variante (vista 5)" }
         estado: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA, ASIGNADA] }
+        resueltaEn: { type: [string, "null"], format: date-time }
+        resueltaPor: { type: [string, "null"], description: "Correo del operador" }
+        asignado:
+          oneOf:
+            - { $ref: "#/components/schemas/Articulo" }
+            - { type: "null" }
+          description: "Sólo con ASIGNADA" 

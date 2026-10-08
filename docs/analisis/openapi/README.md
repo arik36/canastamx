@@ -3,7 +3,7 @@
 | Archivo | Servicio | Versión | Lo publica | Lo consumen |
 |---|---|---|---|---|
 | `dominio.yaml` | `services/domain-service` | 0.2.0 | C1, con B | C2 (app) y D (acceso web) |
-| `analitica.yaml` | `services/analytics-api` | 0.2.0 | A, con B | C2 (app), D (web) y C1 (alertas) |
+| `analitica.yaml` | `services/analytics-api` | 0.2.1 | A, con B | C2 (app), D (web) y C1 (alertas) |
 
 **La versión 0.2 es la revisada por el equipo el 7 de octubre de 2026.** Cada ruta dice
 de qué caso de uso sale. Ya no quedan marcas `x-pendiente`. En la analítica, cada ruta
@@ -76,6 +76,7 @@ Hoy el validador da **0 errores y 5 avisos esperados**:
 | El aviso de Inicio no sabía qué cruces eran nuevos | Revisión de A | `Alerta.ultimoCruce` |
 | RF-13 registra también los avisos | Requerimientos | `Incidente.severidad` (`AVISO` o `INCIDENTE`). Los avisos no se cierran (409) |
 | ADR 015 pide que el índice diga cómo se calculó | ADR 015 | `IndiceContraInpc.canasta`: artículos, base y fórmula |
+| El esquema de operación fija los motivos, el cierre y la cola | `docs/datos/esquema-de-operacion.md` | **0.2.1:** los 8 motivos de fila del catálogo; los avisos son `INFORMATIVO`; el cierre guarda quién y si se reprocesa el lote; la variante trae su cadena y su resolución |
 
 ## Nuevo, a confirmar por A y D
 

@@ -330,3 +330,6 @@ GROUP BY ALL;
   se queda con la más frecuente.
 - **Para la API (T037):** el artículo viaja por su llave natural, nunca por
   `articulo_key`.
+- **Lo que no está en este modelo:** las corridas, la cuarentena, los incidentes,
+  la cola de variantes y el diccionario de artículos. Viven en el esquema de
+  operación, aparte de la capa de consumo (P-08): [`esquema-de-operacion.md`](./esquema-de-operacion.md).
