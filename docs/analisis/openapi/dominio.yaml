@@ -1,16 +1,15 @@
 openapi: 3.1.0
 info:
   title: CanastaMX · Servicio de dominio
-  version: 0.1.0-borrador
+  version: 0.2.0
   summary: Cuentas, canastas y alertas de la persona consumidora.
   description: |
-    **Borrador** armado el 6 de octubre de 2026 con lo que ya está en `main`:
-    CU-08 a CU-11, `docs/analisis/modelo-er.md` y el código de
-    `services/domain-service`. Lo escribe C1 con B; lo aprueban en el PR C2 y D.
+    **Versión 0.2**, revisada por el equipo el 7 de octubre de 2026. Sale de CU-08 a
+    CU-11, `docs/analisis/modelo-er.md` y el código de `services/domain-service`. La
+    publica C1, con B.
 
-    Las convenciones que todavía no se votan van con la opción propuesta y
-    marcadas con `x-pendiente`. La lista completa está en
-    `docs/analisis/openapi/README.md`.
+    Las convenciones y las decisiones de arquitectura (P-01 a P-15) ya se votaron.
+    Están en `docs/analisis/openapi/README.md`.
 
     Es el único servicio que escribe en la base transaccional.
   contact:
@@ -251,8 +250,9 @@ paths:
         El servicio valida el umbral contra el **rango histórico** del artículo
         en la entidad: el mínimo y el máximo de sus medianas quincenales (T031).
         Lo obtiene de la interfaz analítica
-        (`GET /api/v1/articulos/rango-historico` en `analitica.yaml`).
-      x-pendiente: [P-09, P-14]
+        (`GET /api/v1/articulos/rango-historico` en `analitica.yaml`, P-09).
+        La entidad es la que la persona tiene elegida en la app (P-14). La alerta
+        nace **sin revisar**: `posicion`, `ultimaRevision` y `ultimoCruce` en null.
       requestBody:
         required: true
         content:
@@ -313,7 +313,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Token de `POST /api/v1/sesiones`, firmado con `JWT_SECRET` (`.env.example`).
+      description: Token de `POST /api/v1/sesiones`, firmado con `JWT_SECRET` (`.env.example`). Lleva el rol de la cuenta (P-07).
   parameters:
     canastaId:
       name: canastaId
@@ -340,12 +340,12 @@ components:
     limit:
       name: limit
       in: query
-      description: Cuántos elementos devolver. *Propuesta (P-05).*
+      description: Cuántos elementos devolver (P-05).
       schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
     offset:
       name: offset
       in: query
-      description: Cuántos saltar. *Propuesta (P-05).*
+      description: Cuántos saltar (P-05).
       schema: { type: integer, minimum: 0, default: 0 }
   responses:
     DatosInvalidos:
@@ -373,7 +373,7 @@ components:
         time: { type: string, format: date-time }
     Problema:
       type: object
-      description: Formato único de error, RFC 9457 (`application/problem+json`). *Propuesta (P-03).*
+      description: Formato único de error, RFC 9457 (`application/problem+json`) (P-03).
       required: [type, title, status]
       properties:
         type: { type: string, format: uri-reference, examples: ["/problemas/correo-invalido"] }
@@ -396,7 +396,7 @@ components:
         presentacion: { type: string, minLength: 1, examples: ["1 l"] }
     Dinero:
       type: object
-      description: Monto como texto con dos decimales, para no perder centavos. *Propuesta (P-02).*
+      description: Monto como texto con dos decimales, para no perder centavos (P-02). Para sumar o comparar se pasa a centavos enteros o a decimal exacto, **nunca a punto flotante**.
       required: [monto, moneda]
       properties:
         monto: { type: string, pattern: '^\d+\.\d{2}$', examples: ["24.50"] }
@@ -426,29 +426,34 @@ components:
           minLength: 8
           pattern: '^(?=.*[A-Z])(?=.*\d).{8,}$'
           description: Mínimo 8 caracteres, una mayúscula y un número (CU-08). Se guarda cifrada con BCrypt.
-        nombre:
-          type: string
-          description: El modelo ER lo pide obligatorio, pero CU-08 no lo pide y `Usuario.java` no lo tiene (P-13).
-          x-pendiente: [P-13]
     Credenciales:
       type: object
       required: [correo, contrasena]
       properties:
         correo: { type: string, format: email }
         contrasena: { type: string, writeOnly: true }
+    Rol:
+      type: string
+      description: Qué puede hacer la cuenta (P-07). La app sólo crea cuentas `CONSUMIDOR`; las de `ANALISTA` y `OPERADOR` se crean por configuración.
+      enum: [CONSUMIDOR, ANALISTA, OPERADOR]
     Cuenta:
       type: object
-      required: [id, correo, fechaDeRegistro]
+      description: La cuenta no tiene nombre; se identifica con su correo (P-13).
+      required: [id, correo, rol, fechaDeRegistro]
       properties:
         id: { type: string }
         correo: { type: string, format: email }
+        rol: { $ref: "#/components/schemas/Rol" }
         fechaDeRegistro: { type: string, format: date-time }
     Sesion:
       type: object
-      required: [token, expiraEn]
+      required: [token, expiraEn, rol]
       properties:
         token: { type: string }
         expiraEn: { type: string, format: date-time }
+        rol:
+          $ref: "#/components/schemas/Rol"
+          description: Con él, la web decide si abre el tablero o la consola.
     NombreDeCanasta:
       type: object
       required: [nombre]
@@ -462,7 +467,7 @@ components:
         cantidad: { type: integer, minimum: 1, description: Entero mayor que cero (`Cantidad`). }
     Canasta:
       type: object
-      description: El costo estimado no viene aquí, porque no se guarda (modelo ER). Lo calcula la interfaz analítica (P-10).
+      description: El costo estimado no viene aquí, porque no se guarda (modelo ER). Lo calcula la interfaz analítica con `POST /api/v1/canastas/costo` (P-10).
       required: [id, nombre, lineas]
       properties:
         id: { type: string }
@@ -475,10 +480,11 @@ components:
         articulo: { $ref: "#/components/schemas/Articulo" }
         entidad:
           $ref: "#/components/schemas/Entidad"
+          description: La que la persona tiene elegida en la app (P-14).
         umbral: { $ref: "#/components/schemas/Dinero" }
     Alerta:
       type: object
-      required: [id, articulo, entidad, umbral, estado]
+      required: [id, articulo, entidad, umbral, estado, posicion, ultimaRevision, ultimoCruce]
       properties:
         id: { type: string }
         articulo: { $ref: "#/components/schemas/Articulo" }
@@ -489,22 +495,35 @@ components:
           enum: [ACTIVA]
           description: Sigue ACTIVA después de notificar (modelo ER).
         posicion:
-          type: string
-          enum: [ARRIBA, DEBAJO]
-          description: Dónde quedó el precio típico en la última revisión. Avisa sólo al pasar de ARRIBA a DEBAJO, y no repite mientras siga DEBAJO (D-05, CU-11).
+          oneOf:
+            - { type: string, enum: [ARRIBA, DEBAJO] }
+            - { type: "null" }
+          description: |
+            Dónde quedó el precio típico en la última revisión. Avisa sólo al pasar de
+            ARRIBA a DEBAJO, y no repite mientras siga DEBAJO (D-05, CU-11). Es null
+            mientras no se revisa; la primera revisión cuenta como si hubiera estado
+            ARRIBA, así que si el precio ya está debajo, avisa.
         ultimaRevision:
           oneOf:
             - { $ref: "#/components/schemas/Quincena" }
             - { type: "null" }
           description: La quincena de la última revisión; null si todavía no se revisa.
+        ultimoCruce:
+          oneOf:
+            - { $ref: "#/components/schemas/Quincena" }
+            - { type: "null" }
+          description: |
+            La quincena en que el precio cruzó hacia abajo por última vez. La app la
+            compara con la última quincena que mostró para saber si el aviso de Inicio
+            es nuevo (`navegacion.md` §3).
     Notificacion:
       type: object
-      required: [id, estado, fechaHora]
+      required: [id, alertaId, estado, fechaHora]
       properties:
         id: { type: string }
-        estado: { type: string, enum: [ENVIADA, FALLIDA] }
+        alertaId: { type: string, description: "La alerta que la originó (CU-11 · registro de notificaciones)" }
+        estado: { type: string, enum: [PENDIENTE, ENVIADA, FALLIDA], description: Los tres estados de CU-11. }
         fechaHora: { type: string, format: date-time }
         motivo:
           type: string
-          description: Sólo cuando falló. CU-11 lo pide; el modelo ER todavía no tiene la columna.
-x-pendientes: [P-02, P-03, P-04, P-05, P-07, P-09, P-13, P-14]
+          description: Sólo cuando quedó FALLIDA (CU-11, 6a).
