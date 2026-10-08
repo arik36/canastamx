@@ -11,13 +11,13 @@
 
 ## Flujo principal
 
-1. La persona consumidora selecciona un artículo para el que desea configurar una alerta.
-2. El sistema obtiene el historial de precios del artículo.
+1. La persona consumidora selecciona un artículo para el que desea configurar una alerta, en la entidad que tiene elegida en la app.
+2. El sistema obtiene el historial de precios del artículo en esa entidad.
 3. El sistema determina el rango histórico de precios del artículo.
 4. La persona consumidora proporciona un umbral de precio.
 5. El sistema valida que el umbral se encuentre dentro del rango histórico del artículo.
-6. El sistema crea la alerta asociándola con el artículo, el usuario y el umbral indicado.
-7. El sistema registra la alerta como activa.
+6. El sistema crea la alerta asociándola con el artículo, la entidad, el usuario y el umbral indicado.
+7. El sistema registra la alerta como activa y **sin revisar**: todavía no tiene posición (arriba o debajo del umbral). En su primera revisión cuenta como si el precio hubiera estado arriba, así que si ya está por debajo, avisa (CU-11).
 8. El sistema confirma que la alerta quedó configurada correctamente.
 
 ## Flujos alternos
@@ -40,7 +40,7 @@
 
 ## Postcondiciones
 
-- **De éxito:** La alerta queda registrada y activa, asociada al artículo, al usuario y al umbral configurado. La alerta se considera disparada cuando el precio observado sea menor o igual al umbral.
+- **De éxito:** La alerta queda registrada, activa y sin revisar, asociada al artículo, la entidad, el usuario y el umbral configurado. La alerta avisa cuando el precio observado cruza el umbral hacia abajo (CU-11, D-05).
 - **De fallo:** No se registra una alerta activa con un umbral inválido o cuando no existen datos históricos suficientes. Si ocurre un error al registrar la alerta, la configuración no queda parcialmente guardada.
 
 ## Requisito no funcional asociado
@@ -50,6 +50,7 @@
 ## Notas
 
 - El umbral de precio debe encontrarse dentro del rango histórico del artículo.
-- La alerta se dispara cuando el precio observado es menor o igual al umbral configurado.
+- La alerta se dispara cuando el precio observado es menor o igual al umbral configurado (ADR 010 · 5c), y sólo al cruzarlo (D-05).
+- La alerta vigila el precio de **una** entidad: la que estaba elegida al crearla (P-14). Para vigilar el mismo artículo en otra entidad se crea otra alerta.
 - La alerta pertenece a un único usuario y referencia un artículo específico.
 - La identidad del artículo se determina mediante producto + presentación.

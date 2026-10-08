@@ -63,7 +63,8 @@
 
 
 - El umbral de precio debe definirse dentro del rango histórico del artículo (ADR 010).
-- La alerta se dispara cuando el precio observado del artículo es menor o igual (<=) al umbral establecido (ADR 010).
+- La alerta se dispara cuando el precio observado del artículo es menor o igual (<=) al umbral establecido (ADR 010), y sólo al cruzarlo: no repite mientras el precio siga abajo (D-05).
+- La alerta vigila el precio de una entidad, la elegida al crearla (P-14).
 
 ---
 
@@ -117,7 +118,6 @@
 - No se permiten artículos duplicados dentro de una canasta; al agregar un artículo existente se suma su cantidad.
 - Una canasta pertenece a exactamente un usuario y no puede cambiar de dueño.
 - El costo estimado de la canasta se calcula y no se almacena.
-- La condición exacta para activar una alerta está pendiente de acordar entre `<` y `<=`.
 
 ## Diagrama de clases
 
@@ -129,13 +129,12 @@ classDiagram
         -CorreoElectronico correo
         -Instant fechaDeRegistro
         -String contrasenaCifrada
-        -String nombre
-        +Usuario(String id, CorreoElectronico correo, String contrasenaCifrada, String nombre, Instant fechaDeRegistro)
+        -Rol rol
+        +Usuario(String id, CorreoElectronico correo, String contrasenaCifrada, Rol rol, Instant fechaDeRegistro)
         +cambiarContrasena(String yaCifrada) void
-        +renombrar(String nuevo) void
         +id() String
         +correo() CorreoElectronico
-        +nombre() String
+        +rol() Rol
         +fechaDeRegistro() Instant
         +contrasenaCifrada() String
     }
@@ -179,7 +178,36 @@ classDiagram
         +mas(Cantidad otra) Cantidad
     }
 
+    class Rol {
+        <<enumeration>>
+        CONSUMIDOR
+        ANALISTA
+        OPERADOR
+    }
+
+    class Alerta {
+        -String id
+        -String usuarioId
+        -ReferenciaDeArticulo articulo
+        -String entidad
+        -UmbralDePrecio umbral
+        -Posicion posicion
+        -String ultimaRevision
+        -String ultimoCruce
+        +revisar(precioTipico, quincena) boolean
+    }
+
+    class Posicion {
+        <<enumeration>>
+        ARRIBA
+        DEBAJO
+    }
+
     Usuario --> CorreoElectronico
+    Usuario --> Rol
+    Alerta --> ReferenciaDeArticulo
+    Alerta --> Posicion
+    Alerta --> Usuario : usuarioId
     Canasta "1" --> "*" LineaDeCanasta
     LineaDeCanasta --> ReferenciaDeArticulo
     LineaDeCanasta --> Cantidad

@@ -17,9 +17,9 @@
 4. El sistema registra el nombre de la canasta.
 5. La persona consumidora selecciona un artículo y proporciona una cantidad para agregarlo a la canasta.
 6. El sistema agrega el artículo con la cantidad indicada.
-7. La persona consumidora solicita editar la canasta agregando o quitando artículos.
+7. La persona consumidora solicita editar la canasta agregando o quitando artículos, o cambiando la cantidad de uno.
 8. El sistema aplica las modificaciones solicitadas.
-9. El sistema calcula el costo estimado de la canasta sin almacenarlo.
+9. La interfaz analítica calcula el costo estimado de la canasta por cadena comercial, a partir de sus líneas, sin almacenarlo (P-10).
 10. El sistema confirma que la canasta quedó actualizada.
 
 ## Flujos alternos
