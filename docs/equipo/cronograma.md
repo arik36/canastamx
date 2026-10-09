@@ -62,6 +62,28 @@ El **16 de noviembre es festivo** y cae dos días antes de la entrega final. Esa
 
 ---
 
+## Cuidado · este documento y el tablero numeran las semanas distinto
+
+Este cronograma cuenta la entrega del 18 de septiembre como una semana propia
+(**Semana 3 · 17 y 18 de septiembre**). El tablero de GitHub y las fichas no la
+cuentan, porque la documentación de tareas arrancó una semana después. **Desde el
+21 de septiembre, la semana N de este documento es la semana N−1 del tablero.** Ya
+estaba registrado en `docs/equipo/semanas/semana-04.json`, en su campo `fuente`.
+
+| Fechas | Aquí | Tablero y fichas |
+|---|---|---|
+| 21 al 27 de septiembre | Semana 4 | Semana 3 |
+| 28 de septiembre al 4 de octubre | Semana 5 | Semana 4 |
+| 5 al 11 de octubre · **entrega del 9** | Semana 6 | Semana 5 |
+| 12 al 18 de octubre · arranca la construcción | Semana 7 | Semana 6 |
+| 19 al 25 de octubre | Semana 8 | Semana 7 |
+
+**La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
+fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos
+lecturas; «la semana 7» sí.
+
+---
+
 ## Semana 1 — lunes 7 a viernes 11 de septiembre
 
 **Objetivo único:** decidir si la fuente de PROFECO sirve. Si el archivo no tiene lo que suponemos, hay que saberlo ahora y no en octubre, cuando ya no haya margen para cambiar de rumbo.
