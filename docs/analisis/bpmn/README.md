@@ -4,7 +4,7 @@
 |---|---|---|
 | `ingesta.bpmn` | Un lote, desde que PROFECO publica hasta la capa de consumo | CU-01, CU-02, CU-03, CU-06 y CU-07 |
 | `incidentes.bpmn` | La atención de un incidente de calidad, desde que se detecta hasta que se cierra | CU-04 y CU-05 |
-| ``alertas.bpmn` | Una alerta de precio, desde que se configura hasta que avisa o reintenta | CU-10 y CU-11 |
+| `alertas.bpmn` | Una alerta de precio, desde que se configura hasta que avisa o reintenta | CU-10 y CU-11 |
 
 **El `.bpmn` es la fuente; la imagen se regenera.** Para verlo o cambiarlo, arrastra
 el archivo a [demo.bpmn.io](https://demo.bpmn.io). Para la imagen, usa el botón de

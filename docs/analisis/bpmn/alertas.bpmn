@@ -52,13 +52,13 @@
     <sequenceFlow id="Flow_0f7qf78" sourceRef="Event_0zhq2zw" targetRef="Activity_1lm2gqb" />
     <sequenceFlow id="Flow_0wh8y9m" sourceRef="Activity_1lm2gqb" targetRef="Activity_1myvnbl" />
     <sequenceFlow id="Flow_0geepsh" sourceRef="Activity_1myvnbl" targetRef="Gateway_0islvlf" />
-    <sequenceFlow id="Flow_0luhbzp" name="Si" sourceRef="Gateway_0islvlf" targetRef="Activity_0seapri" />
+    <sequenceFlow id="Flow_0luhbzp" name="Sí" sourceRef="Gateway_0islvlf" targetRef="Activity_0seapri" />
     <sequenceFlow id="Flow_073wodo" name="No" sourceRef="Gateway_0islvlf" targetRef="Event_1ad7pl2" />
     <sequenceFlow id="Flow_0v1n7s0" sourceRef="Event_1tyzq00" targetRef="Activity_0v7o73z" />
     <sequenceFlow id="Flow_0pufzco" sourceRef="Activity_0v7o73z" targetRef="Activity_0d6ma9u" />
     <sequenceFlow id="Flow_1dbb7b8" name="No" sourceRef="Gateway_1tdifpb" targetRef="Activity_0oqlv6r" />
     <sequenceFlow id="Flow_0cgnjkj" sourceRef="Activity_1b94k4w" targetRef="Gateway_1tdifpb" />
-    <sequenceFlow id="Flow_1epuhi1" name="Si" sourceRef="Gateway_1tdifpb" targetRef="Activity_16u2m03" />
+    <sequenceFlow id="Flow_1epuhi1" name="Sí" sourceRef="Gateway_1tdifpb" targetRef="Activity_16u2m03" />
     <sequenceFlow id="Flow_0gaghg4" sourceRef="Activity_0d6ma9u" targetRef="Event_0llvi0r" />
     <startEvent id="Event_0zhq2zw" name="Llega la revisión quincenal">
       <timerEventDefinition />
@@ -68,12 +68,12 @@
       <incoming>Flow_0f7qf78</incoming>
       <outgoing>Flow_0wh8y9m</outgoing>
     </task>
-    <task id="Activity_0seapri" name="Comparar &#60; umbral">
+    <task id="Activity_0seapri" name="Comparar &#60;= umbral">
       <incoming>Flow_0luhbzp</incoming>
       <outgoing>Flow_0ptkskf</outgoing>
     </task>
     <sequenceFlow id="Flow_0ptkskf" sourceRef="Activity_0seapri" targetRef="Gateway_19x2owh" />
-    <task id="Activity_1myvnbl" name="Entregar  precio vigente">
+    <task id="Activity_1myvnbl" name="Entregar precio vigente">
       <incoming>Flow_0wh8y9m</incoming>
       <outgoing>Flow_0geepsh</outgoing>
     </task>
@@ -95,7 +95,7 @@
       <outgoing>Flow_0d0vft6</outgoing>
       <outgoing>Flow_02hanzi</outgoing>
     </exclusiveGateway>
-    <sequenceFlow id="Flow_173xa12" name="Si" sourceRef="Gateway_19x2owh" targetRef="Gateway_1syixb5" />
+    <sequenceFlow id="Flow_173xa12" name="Sí" sourceRef="Gateway_19x2owh" targetRef="Gateway_1syixb5" />
     <task id="Activity_02emtlu" name="Registrar que sigue debajo">
       <incoming>Flow_0d0vft6</incoming>
       <outgoing>Flow_06rn7lv</outgoing>
@@ -105,7 +105,7 @@
       <incoming>Flow_06rn7lv</incoming>
     </endEvent>
     <sequenceFlow id="Flow_06rn7lv" sourceRef="Activity_02emtlu" targetRef="Event_19r2pb9" />
-    <sequenceFlow id="Flow_02hanzi" name="Si" sourceRef="Gateway_1syixb5" targetRef="Activity_0k8mzlc" />
+    <sequenceFlow id="Flow_02hanzi" name="Sí" sourceRef="Gateway_1syixb5" targetRef="Activity_0k8mzlc" />
     <sequenceFlow id="Flow_1272ujg" sourceRef="Activity_0k8mzlc" targetRef="Activity_1b94k4w" />
     <task id="Activity_0k8mzlc" name="Enviar correo">
       <incoming>Flow_02hanzi</incoming>
@@ -138,7 +138,7 @@
     <endEvent id="Event_0llvi0r" name="Alerta activa, sin revisar">
       <incoming>Flow_0gaghg4</incoming>
     </endEvent>
-    <endEvent id="Event_1ad7pl2" name="Sin precio: espea la siguiente revisión">
+    <endEvent id="Event_1ad7pl2" name="Sin precio: espera la siguiente revisión">
       <incoming>Flow_073wodo</incoming>
     </endEvent>
     <endEvent id="Event_0h9e8ai" name="Sin aviso">
@@ -279,7 +279,7 @@
       <bpmndi:BPMNShape id="Event_1ad7pl2_di" bpmnElement="Event_1ad7pl2">
         <omgdc:Bounds x="479" y="342" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="454" y="292" width="85" height="40" />
+          <omgdc:Bounds x="452" y="292" width="89" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0h9e8ai_di" bpmnElement="Event_0h9e8ai">
@@ -309,7 +309,7 @@
         <omgdi:waypoint x="522" y="430" />
         <omgdi:waypoint x="560" y="430" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="532" y="412" width="10" height="14" />
+          <omgdc:Bounds x="532" y="412" width="11" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_073wodo_di" bpmnElement="Flow_073wodo">
@@ -343,7 +343,7 @@
         <omgdi:waypoint x="1115" y="440" />
         <omgdi:waypoint x="1190" y="440" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="1140" y="446" width="10" height="14" />
+          <omgdc:Bounds x="1140" y="446" width="11" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0gaghg4_di" bpmnElement="Flow_0gaghg4">
@@ -369,7 +369,7 @@
         <omgdi:waypoint x="745" y="430" />
         <omgdi:waypoint x="815" y="430" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="775" y="412" width="10" height="14" />
+          <omgdc:Bounds x="775" y="412" width="11" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0d0vft6_di" bpmnElement="Flow_0d0vft6">
@@ -387,7 +387,7 @@
         <omgdi:waypoint x="865" y="430" />
         <omgdi:waypoint x="900" y="430" />
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="878" y="412" width="10" height="14" />
+          <omgdc:Bounds x="879" y="412" width="11" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1272ujg_di" bpmnElement="Flow_1272ujg">
