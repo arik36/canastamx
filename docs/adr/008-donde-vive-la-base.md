@@ -1,4 +1,4 @@
-# ADR 006 · Dónde vive la base desplegada
+# ADR 008 · Dónde vive la base desplegada
 
 - **Fecha:** 17 de septiembre de 2026
 - **Estado:** propuesta
