@@ -311,7 +311,7 @@ Todo en minúsculas, sin acentos, sin espacios, palabras separadas por guiones.
 |---|---|
 | Ariadne Lizett Macías Campos | `alm` |
 | Ari Adair Soto Garnica | `aas` |
-| Liseth Yareth Lara López | `lyl` |
+| Lisseth Yaret Lara López | `lyl` |
 | Oscar Renato Fonseca Ríos | `orf` |
 | Karen Alejandra Herrera Villalpando | `kah` |
 

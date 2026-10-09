@@ -94,7 +94,7 @@ jobs:
       - name: Análisis estático
         if: steps.existe.outputs.hay == 'si'
         run: |
-          pip install ruff
+          pip install ruff==0.17.0
           ruff check services/ --output-format=github
 
       - name: Pruebas

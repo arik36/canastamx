@@ -38,7 +38,7 @@ El manual definía cuatro. El integrante C son dos personas, lo que rompe la reg
 |---|---|---|---|---|
 | **A** | Ariadne Lizett Macías Campos | `alm` | Datos y plataforma | B |
 | **B** | Ari Adair Soto Garnica | `aas` | Infraestructura, entrega continua y calidad | A |
-| **C1** | Liseth Yareth Lara López | `lyl` | Servicio de dominio (Java, Spring Boot) | C2 |
+| **C1** | Lisseth Yaret Lara López | `lyl` | Servicio de dominio (Java, Spring Boot) | C2 |
 | **C2** | Oscar Renato Fonseca Ríos | `orf` | Cliente móvil (React Native, Expo) | C1 y D |
 | **D** | Karen Alejandra Herrera Villalpando | `kah` | Cliente web y maquetación | C2 |
 
@@ -59,6 +59,28 @@ C1 y C2 comparten el contrato OpenAPI del servicio de dominio: C1 lo publica, C2
 | **2, 7 y 9 de diciembre** | mié, lun, mié | Presentaciones finales. |
 
 El **16 de noviembre es festivo** y cae dos días antes de la entrega final. Esa semana se planea con capacidad reducida: lo que se pueda cerrar el viernes 13, se cierra el viernes 13.
+
+---
+
+## Cuidado · este documento y el tablero numeran las semanas distinto
+
+Este cronograma cuenta la entrega del 18 de septiembre como una semana propia
+(**Semana 3 · 17 y 18 de septiembre**). El tablero de GitHub y las fichas no la
+cuentan, porque la documentación de tareas arrancó una semana después. **Desde el
+21 de septiembre, la semana N de este documento es la semana N−1 del tablero.** Ya
+estaba registrado en `docs/equipo/semanas/semana-04.json`, en su campo `fuente`.
+
+| Fechas | Aquí | Tablero y fichas |
+|---|---|---|
+| 21 al 27 de septiembre | Semana 4 | Semana 3 |
+| 28 de septiembre al 4 de octubre | Semana 5 | Semana 4 |
+| 5 al 11 de octubre · **entrega del 9** | Semana 6 | Semana 5 |
+| 12 al 18 de octubre · arranca la construcción | Semana 7 | Semana 6 |
+| 19 al 25 de octubre | Semana 8 | Semana 7 |
+
+**La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
+fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos
+lecturas; «la semana 7» sí.
 
 ---
 

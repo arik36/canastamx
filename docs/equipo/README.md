@@ -98,7 +98,7 @@ Nadie parte de un archivo vacío. Estos ya traen la estructura puesta; se llenan
 |---|---|---|---|---|---|
 | **A** | Ariadne Lizett Macías Campos | `alm` | Datos y plataforma | `datos` | B |
 | **B** | Ari Adair Soto Garnica | `aas` | Infraestructura, CI y calidad | `infra` | A |
-| **C1** | Liseth Yareth Lara López | `lyl` | Servicio de dominio (Java) | `dominio` | C2 |
+| **C1** | Lisseth Yaret Lara López | `lyl` | Servicio de dominio (Java) | `dominio` | C2 |
 | **C2** | Oscar Renato Fonseca Ríos | `orf` | Cliente móvil (Expo) | `movil` | C1 y D |
 | **D** | Karen Alejandra Herrera Villalpando | `kah` | Cliente web y maquetación | `web` | C2 |
 

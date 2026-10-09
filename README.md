@@ -91,7 +91,7 @@ El detalle, con comandos para terminal y para GitHub Desktop, está en [`docs/eq
 |---|---|---|---|
 | A | Macías Campos Ariadne Lizett | `alm` | Datos y plataforma |
 | B | Soto Garnica Ari Adair | `aas` | Infraestructura, entrega continua y calidad |
-| C1 | Lara López Liseth Yareth | `lyl` | Servicio de dominio |
+| C1 | Lara López Lisseth Yaret | `lyl` | Servicio de dominio |
 | C2 | Fonseca Ríos Oscar Renato | `orf` | Cliente móvil |
 | D | Herrera Villalpando Karen Alejandra | `kah` | Cliente web y maquetación |
 

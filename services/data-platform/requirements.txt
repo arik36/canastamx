@@ -18,10 +18,18 @@ PyYAML>=6.0        # lee contracts/qqp-v1.yaml · las 15 columnas y los 3 recort
 
 # Herramientas de desarrollo. El CI instala ruff por su cuenta; se listan aquí
 # para que quien clone tenga lo mismo.
-ruff>=0.6
+ruff==0.17.0       # ANCLADA, y también en ci.yml. Ver la nota de abajo.
 pytest>=8.0        # todavía no hay pruebas; llegan en la semana 6 con la
                    # compuerta de calidad contra el contrato
 
 # NOTA · las versiones son mínimos, no anclas. Cuando el frente de datos cierre
 # la semana 7 conviene fijarlas con `pip freeze` para que el experimento de la
 # semana 13 corra sobre el mismo conjunto que se documentó.
+#
+# EXCEPCIÓN · ruff, desde el 9 de octubre de 2026. El CI corría
+# `pip install ruff` sin ancla, y el día que salió ruff 0.17.0 la regla UP017
+# empezó a marcar `dt.timezone.utc` en tres líneas que llevaban ocho días en
+# `main` sin tocarse: la compuerta se puso roja sin que cambiara el repositorio.
+# Una compuerta de calidad que un tercero puede poner en rojo no mide el
+# proyecto, mide el calendario de ese tercero. Se ancla aquí y en ci.yml, y
+# subirla de versión es un cambio con su propia solicitud.
