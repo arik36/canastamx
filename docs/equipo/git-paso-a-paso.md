@@ -186,7 +186,7 @@ El nombre lleva formato. `tipo/iniciales-descripcion-corta`, todo en minúsculas
 |---|---|
 | Ariadne Lizett Macías Campos (A) | `alm` |
 | Ari Adair Soto Garnica (B) | `aas` |
-| Liseth Yareth Lara López (C1) | `lyl` |
+| Lisseth Yaret Lara López (C1) | `lyl` |
 | Oscar Renato Fonseca Ríos (C2) | `orf` |
 | Karen Alejandra Herrera Villalpando (D) | `kah` |
 

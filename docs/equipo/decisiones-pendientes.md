@@ -12,8 +12,56 @@
 
 ## Para decidir
 
-Nada por votar al 7 de octubre de 2026. Lo que sigue abierto se mide o se escribe:
-ver «Por medir» y «Por escribir».
+Las tres se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las tres
+tocan contratos que se construyen esa semana. Por qué están aquí y no resueltas en
+silencio: `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
+
+### D-09 · ¿Cómo se entregan los avisos de precio?
+
+Viene de CU-11 y RF-21. Ya aparece como «por decidir» en el diseño arquitectónico
+(`docs/arquitectura/README.md`, contexto, contenedores y despliegue), y hasta hoy no
+estaba en la boleta.
+
+| | Opción | Consecuencia |
+|---|---|---|
+| **A** | Un contenedor que atrapa los correos en desarrollo y un SMTP de proveedor en producción | Dos configuraciones y un secreto más en el `.env`. El experimento no depende de un proveedor externo: los avisos se pueden contar sin enviar nada a nadie |
+| **B** | Sólo el aviso dentro de la app (Inicio y «Precios que bajaron») | Hay que cambiar RF-21, CU-11 y las tres vistas de arquitectura, que hoy dicen «por correo». La alerta deja de servir con la app cerrada |
+| **C** | SMTP de proveedor también en desarrollo | Correos de prueba a direcciones reales, y una cuota que se agota en el experimento |
+
+**Quién:** C1 y B. **Dónde quedará:** ADR nuevo · `arquitectura/` · CU-11.
+
+### D-10 · ¿Cómo sabe el cliente el correo de la cuenta después de iniciar sesión?
+
+La abrió P-13. La vista 8 debe mostrar el correo (`inventario-vistas.md`) y la barra
+de la web, el correo y el rol (`diseno.md` §7 · 13). Hoy `dominio.yaml` sólo tiene
+`POST /cuentas` y `POST /sesiones`, y `Sesion` trae token, expiración y rol: al
+reabrir la app con la sesión guardada, el cliente **no tiene el correo**.
+
+| | Opción | Consecuencia |
+|---|---|---|
+| **A** | `GET /api/v1/cuentas/yo`, que devuelve `Cuenta` | Una ruta nueva en `dominio.yaml` 0.2.1 y C1 la implementa. El teléfono no guarda el correo y funciona con la sesión restaurada. Sirve igual a la app y a la web |
+| **B** | `Sesion` también trae el `correo` | Ninguna ruta nueva, pero la app tiene que guardar el correo en el teléfono para mostrarlo al reabrir: una copia del único dato personal fuera del servidor |
+| **C** | El token lleva el correo como atributo y el cliente lo lee del JWT | El correo viaja en cada petición y queda en cualquier registro que guarde el encabezado. Hoy el contrato dice que el token «lleva el rol» |
+
+**Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
+
+### D-11 · ¿Con qué se registra quién cerró un incidente o resolvió una variante?
+
+La abrió P-08 junto con P-13. Hoy se guarda el **correo del operador** en el esquema
+de operación (`analitica.yaml` §`Incidente` y §`Variante`, `cerradoPor` y
+`resueltaPor`; `esquema-de-operacion.md` §3): una copia del único dato personal del
+sistema, en una base distinta a la del dominio.
+
+| | Opción | Consecuencia |
+|---|---|---|
+| **A** | El correo, como hoy, sin decir nada más | Queda un dato personal en una capa de la que el proyecto dice que no tiene datos personales, y nadie lo declaró |
+| **B** | El `id` de la cuenta | La consola no puede mostrar quién cerró sin preguntarle al dominio, y P-09 sólo permite que el dominio consulte a la analítica, no al revés |
+| **C** | El correo, y se declara: un RNF que diga que el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona | La consola sigue sirviendo y el documento lo dice en voz alta, que es lo que el asesor va a preguntar |
+
+**Quién:** A, con B. **Dónde quedará:** `requerimientos.md` (RNF) ·
+`esquema-de-operacion.md`.
+
+Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
 ---
 
