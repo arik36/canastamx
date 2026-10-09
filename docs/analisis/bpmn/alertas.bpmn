@@ -111,7 +111,7 @@
       <incoming>Flow_02hanzi</incoming>
       <outgoing>Flow_1272ujg</outgoing>
     </task>
-    <exclusiveGateway id="Gateway_1tdifpb" name="¿Se envio?">
+    <exclusiveGateway id="Gateway_1tdifpb" name="¿Se envió?">
       <incoming>Flow_0cgnjkj</incoming>
       <outgoing>Flow_1epuhi1</outgoing>
       <outgoing>Flow_1dbb7b8</outgoing>
@@ -131,7 +131,7 @@
     <endEvent id="Event_133ua9u" name="Se reintenta en la siguiente revisión">
       <incoming>Flow_1kz3ypb</incoming>
     </endEvent>
-    <task id="Activity_0d6ma9u" name="Registar alerta">
+    <task id="Activity_0d6ma9u" name="Registrar alerta">
       <incoming>Flow_0pufzco</incoming>
       <outgoing>Flow_0gaghg4</outgoing>
     </task>
