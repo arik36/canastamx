@@ -90,7 +90,7 @@ def main():
     w = L.append
     w("# Ingesta a la capa cruda · evidencia de la corrida")
     w("")
-    w(f"**Generado:** {dt.datetime.now(dt.timezone.utc).date().isoformat()} por "
+    w(f"**Generado:** {dt.datetime.now(dt.UTC).date().isoformat()} por "
       "`services/data-platform/ingestion/consolidar-corridas.py` · **T020** · issue #90")
     w("")
     w("> Este documento se **genera**, no se escribe a mano. Sale de los registros")

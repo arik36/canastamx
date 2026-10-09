@@ -651,7 +651,7 @@ def main():
     # tiempo que MinIO le pone a los objetos. Con la hora local de México
     # (UTC-6) una corrida de las 20:15 quedaba fechada un día antes que sus
     # propios objetos, y eso confunde al revisar la evidencia.
-    hoy = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    hoy = dt.datetime.now(dt.UTC).date().isoformat()
     registro = CORRIDAS / f"{hoy}-{lote}.json"
 
     # Las cinco cifras van agrupadas y con ese nombre a propósito: son el
@@ -689,7 +689,7 @@ def main():
                                    "bytes": byt_tot},
         "particiones": [{"entidad": e, "quincena": q} for e, q in particiones],
         "destino": destino,
-        "corrida": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "corrida": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
     }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"registro        : {registro}")
