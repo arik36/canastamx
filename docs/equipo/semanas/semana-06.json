@@ -1,0 +1,80 @@
+{
+  "semana": 6,
+  "del": "2026-10-12",
+  "al": "2026-10-18",
+  "hito": "E3 — Construcción",
+  "fuente": "docs/equipo/cronograma.md, que llama «Semana 7» a estas mismas fechas, y docs/equipo/fichas/planeacion-semana-06.md. Los identificadores siguen la serie del tablero: T041 y T042 fueron la semana de la entrega, y T048 ya está comprometido a la capa intermedia del 25 de octubre (CU-03) y T043 a la capa cruda con datos (ADR 009). El orden del arreglo es el de creación, no el de los identificadores: T045 va antes que T044, T046 y T047 para que las tres la citen por su número de issue y no como «su número se conoce al crearla».",
+  "tareas": [
+    {
+      "id": "T043",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Datos] Ingesta de punta a punta y Pandera contra el contrato",
+      "que": "Envolver la ingesta actual en activos de Dagster particionados por quincena (ADR 016): un activo de capa cruda, uno de capa cruda validada y un sensor que dispare al aparecer un archivo nuevo en el bucket. Generar el esquema de Pandera leyendo `contracts/qqp-v1.yaml`, sin escribir ninguna regla a mano (ADR 018). Escribir a cuarentena **una fila por fila rechazada, con su motivo**. Dejar en DuckDB lo que necesita ver el lote completo: colisión de precio alta, frescura y el umbral de rechazo del 5% por lote (D-07).",
+      "criterio": "`dagster dev` muestra tres activos, uno particionado por quincena. Materializar la partición `2026-07-Q2` escribe la capa cruda y deja su linaje, y hacerlo dos veces da la misma huella (RF-25). Un lote con filas defectuosas no las promueve: cada una queda en cuarentena con su motivo. Cambiar `largo_maximo` de una columna en el contrato cambia la compuerta **sin tocar código**. `ruff check services/` pasa con ruff 0.17.0.",
+      "donde": "services/data-platform/",
+      "depende": [],
+      "nota_dependencia": "El ADR 016 le pone fecha de salida a Dagster: si el 25 de octubre no corren tres activos con un sensor, se cambia a guion y `cron`. Esa fecha es parte de la tarea, no un comentario."
+    },
+    {
+      "id": "T045",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Dominio] La cuenta con rol y sin nombre, y el inicio de sesión real",
+      "que": "Crear `Rol` (`CONSUMIDOR`, `ANALISTA`, `OPERADOR`). Quitar de `Usuario` el campo `nombre`, el método `renombrar()` y el acceso `nombre()`, y agregar `Rol` al constructor (P-13 y P-07). Quitar el argumento del nombre en `UsuarioTest` y **agregar una prueba que falle si el nombre regresa**. Implementar `POST /api/v1/cuentas` y `POST /api/v1/sesiones` contra `dominio.yaml`: la cuenta nace `CONSUMIDOR` y la sesión devuelve token, expiración y rol. Si D-10 sale en la opción A, agregar `GET /api/v1/cuentas/yo` y subir `dominio.yaml` a 0.2.1. Si queda semana, las rutas de canasta.",
+      "criterio": "`Usuario` no compila si alguien le pasa un nombre. `mvn -B test` pasa, e incluye la prueba nueva. Registrarse y entrar devuelve un token que lleva el rol. La respuesta de la cuenta trae `id`, `correo`, `rol` y `fechaDeRegistro`, y nada más. Desde la app sólo se crean cuentas `CONSUMIDOR`.",
+      "donde": "services/domain-service/",
+      "depende": [],
+      "nota_dependencia": "**D-10 se vota el lunes 12** y define si entra `GET /api/v1/cuentas/yo`: publicar `dominio.yaml` antes de votarla y agregar la ruta después es romper el contrato con el que C2 y D ya construyeron. Avísale a B en cuanto esto entre a `main`: él activa las pruebas del dominio en la integración continua después, no antes."
+    },
+    {
+      "id": "T044",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Infra] Las tres suites en la integración continua y los datos semilla",
+      "que": "Cerrar primero el **ADR 008**: declarar de qué población es su cifra de peso —corpus 21,357,873, recorte territorial 4,384,962 o alcance del contrato 2,658,906— y dejarlo en «aceptada». Agregar `redocly lint` sobre `docs/analisis/openapi/*.yaml` a la integración continua, con los 5 avisos esperados sin romper el trabajo. Escribir el guion de carga de datos semilla en `infra/scripts/`, sin datos crudos de PROFECO. **Y, sólo después de que T045 entre a `main`, descomentar el paso «Pruebas» del trabajo Dominio** (`.github/workflows/ci.yml`, líneas 64 a 67).",
+      "criterio": "Los tres trabajos de la integración continua corren, y el registro del trabajo Dominio **muestra el conteo de pruebas**: «0 tests» en verde es un falso positivo, porque la guarda se las saltó. `redocly lint` corre en cada solicitud de cambios. El guion de semilla se corre dos veces seguidas sin duplicar filas ni reventar. El ADR 008 dice de qué población es su cifra y ya no aparece en el aviso del auditor.",
+      "donde": "`.github/`, `infra/scripts/` y `docs/adr/008-donde-vive-la-base.md`",
+      "depende": [
+        "T045"
+      ],
+      "nota_dependencia": "Si el paso de pruebas se activa antes de que T045 entre a `main`, la integración continua se pone **verde certificando el modelo que el equipo cambió el 7 de octubre** (P-13): `Usuario.java` todavía tiene el campo `nombre` y `UsuarioTest.java` se lo pasa en su línea 32. Una compuerta que aprueba lo incorrecto es peor que no tener compuerta. Primero el cambio de C1, después el paso."
+    },
+    {
+      "id": "T046",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Móvil] Las cuatro pestañas y la pantalla de acceso conectada",
+      "que": "Reescribir el **ADR 007** con las cuatro pestañas de D-01 y ratificar el 006 y el 011, antes del código. En `clients/mobile`: `_layout.tsx` con cuatro `Tabs.Screen` (`index`, `descubrir`, `canasta`, `cuenta`), `index` con título «Inicio», `descubrir.tsx` y `cuenta.tsx` nuevas, y `alertas.tsx` **fuera** del grupo `(tabs)`, movida a `app/alertas.tsx`. Maquetar la pantalla de acceso con el sistema de diseño, con «No somos PROFECO» (RF-23), y conectarla a `POST /api/v1/sesiones`: guardar el token y decidir con el rol. La pestaña Cuenta muestra **el correo**, nunca un nombre (P-13).",
+      "criterio": "La barra de abajo tiene cuatro pestañas y «Alertas» ya no es una de ellas. La ruta `/alertas` sigue funcionando desde la campana y desde Cuenta. Con credenciales buenas entra; con malas avisa y no se queda cargando. La pestaña Cuenta muestra un correo. El ADR 007 ya no dice tres pestañas y está en «aceptada».",
+      "donde": "`clients/mobile/` y `docs/adr/`",
+      "depende": [
+        "T045"
+      ],
+      "nota_dependencia": "El token de C1 llega a mitad de semana. **Las pestañas y la maqueta del acceso no dependen de él: hazlas primero.** Cierra también la #120, la primera llamada real al dominio, que sigue abierta desde la semana 4 y no tiene rama subida."
+    },
+    {
+      "id": "T047",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Web] Estructura de la aplicación web, con acceso y navegación",
+      "que": "Escribir el **ADR del cliente web** (Next.js o el Vite que exporta Figma) antes del código. Crear la estructura del proyecto y las rutas de las cinco vistas web: acceso, tablero, detalle, consola y cola. Conectar el acceso a `POST /api/v1/sesiones` y mandar según el rol: tablero al analista, consola al operador (P-07). Barra lateral con **el correo y el rol** de la sesión, nunca un nombre (P-13). Aviso de ancho mínimo en las consolas por debajo de 1025 px (D-08). Además, rehacer las capturas del prototipo con los puntos 12, 13 y 14 de `diseno.md` §7 ya corregidos.",
+      "criterio": "Las cinco rutas existen y se navega entre ellas. Entrar como analista abre el tablero y como operador la consola; escribir a mano la ruta de la consola siendo analista no la abre. La barra muestra correo y rol. A 1024 px la consola avisa del ancho mínimo y a 1025 no. Toda cifra en pantalla lleva su población (RNF-16). Los puntos 12, 13 y 14 de `diseno.md` §7 quedan marcados como resueltos.",
+      "donde": "`clients/web/`, `docs/adr/` y `docs/entregas/diseno.md`",
+      "depende": [
+        "T045"
+      ],
+      "nota_dependencia": "El token de C1 llega a mitad de semana. La estructura, las rutas y las capturas corregidas no dependen de él: van primero."
+    }
+  ]
+}
