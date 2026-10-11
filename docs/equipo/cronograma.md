@@ -237,7 +237,7 @@ Recibe las dos tareas que salieron de la semana 2. A pasa de una tarea a tres y 
 
 | Quién | Actividad | Queda en |
 |---|---|---|
-| A | Transformaciones de capa cruda a intermedia en dbt: tipado, deduplicación y normalización. Primeras pruebas de dbt. | `services/data-platform/dbt/` |
+| A | Transformaciones de capa cruda a intermedia con los SQL de T031 dentro de activos de Dagster: tipado, deduplicación y normalización. **dbt se pospone y se revisa el 2 de noviembre (ADR 019).** | `services/data-platform/` |
 | B | Monta el entorno de pruebas aislado que usará el experimento. | `infra/envs/test/` |
 | C1 | Alertas y notificaciones. Pruebas unitarias con JUnit. | `services/domain-service/` |
 | C2 | Pantalla de búsqueda con datos reales. | `clients/mobile/` |
