@@ -35,7 +35,9 @@ USUARIOS = {"A": "arik36", "B": "Wolff06", "C1": "lisslar",
             "C2": "Renato-Rios", "D": "alesitaK"}
 CAMPO_SEMANA, CAMPO_FRENTE, CAMPO_FECHA, CAMPO_STATUS = (
     "Semana", "Frente", "Fecha límite", "Status")
-COLUMNA = "Esta semana"
+COLUMNA = "Esta Semana"   # EXACTO como está en el tablero, con su mayúscula:
+                          # Backlog · Esta Semana · En curso · En revision ·
+                          # Hecho · Retrasadas
 FRENTES = {"Datos", "Infra", "Dominio", "Móvil", "Web", "Equipo"}
 MESES = ["ene", "feb", "mar", "abr", "may", "jun",
          "jul", "ago", "sep", "oct", "nov", "dic"]
@@ -152,9 +154,13 @@ def main():
         print(f"Proyecto: {proyecto.get('title')}\n")
 
     def opcion(campo, nombre):
-        for o in campos.get(campo, {}).get("options", []):
+        opciones = campos.get(campo, {}).get("options", [])
+        for o in opciones:                       # primero, exacta
             if o["name"] == nombre:
                 return o["id"]
+        for o in opciones:                       # y si no, sin distinguir mayúsculas:
+            if o["name"].casefold() == nombre.casefold():
+                return o["id"]                   # «Esta semana» contra «Esta Semana»
         return None
 
     numeros, creados, reusados, editados = {}, 0, 0, 0
@@ -196,15 +202,22 @@ def main():
         if not item:
             print("   ✗ no se pudo agregar al proyecto")
             continue
+        escritos = []
         for campo, arg in valores:
             if arg[1] is None:
-                ERRORES.append(f"{t['id']}: el campo «{campo}» no tiene la opción que busco")
-                print(f"   ✗ {campo}: opción no encontrada")
+                hay = ", ".join(o["name"] for o in campos.get(campo, {}).get("options", []))
+                ERRORES.append(f"{t['id']}: el campo «{campo}» no tiene la opción que busco. "
+                               f"Tiene: {hay or 'ninguna'}")
+                print(f"   ✗ {campo}: opción no encontrada · el campo tiene: {hay or 'ninguna'}")
                 continue
             if gh("project", "item-edit", "--id", item["id"], "--project-id", proyecto["id"],
                   "--field-id", campos[campo]["id"], *arg) is not None:
                 editados += 1
-        print(f"   ✓ en el tablero: Semana {semana} · {t['frente']} · {t['fecha']} · «{COLUMNA}»")
+                escritos.append(campo)
+        # Sólo se anuncia lo que de verdad se escribió: antes esta línea decía
+        # «Status: Esta semana» aunque ese campo hubiera fallado.
+        print("   " + (f"✓ en el tablero · escritos: {', '.join(escritos)}" if escritos
+                       else "✗ en el tablero, pero sin ningún campo escrito"))
 
     print(f"\n{'Simulado' if SIMULAR else 'Listo'}: {creados} creados · {reusados} ya existían · "
           f"{editados} campos escritos")
