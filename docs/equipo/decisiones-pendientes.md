@@ -113,10 +113,12 @@ Son decisiones que ya se tomaron, pero sin ADR.
 
 | ADR que falta | Dónde aparece la decisión | Quién |
 |---|---|---|
-| Orquestador: Dagster y no Airflow | README. La guía de las presentaciones dice que el ADR ya existe, y no existe | A |
-| Interfaz analítica en FastAPI | README | A |
-| Validación con Pandera | README | A |
 | Cliente web en Next.js | README | D |
+
+Las tres de A quedaron escritas el 11 de octubre: **ADR 016** (Dagster y no Airflow,
+con fecha de salida el 25 de octubre), **ADR 017** (FastAPI) y **ADR 018** (Pandera
+por lote). Se agregó el **ADR 019**, que pospone dbt y fija su revisión para el 2 de
+noviembre.
 
 ## Por ratificar
 
