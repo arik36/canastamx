@@ -10,8 +10,10 @@
 > paso a paso, cómo se ve terminado y **cómo lo compruebas tú mismo** sin
 > preguntarle a nadie.
 >
-> **Los identificadores `T0XX` están por confirmar contra el tablero.** El trabajo
-> de cada ficha no depende de ellos.
+> **Las tarjetas del tablero salen de `docs/equipo/semanas/semana-06.json`**, con
+> `infra/scripts/sembrar-semana.py`. Los identificadores siguen la serie: T041 y
+> T042 fueron la semana de la entrega, y las cinco de esta semana son **T043 a
+> T047**.
 >
 > Si algo no se entiende, di **cuál sección** de cuál ficha.
 
@@ -97,7 +99,7 @@ Los dos avisos que da el auditor hoy son los ADR en propuesta y la cifra del ADR
 
 ---
 
-# T0XX · A · Ingesta de punta a punta y Pandera contra el contrato
+# T043 · A · Ingesta de punta a punta y Pandera contra el contrato
 
 **Rama:** `feat/alm-ingesta-dagster-pandera` · **10 horas**
 
@@ -181,7 +183,7 @@ pip install ruff==0.17.0 && ruff check services/
 
 ---
 
-# T0XX · B · Las tres suites en la integración continua y los datos semilla
+# T044 · B · Las tres suites en la integración continua y los datos semilla
 
 **Rama:** `feat/aas-ci-suites-y-semilla` · **8 horas**
 
@@ -248,7 +250,7 @@ pip install ruff==0.17.0 && ruff check services/
 
 ---
 
-# T0XX · C1 · La cuenta con rol y sin nombre, y el inicio de sesión real
+# T045 · C1 · La cuenta con rol y sin nombre, y el inicio de sesión real
 
 **Rama:** `feat/lyl-autenticacion-con-rol` · **10 horas**
 
@@ -323,7 +325,7 @@ mvn -B test        # la prueba nueva falla si alguien lo repone
 
 ---
 
-# T0XX · C2 · Las cuatro pestañas y la pantalla de acceso conectada
+# T046 · C2 · Las cuatro pestañas y la pantalla de acceso conectada
 
 **Rama:** `feat/orf-acceso-conectado` · **8 horas** · (las pestañas van en su propia
 rama, ver abajo)
@@ -392,7 +394,7 @@ npx expo start
 
 ---
 
-# T0XX · D · La estructura de la web, con acceso y navegación
+# T047 · D · La estructura de la web, con acceso y navegación
 
 **Rama:** `feat/kah-web-acceso-y-navegacion` · **8 horas**
 
