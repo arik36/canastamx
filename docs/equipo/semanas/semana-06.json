@@ -3,7 +3,7 @@
   "del": "2026-10-12",
   "al": "2026-10-18",
   "hito": "E3 — Construcción",
-  "fuente": "docs/equipo/cronograma.md, que llama «Semana 7» a estas mismas fechas, y docs/equipo/fichas/planeacion-semana-06.md. Los identificadores siguen la serie del tablero: T041 y T042 fueron la semana de la entrega, y T048 ya está comprometido a la capa intermedia del 25 de octubre (CU-03) y T043 a la capa cruda con datos (ADR 009).",
+  "fuente": "docs/equipo/cronograma.md, que llama «Semana 7» a estas mismas fechas, y docs/equipo/fichas/planeacion-semana-06.md. Los identificadores siguen la serie del tablero: T041 y T042 fueron la semana de la entrega, y T048 ya está comprometido a la capa intermedia del 25 de octubre (CU-03) y T043 a la capa cruda con datos (ADR 009). El orden del arreglo es el de creación, no el de los identificadores: T045 va antes que T044, T046 y T047 para que las tres la citen por su número de issue y no como «su número se conoce al crearla».",
   "tareas": [
     {
       "id": "T043",
@@ -19,6 +19,19 @@
       "nota_dependencia": "El ADR 016 le pone fecha de salida a Dagster: si el 25 de octubre no corren tres activos con un sensor, se cambia a guion y `cron`. Esa fecha es parte de la tarea, no un comentario."
     },
     {
+      "id": "T045",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "fecha": "2026-10-18",
+      "titulo": "[S6][Dominio] La cuenta con rol y sin nombre, y el inicio de sesión real",
+      "que": "Crear `Rol` (`CONSUMIDOR`, `ANALISTA`, `OPERADOR`). Quitar de `Usuario` el campo `nombre`, el método `renombrar()` y el acceso `nombre()`, y agregar `Rol` al constructor (P-13 y P-07). Quitar el argumento del nombre en `UsuarioTest` y **agregar una prueba que falle si el nombre regresa**. Implementar `POST /api/v1/cuentas` y `POST /api/v1/sesiones` contra `dominio.yaml`: la cuenta nace `CONSUMIDOR` y la sesión devuelve token, expiración y rol. Si D-10 sale en la opción A, agregar `GET /api/v1/cuentas/yo` y subir `dominio.yaml` a 0.2.1. Si queda semana, las rutas de canasta.",
+      "criterio": "`Usuario` no compila si alguien le pasa un nombre. `mvn -B test` pasa, e incluye la prueba nueva. Registrarse y entrar devuelve un token que lleva el rol. La respuesta de la cuenta trae `id`, `correo`, `rol` y `fechaDeRegistro`, y nada más. Desde la app sólo se crean cuentas `CONSUMIDOR`.",
+      "donde": "services/domain-service/",
+      "depende": [],
+      "nota_dependencia": "**D-10 se vota el lunes 12** y define si entra `GET /api/v1/cuentas/yo`: publicar `dominio.yaml` antes de votarla y agregar la ruta después es romper el contrato con el que C2 y D ya construyeron. Avísale a B en cuanto esto entre a `main`: él activa las pruebas del dominio en la integración continua después, no antes."
+    },
+    {
       "id": "T044",
       "clave": "B",
       "frente": "Infra",
@@ -32,19 +45,6 @@
         "T045"
       ],
       "nota_dependencia": "Si el paso de pruebas se activa antes de que T045 entre a `main`, la integración continua se pone **verde certificando el modelo que el equipo cambió el 7 de octubre** (P-13): `Usuario.java` todavía tiene el campo `nombre` y `UsuarioTest.java` se lo pasa en su línea 32. Una compuerta que aprueba lo incorrecto es peor que no tener compuerta. Primero el cambio de C1, después el paso."
-    },
-    {
-      "id": "T045",
-      "clave": "C1",
-      "frente": "Dominio",
-      "etiqueta": "dominio",
-      "fecha": "2026-10-18",
-      "titulo": "[S6][Dominio] La cuenta con rol y sin nombre, y el inicio de sesión real",
-      "que": "Crear `Rol` (`CONSUMIDOR`, `ANALISTA`, `OPERADOR`). Quitar de `Usuario` el campo `nombre`, el método `renombrar()` y el acceso `nombre()`, y agregar `Rol` al constructor (P-13 y P-07). Quitar el argumento del nombre en `UsuarioTest` y **agregar una prueba que falle si el nombre regresa**. Implementar `POST /api/v1/cuentas` y `POST /api/v1/sesiones` contra `dominio.yaml`: la cuenta nace `CONSUMIDOR` y la sesión devuelve token, expiración y rol. Si D-10 sale en la opción A, agregar `GET /api/v1/cuentas/yo` y subir `dominio.yaml` a 0.2.1. Si queda semana, las rutas de canasta.",
-      "criterio": "`Usuario` no compila si alguien le pasa un nombre. `mvn -B test` pasa, e incluye la prueba nueva. Registrarse y entrar devuelve un token que lleva el rol. La respuesta de la cuenta trae `id`, `correo`, `rol` y `fechaDeRegistro`, y nada más. Desde la app sólo se crean cuentas `CONSUMIDOR`.",
-      "donde": "services/domain-service/",
-      "depende": [],
-      "nota_dependencia": "**D-10 se vota el lunes 12** y define si entra `GET /api/v1/cuentas/yo`: publicar `dominio.yaml` antes de votarla y agregar la ruta después es romper el contrato con el que C2 y D ya construyeron. Avísale a B en cuanto esto entre a `main`: él activa las pruebas del dominio en la integración continua después, no antes."
     },
     {
       "id": "T046",
