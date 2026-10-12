@@ -15,10 +15,10 @@
 2. El sistema valida que el correo electrónico tenga un formato válido.
 3. El sistema valida que la contraseña tenga mínimo 8 caracteres, una mayúscula y un número.
 4. El sistema cifra la contraseña antes de almacenarla y nunca guarda la contraseña en texto plano.
-5. El sistema registra la cuenta asociando el correo electrónico con la contraseña cifrada.
+5. El sistema registra la cuenta asociando el correo electrónico con la contraseña cifrada, y le asigna el rol `CONSUMIDOR`.
 6. La persona consumidora proporciona sus credenciales para iniciar sesión.
 7. El sistema valida las credenciales proporcionadas contra los datos registrados.
-8. El sistema permite el inicio de sesión de la persona consumidora.
+8. El sistema permite el inicio de sesión y entrega una sesión que lleva el rol de la cuenta.
 
 ## Flujos alternos
 
@@ -47,7 +47,7 @@
 
 ## Postcondiciones
 
-- **De éxito:** La cuenta queda registrada con un correo electrónico válido y una contraseña cifrada, sin almacenar la contraseña en texto plano. La persona consumidora puede iniciar sesión con sus credenciales válidas.
+- **De éxito:** La cuenta queda registrada con un correo electrónico válido, una contraseña cifrada y el rol `CONSUMIDOR`, sin almacenar la contraseña en texto plano y sin nombre. La persona consumidora puede iniciar sesión con sus credenciales válidas y recibe una sesión con su rol.
 - **De fallo:** No se crea una cuenta con datos inválidos o duplicados y no se permite iniciar sesión con credenciales no válidas.
 
 ## Requisito no funcional asociado
@@ -60,3 +60,5 @@
 - El sistema maneja la contraseña mediante `ContraseñaCifrada`.
 - La contraseña nunca debe almacenarse en texto plano.
 - El correo electrónico se representa mediante el objeto de valor `CorreoElectronico`.
+- **La cuenta no guarda nombre: se identifica con su correo electrónico** (P-13, 7 de octubre de 2026). Donde antes se mostraría un nombre, se muestra el correo: la vista 8 de la app y la barra lateral de la web.
+- **La cuenta nace con un rol** (`CONSUMIDOR`, `ANALISTA` u `OPERADOR`) y la sesión lo lleva; con él, la web decide si abre el tablero o la consola (P-07, 7 de octubre de 2026). Desde la app sólo se crean cuentas `CONSUMIDOR`: las de analista y operador se crean por configuración.
