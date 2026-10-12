@@ -233,6 +233,12 @@ Vienen de los datos y del contrato:
 | 9 | Web · Detalle | «Precio promedio regional · media ponderada»; el máximo en rojo | «Precio típico (mediana)»; el máximo en tinta | D |
 | 10 | Datos de ejemplo | Fechas «11 sep 2026» | Fechas hasta julio de 2026 | D |
 | 11 | App · Descubrir | Listas «Despensa Quincenal», «Fiesta Navidad» y «Desayunos» | No las pide ningún caso de uso ni requerimiento. Se definen o se quitan | D y C2 |
+<<<<<<< Updated upstream
 | 12 | App · Cuenta | El nombre «Karen Alejandra» y una foto de perfil | El correo de la cuenta y un avatar con su inicial: la cuenta no tiene nombre ni foto (P-13) | D y C2 |
 | 13 | Web · Barra lateral | «Analista Ruiz» | El correo y el rol de la sesión (P-07 y P-13) | D |
 | 14 | Web · Cola | Cobertura 81.4% y precisión 97.3% | Son inventadas, y la cobertura queda por debajo de la meta de H3 (85%). «Se mide en T058», o la cifra real con su población | D |
+=======
+| ~~12~~ | ~~App · Cuenta~~ | ~~Nombre "Karen Alejandra" y foto real~~ | ~~Correo de la cuenta y avatar con inicial~~ | ~~D~~ |
+| ~~13~~ | ~~Web · Barra lateral~~ | ~~Nombre de analista u operador~~ | ~~Correo de la cuenta y rol en dos renglones~~ | ~~D~~ |
+| ~~14~~ | ~~Web · Cola~~ | ~~Cobertura 81.4% y precisión 97.3% (inventadas)~~ | ~~Etiqueta "Se mide en T058"~~ | ~~D~~ |
+>>>>>>> Stashed changes
