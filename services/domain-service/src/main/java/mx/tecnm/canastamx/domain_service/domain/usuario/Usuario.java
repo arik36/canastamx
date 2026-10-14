@@ -1,3 +1,4 @@
+
 package mx.tecnm.canastamx.domain_service.domain.usuario;
 
 import java.time.Instant;
@@ -7,11 +8,12 @@ public class Usuario {
     private final String id;
     private final CorreoElectronico correo;
     private final Instant fechaDeRegistro;
+    private final Rol rol;
     private String contrasenaCifrada;
-    private String nombre;
 
-    public Usuario(String id, CorreoElectronico correo, String contrasenaCifrada,
-                   String nombre, Instant fechaDeRegistro) {
+    public Usuario(String id, CorreoElectronico correo,
+                   String contrasenaCifrada, Rol rol,
+                   Instant fechaDeRegistro) {
 
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("el usuario necesita id");
@@ -21,13 +23,17 @@ public class Usuario {
             throw new IllegalArgumentException("el usuario necesita correo");
         }
 
+        if (rol == null) {
+            throw new IllegalArgumentException("el usuario necesita rol");
+        }
+
         this.id = id;
         this.correo = correo;
         this.fechaDeRegistro =
                 fechaDeRegistro == null ? Instant.now() : fechaDeRegistro;
+        this.rol = rol;
 
         cambiarContrasena(contrasenaCifrada);
-        renombrar(nombre);
     }
 
     public final void cambiarContrasena(String yaCifrada) {
@@ -44,15 +50,6 @@ public class Usuario {
         this.contrasenaCifrada = yaCifrada;
     }
 
-    public final void renombrar(String nuevo) {
-        if (nuevo == null || nuevo.isBlank()) {
-            throw new IllegalArgumentException(
-                    "el nombre no puede ir vacío");
-        }
-
-        this.nombre = nuevo.trim();
-    }
-
     public String id() {
         return id;
     }
@@ -61,8 +58,8 @@ public class Usuario {
         return correo;
     }
 
-    public String nombre() {
-        return nombre;
+    public Rol rol() {
+        return rol;
     }
 
     public Instant fechaDeRegistro() {
