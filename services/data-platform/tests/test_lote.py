@@ -68,7 +68,10 @@ def test_el_grupo_completo_va_a_cuarentena_no_solo_la_sobrante(contrato, columna
     assert resumen["filas_en_cuarentena"] == 2, "se apartó una fila, no el grupo"
     assert len(limpias) == 0
     assert {r["motivo"] for r in registros} == {"colision_precio_alta"}
-    assert {r["nivel"] for r in registros} == {"GRUPO"}
+    # FILA y no GRUPO: la tabla `cuarentena` sólo acepta FILA, y obliga a llenar
+    # `grupo` cuando el motivo es éste. Hasta el 15 de octubre salía GRUPO.
+    assert {r["nivel"] for r in registros} == {"FILA"}
+    assert all(r["grupo"] for r in registros)
     assert len({r["grupo"] for r in registros}) == 1, "las dos filas, un solo grupo"
 
 
@@ -243,25 +246,188 @@ def test_ninguna_cifra_del_contrato_esta_escrita_en_el_codigo():
             f"{que} ({valor}) aparece escrito en lote.py; se lee del contrato")
 
 
-def test_la_cifra_que_el_contrato_tiene_en_prosa_se_reporta_no_se_adivina(contrato):
-    """El `$1` que distingue una captura doble de una observación múltiple vive en
-    un comentario de `clave_de_fila.desempate`. Un comentario desaparece al
-    interpretar el YAML, así que no se puede obedecer: se reporta."""
-    faltan = lote.cifras_que_el_contrato_no_declara(contrato)
-    assert "umbral_de_captura_doble" in faltan
-    assert "umbral_de_captura_doble" in lote.CIFRAS_EN_PROSA
+def test_el_umbral_de_captura_doble_es_dato_desde_la_1_3_5(contrato):
+    """Hasta la 1.3.4 el `$1` vivía en un comentario de `clave_de_fila.desempate`,
+    y un comentario desaparece al interpretar el YAML. Desde la 1.3.5 es
+    `clave_de_fila.captura_doble.menos_de`."""
+    assert lote.cifras_que_el_contrato_no_declara(contrato) == []
+    assert contrato["clave_de_fila"]["captura_doble"]["menos_de"] == 1
 
 
-def test_la_captura_doble_no_se_deduplica_y_se_dice(contrato, columnas):
-    """Mientras el umbral no esté como dato, las dos filas de una captura doble
-    pasan. Es una desviación del contrato y está declarada, no escondida."""
+def test_sin_el_dato_la_compuerta_se_niega_en_vez_de_adivinar(contrato, columnas):
+    """Si alguien quita el umbral del contrato, la compuerta no sigue con una cifra
+    escrita a mano: se detiene y dice cuál falta."""
+    sin = dict(contrato)
+    sin["clave_de_fila"] = {k: v for k, v in contrato["clave_de_fila"].items()
+                            if k != "captura_doble"}
+    assert lote.cifras_que_el_contrato_no_declara(sin) == ["umbral_de_captura_doble"]
+    df = marco(columnas, [fila(columnas, producto="A"), fila(columnas, producto="A")])
+    with pytest.raises(ValueError, match="captura_doble"):
+        lote.revisar_grupos(df, sin)
+
+
+def test_la_captura_doble_no_se_deduplica_aqui_se_cuenta(contrato, columnas):
+    """Deduplicar es transformar, y eso es de la capa intermedia (semana del 19 al
+    25 de octubre). La compuerta deja pasar las dos filas y las cuenta en su cubo,
+    para que la deduplicación se compruebe contra esa cifra."""
     df = marco(columnas, [
         fila(columnas, producto="Frijol", precio="30.00"),
         fila(columnas, producto="Frijol", precio="30.50"),
     ])
-    limpias, _, resumen = lote.revisar_grupos(df, contrato)
-    assert len(limpias) == 2
-    assert "umbral_de_captura_doble" in resumen["cifras_en_prosa_no_aplicadas"]
+    limpias, registros, resumen = lote.revisar_grupos(df, contrato)
+    assert len(limpias) == 2 and registros == []
+    assert resumen["grupos_captura_doble"] == 1
+    assert resumen["sobrantes_captura_doble"] == 1
+
+
+# ── Los tres cubos de la clave de fila (1.3.5) ─────────────────────────────
+
+def test_los_tres_cubos_de_la_clave_de_fila(contrato, columnas):
+    """Menos de $1, captura doble; de $1 a $50, observaciones múltiples; más de
+    $50, colisión alta. Sólo la última aparta filas."""
+    df = marco(columnas, [
+        fila(columnas, producto="Frijol", precio="30.00"),
+        fila(columnas, producto="Frijol", precio="30.50"),      # $0.50
+        fila(columnas, producto="Arroz", precio="20.00"),
+        fila(columnas, producto="Arroz", precio="37.00"),       # $17
+        fila(columnas, producto="Aceite", precio="40.00"),
+        fila(columnas, producto="Aceite", precio="200.00"),     # $160
+    ])
+    limpias, registros, r = lote.revisar_grupos(df, contrato)
+    assert (r["grupos_captura_doble"], r["grupos_observaciones_multiples"],
+            r["grupos_en_colision"]) == (1, 1, 1)
+    assert r["filas_en_cuarentena"] == 2
+    assert {x["fila"]["producto"] for x in registros} == {"Aceite"}
+    assert len(limpias) == 4
+
+
+@pytest.mark.parametrize("menor,mayor,cubo", [
+    ("10.00", "10.99", "captura_doble"),            # $0.99
+    ("10.00", "11.00", "observaciones_multiples"),  # $1.00 exacto: ya no es doble
+    ("10.00", "60.00", "observaciones_multiples"),  # $50.00 exacto: todavía no es colisión
+    ("10.00", "60.01", "en_colision"),              # $50.01
+])
+def test_las_fronteras_de_los_cubos(contrato, columnas, menor, mayor, cubo):
+    """«Menos de» y «más de» son estrictos, como los escribe el contrato. Y la
+    resta es en DECIMAL(12,2): en flotante, $1.00 sale 0.99999 y cae en el cubo
+    de al lado, que es justo lo que `precio.razon_del_casteo` advierte."""
+    df = marco(columnas, [fila(columnas, producto="P", precio=menor),
+                          fila(columnas, producto="P", precio=mayor)])
+    _, _, r = lote.revisar_grupos(df, contrato)
+    assert r[f"grupos_{cubo}"] == 1, r
+
+
+def test_el_umbral_de_captura_doble_lo_decide_el_contrato(contrato, columnas):
+    """El `1` no se puede buscar en el código como las otras cifras —aparece en
+    cualquier `count(*) > 1`—, así que se comprueba por su efecto: se mueve en una
+    copia del contrato y el mismo grupo cambia de cubo."""
+    df = marco(columnas, [fila(columnas, producto="P", precio="10.00"),
+                          fila(columnas, producto="P", precio="12.00")])   # $2
+    _, _, con_1 = lote.revisar_grupos(df, contrato)
+    assert con_1["grupos_observaciones_multiples"] == 1
+
+    otro = dict(contrato)
+    otro["clave_de_fila"] = {**contrato["clave_de_fila"],
+                             "captura_doble": {"menos_de": 5}}
+    _, _, con_5 = lote.revisar_grupos(df, otro)
+    assert con_5["grupos_captura_doble"] == 1, (
+        "mover el umbral en el contrato no cambió el cubo: está escrito en el código")
+
+
+# ── Con qué se compara cada columna de la clave (1.3.5) ────────────────────
+
+def test_la_marca_se_compara_en_mayusculas_sin_acentos(contrato, columnas):
+    """**El error que corrigió la 1.3.5.** La canónica quita la puntuación y une
+    `Kellogg's` con `Kellogg´s`; la de la marca no (ADR 002 · 3). Con la canónica
+    estas dos filas eran un grupo con $130 de diferencia, y se iban a cuarentena."""
+    df = marco(columnas, [
+        fila(columnas, producto="Cereal", marca="Kellogg's", precio="20.00"),
+        fila(columnas, producto="Cereal", marca="Kellogg´s", precio="150.00"),
+    ])
+    _, registros, r = lote.revisar_grupos(df, contrato)
+    assert r["grupos"] == 0 and registros == [], (
+        "la marca se comparó en forma canónica: unió dos marcas distintas")
+
+
+def test_s_m_y_S_M_son_la_misma_marca(contrato, columnas):
+    """Lo que la regla de la marca sí une: sólo difieren en mayúsculas, y el
+    contrato lo explica en `normalizacion.marca`."""
+    df = marco(columnas, [fila(columnas, producto="Pan", marca="S/m", precio="10.00"),
+                          fila(columnas, producto="Pan", marca="S/M", precio="99.00")])
+    _, registros, r = lote.revisar_grupos(df, contrato)
+    assert r["grupos_en_colision"] == 1 and len(registros) == 2
+
+
+def test_la_normalizacion_de_cada_columna_la_decide_el_contrato(contrato, columnas):
+    """Se cambia la de la marca a canónica en una copia del contrato, y las dos
+    Kellogg se vuelven un grupo. Si no cambiara, la regla estaría en el código."""
+    df = marco(columnas, [
+        fila(columnas, producto="Cereal", marca="Kellogg's", precio="20.00"),
+        fila(columnas, producto="Cereal", marca="Kellogg´s", precio="150.00"),
+    ])
+    otro = dict(contrato)
+    otro["clave_de_fila"] = {
+        **contrato["clave_de_fila"],
+        "normaliza_por_columna": {**contrato["clave_de_fila"]["normaliza_por_columna"],
+                                  "marca": "canonica"}}
+    _, _, r = lote.revisar_grupos(df, otro)
+    assert r["grupos_en_colision"] == 1
+
+
+def test_cada_columna_de_la_clave_dice_como_se_compara(contrato):
+    """Ni una columna de la clave sin su normalización —adivinar es como se coló la
+    canónica en la marca—, y la de la marca es la misma que `normalizacion.marca.a`,
+    para que los dos lugares no puedan separarse."""
+    clave = contrato["clave_de_fila"]
+    assert set(clave["normaliza_por_columna"]) == set(clave["columnas"])
+    assert clave["normaliza_por_columna"]["marca"] == contrato["normalizacion"]["marca"]["a"]
+    assert set(clave["normaliza_por_columna"].values()) <= set(lote.NORMALIZACIONES)
+
+
+def test_mayusculas_sin_acentos_da_lo_mismo_que_la_ingesta(contrato):
+    """`ingesta.py` escribió esta normalización a mano en septiembre, para
+    `estado` y `catalogo`. La 1.3.5 la declara en el contrato. Se comparan por lo
+    que DAN, no por cómo se escriben: si un día alguien cambia una de las dos,
+    esto truena."""
+    import duckdb
+    from ingesta import recorte_del_contrato
+
+    de_la_ingesta = recorte_del_contrato(contrato)["sql"]["estado"].split(" IN ")[0]
+    del_contrato = lote.expresion(contrato, "mayusculas_sin_acentos", "estado")
+    casos = ["Guanajuato", " guanajuato ", "Querétaro", "QUERÉTARO", "San Luis Potosí",
+             "S/m", "Kellogg's", "Kellogg´s", "  Básicos  "]
+    con = duckdb.connect()
+    for caso in casos:
+        a = con.execute(f"SELECT {de_la_ingesta} FROM (SELECT ? AS estado)", [caso]).fetchone()[0]
+        b = con.execute(f"SELECT {del_contrato} FROM (SELECT ? AS estado)", [caso]).fetchone()[0]
+        assert a == b, f"{caso!r}: la ingesta da {a!r} y el contrato {b!r}"
+
+
+def test_la_cuarentena_de_colision_cabe_en_la_tabla_del_esquema(contrato, columnas):
+    """La forma que la tabla `cuarentena` acepta, leída del propio SQL: nivel FILA
+    (su CHECK), el par (motivo, nivel) en el catálogo (su llave foránea) y `grupo`
+    lleno cuando el motivo es la colisión (su otro CHECK)."""
+    import re
+
+    sql = (PLATAFORMA.parents[1] / "docs" / "datos" /
+           "esquema-de-operacion.sql").read_text(encoding="utf-8")
+    assert "CHECK (nivel = 'FILA')" in sql
+    assert "CHECK (motivo <> 'colision_precio_alta' OR grupo IS NOT NULL)" in sql
+    catalogo = dict(re.findall(r"\('(\w+)',\s*'(FILA|LOTE|CORRIDA)'", sql))
+
+    df = marco(columnas, [fila(columnas, producto="A", precio="10.00"),
+                          fila(columnas, producto="A", precio="99.00")])
+    _, registros, _ = lote.revisar_grupos(df, contrato)
+    assert registros
+    for r in registros:
+        assert r["nivel"] == "FILA"
+        assert catalogo.get(r["motivo"]) == r["nivel"]
+        assert r["grupo"]
+
+
+def test_los_motivos_de_grupo_estan_en_el_catalogo_del_contrato(contrato):
+    for motivo, regla in lote.MOTIVOS_DE_GRUPO.items():
+        assert contrato["motivos_de_fila"].get(motivo) == regla
 
 
 def test_los_motivos_de_grupo_apuntan_a_una_regla_del_contrato(contrato):

@@ -28,18 +28,20 @@ Por eso aquí no hay ni un solo `65` escrito a mano. Si lo ves, es un error.
 
 LOS CINCO MOTIVOS QUE EMITE, Y LOS QUE NO
 -----------------------------------------
-De fila, y los cinco están en el catálogo de `docs/datos/esquema-de-operacion.sql`:
+De fila. Los cinco están declarados en el contrato desde la 1.3.5
+(`motivos_de_fila`), con la misma regla que el catálogo de
+`docs/datos/esquema-de-operacion.sql`:
 
-    valor_requerido_vacio    columnas.*.valor_requerido        en_contrato: false
-    largo_excedido           columnas.*.largo_maximo           en_contrato: false
-    tipo_invalido            columnas.*.tipo                   en_contrato: false
-    fecha_fuera_de_ventana   columnas.fecha_registro.rango     en_contrato: true
-    precio_fuera_de_rango    columnas.precio.al_exceder        en_contrato: true
+    valor_requerido_vacio    columnas.*.valor_requerido
+    largo_excedido           columnas.*.largo_maximo
+    tipo_invalido            columnas.*.tipo
+    fecha_fuera_de_ventana   columnas.fecha_registro.al_estar_fuera_de_rango
+    precio_fuera_de_rango    columnas.precio.al_exceder
 
-**Los tres primeros todavía no están declarados en el contrato.** El catálogo ya
-los marca con `en_contrato = false` y el protocolo pide declararlos antes del 9 de
-noviembre. Esta compuerta los produce hoy, y `--motivos` imprime cuáles le faltan
-al contrato: ésa es la lista de trabajo, generada en vez de recordada.
+Hasta la 1.3.4, los tres primeros no tenían nombre en el contrato y los dos
+últimos sólo lo tenían en un comentario. `--motivos` revisa que el contrato los
+declare como DATO y con la misma regla: si alguien quita uno o le cambia la
+regla, lo dice.
 
 Lo que **no** emite, a propósito, porque necesita ver más de una fila y vive en
 DuckDB: `colision_precio_alta` (compara grupos), `codificacion_irrecuperable` y
@@ -315,24 +317,23 @@ def decidir_promocion(resumen, contrato):
 
 
 def motivos_que_el_contrato_no_declara(contrato=None):
-    """Qué motivos de esta compuerta no aparecen en el contrato. Es la lista de
-    trabajo de `pendientes`, generada en vez de recordada: pendiente antes del 9
-    de noviembre.
+    """Qué motivos de esta compuerta el contrato no declara en `motivos_de_fila`,
+    o declara con otra regla.
 
-    Se busca sobre el **texto** del contrato, no sobre el YAML ya interpretado, y
-    la razón vale la pena: hoy `fecha_fuera_de_ventana` y `precio_fuera_de_rango`
-    sólo aparecen en sendos COMENTARIOS (líneas 565 y 601 de la 1.3.4), y un
-    comentario desaparece al interpretar el archivo. Buscar sobre el texto es lo
-    que hace un humano al leerlo.
+    Hasta la 1.3.4 esta función buscaba sobre el TEXTO del contrato, porque dos de
+    los cinco motivos sólo aparecían en comentarios, y un comentario desaparece al
+    interpretar el YAML. Desde la 1.3.5 el contrato los nombra como DATO y aquí se
+    busca sobre el dato: un comentario ya no cuenta como declaración, porque
+    ningún programa puede obedecerlo.
 
-    Que estén nada más en un comentario es, de todas formas, la mitad del
-    problema: un comentario no es una declaración y ningún programa puede
-    obedecerlo. Lo que el contrato necesita en la 1.3.5 es nombrar los cinco
-    motivos como DATO, no en prosa.
+    Que la regla coincida importa tanto como el nombre. Si el contrato dice que
+    `largo_excedido` sale de `columnas.*.largo_maximo` y esta compuerta lo
+    produce desde otra regla, los dos dicen lo mismo con palabras distintas: es la
+    falla que este proyecto estudia.
     """
-    from ingesta import CONTRATO
-    texto = CONTRATO.read_text(encoding="utf-8")
-    return [m for m in MOTIVOS if m not in texto]
+    contrato = contrato or leer_contrato()
+    declarados = contrato.get("motivos_de_fila") or {}
+    return [m for m, regla in MOTIVOS.items() if declarados.get(m) != regla]
 
 
 # ── Línea de comandos ──────────────────────────────────────────────────────
@@ -411,7 +412,7 @@ def main():
         for m, regla in MOTIVOS.items():
             print(f"  {'✗ sin declarar' if m in faltan else '✓ declarado   '}  {m:24} {regla}")
         if faltan:
-            print(f"\nFaltan {len(faltan)} por declarar en el contrato, antes del 9 de noviembre.")
+            print(f"\nFaltan {len(faltan)} en `motivos_de_fila`, o están con otra regla.")
         return 0 if not faltan else 1
 
     if not a.archivo:
