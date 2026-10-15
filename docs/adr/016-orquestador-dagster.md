@@ -43,6 +43,28 @@ datos:
 un sensor, se cambia a guion más `cron`** y se escribe el ADR que reemplaza a éste.
 La fecha está puesta para que la decisión no se defienda sola por inercia.
 
+### Qué corre al 14 de octubre de 2026
+
+`services/data-platform/orquestacion/definiciones.py` (T043). `dagster dev` levanta
+y muestra **tres activos, los tres particionados en las 38 quincenas** —`capa_cruda`,
+`filas_revisadas` y `lote_promovido`— más el sensor `archivo_nuevo`, que revisa cada
+30 segundos y deja la marca de tiempo del disparo en las etiquetas de la corrida. Las
+38 particiones no están escritas: salen de `alcance.ventana` del contrato.
+
+**Lo que falta para que la fecha de salida quede contestada del todo:** una corrida
+contra MinIO. Lo probado es de punta a punta en **simulación** (`--simular`), que
+ejercita los tres activos, el linaje y el reproceso, pero no la escritura al bucket.
+Eso es de B y del ADR 008.
+
+Y una consecuencia de haberlo construido, que vale para el 25 de octubre: la
+orquestación quedó **delgada a propósito**. Ninguna regla del contrato vive en
+`orquestacion/`; están en `ingestion/compuerta.py` y `ingestion/lote.py`, que no
+mencionan Dagster. Hay dos pruebas que lo vigilan
+(`test_la_orquestacion_no_tiene_ninguna_regla_del_contrato` y
+`test_las_compuertas_no_importan_dagster`). Si el 25 se decide volver a guion más
+`cron`, se borra una carpeta y las compuertas siguen corriendo: eso es lo que hace
+que la fecha de salida sea una decisión real y no una amenaza.
+
 ## Alternativas descartadas
 
 | Alternativa | Por qué no |

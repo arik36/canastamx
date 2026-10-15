@@ -112,5 +112,13 @@ docker-compose.override.yml
 services/data-platform/ingestion/corridas/*
 !services/data-platform/ingestion/corridas/.gitkeep
 
+# La carpeta de llegada del sensor. Es la carpeta por omisión de CANASTAMX_LOTES,
+# y está DENTRO del repositorio: sin esta regla, el primer lote que alguien deje
+# ahí para probar el sensor se iría al repositorio en el siguiente `git add -A`.
+# Son datos crudos, y la regla 7 del tablero dice que no entran. El trabajo
+# «Higiene» del CI atraparía el peso, pero no el principio.
+services/data-platform/ingestion/lotes/*
+!services/data-platform/ingestion/lotes/.gitkeep
+
 # Respaldos de editores y guiones
 *.bak
