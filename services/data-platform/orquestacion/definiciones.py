@@ -124,19 +124,47 @@ def quincenas_del_contrato(contrato=None):
 QUINCENAS = StaticPartitionsDefinition(quincenas_del_contrato())
 
 
-def nombre_de_lote(quincena):
-    """`2026-07-Q2` → `07-2026_Q2`, que es como nombra la fuente sus archivos."""
+def nombres_de_lote(quincena):
+    """`2026-07-Q2` → `["07-2026_Q2", "07-2026_02"]`, las dos formas que usa la fuente.
+
+    **La fuente no nombra igual los dos años, y esto costó un error.** Los 24
+    archivos de 2025 se llaman `01-2025_01`, `01-2025_02`; los 14 de 2026,
+    `01-2026_Q1`, `01-2026_Q2`. Están los 38 listados con su sha256 en
+    `docs/datos/ingesta-capa-cruda.md` §«Identidad de los archivos de entrada».
+
+    `ingesta.py` ya lo sabía: su `NOMBRE_DE_LOTE` trae `(?:Q|0)?`, que acepta las
+    dos. La primera versión de este envoltorio generaba sólo la forma con `Q`, así
+    que las 24 particiones de 2025 no encontraban su archivo. Se devuelven las dos
+    y se prueba cada una, en vez de adivinar por año: si la fuente cambia de
+    criterio otra vez, sigue funcionando.
+    """
     anio, mes, q = quincena.split("-")
-    return f"{mes}-{anio}_{q}"
+    numero = q.removeprefix("Q")
+    return [f"{mes}-{anio}_Q{numero}", f"{mes}-{anio}_0{numero}"]
+
+
+def nombre_de_lote(quincena):
+    """El nombre del lote para el registro de la corrida y las etiquetas.
+
+    Se queda con la forma del archivo que de verdad está en la carpeta, para que
+    el registro y la evidencia digan el mismo nombre que el archivo. Si no hay
+    archivo, la forma con `Q`, que es la que usa el contrato para las quincenas.
+    """
+    nombres = nombres_de_lote(quincena)
+    for nombre in nombres:
+        for sufijo in (".parquet", ".csv"):
+            if (LOTES / f"{nombre}{sufijo}").exists():
+                return nombre
+    return nombres[0]
 
 
 def archivo_del_lote(quincena):
     """El archivo de esa quincena en la carpeta de llegada, o None."""
-    base = nombre_de_lote(quincena)
-    for sufijo in (".parquet", ".csv"):
-        ruta = LOTES / f"{base}{sufijo}"
-        if ruta.exists():
-            return ruta
+    for nombre in nombres_de_lote(quincena):
+        for sufijo in (".parquet", ".csv"):
+            ruta = LOTES / f"{nombre}{sufijo}"
+            if ruta.exists():
+                return ruta
     return None
 
 
@@ -186,9 +214,11 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
     quincena = context.partition_key
     archivo = archivo_del_lote(quincena)
     if archivo is None:
+        buscados = ", ".join(f"{n}{s}" for n in nombres_de_lote(quincena)
+                             for s in (".parquet", ".csv"))
         raise FileNotFoundError(
             f"no hay archivo para la quincena {quincena} en {LOTES}. "
-            f"Se buscó {nombre_de_lote(quincena)}.parquet y .csv. "
+            f"Se buscó: {buscados}. "
             "La carpeta se configura con CANASTAMX_LOTES."
         )
 

@@ -119,10 +119,66 @@ def test_el_sensor_y_el_trabajo_existen(entorno):
     assert "corrida_del_lote" in [j.name for j in repo.get_all_jobs()]
 
 
-def test_la_quincena_se_traduce_al_nombre_de_archivo_de_la_fuente(entorno):
+def test_la_quincena_se_traduce_a_LAS_DOS_formas_que_usa_la_fuente(entorno):
+    """Los 24 archivos de 2025 se llaman `01-2025_01`; los 14 de 2026,
+    `01-2026_Q1`. Están los 38 con su sha256 en
+    `docs/datos/ingesta-capa-cruda.md`. Generar sólo la forma con `Q` dejaba 24
+    de las 38 particiones sin encontrar su archivo."""
     d, _ = entorno
+    assert d.nombres_de_lote("2026-07-Q2") == ["07-2026_Q2", "07-2026_02"]
+    assert d.nombres_de_lote("2025-01-Q1") == ["01-2025_Q1", "01-2025_01"]
+
+
+def test_encuentra_el_archivo_con_el_nombre_de_2025(entorno, columnas):
+    """La prueba que faltaba. Con el nombre que de verdad traen los 24 archivos de
+    2025, la partición tiene que encontrar su archivo."""
+    d, llegada = entorno
+    escribir_lote(llegada, "03-2025_02.csv",
+                  [fila(columnas, producto="P")], columnas)
+    ruta = d.archivo_del_lote("2025-03-Q2")
+    assert ruta is not None, "no encontró 03-2025_02.csv para la quincena 2025-03-Q2"
+    assert ruta.name == "03-2025_02.csv"
+    # Y el nombre del lote queda con la forma del archivo que sí está, para que el
+    # registro de la corrida diga el mismo nombre que el archivo.
+    assert d.nombre_de_lote("2025-03-Q2") == "03-2025_02"
+
+
+def test_encuentra_el_archivo_con_el_nombre_de_2026(entorno, columnas):
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv",
+                  [fila(columnas, producto="P")], columnas)
+    ruta = d.archivo_del_lote("2026-07-Q2")
+    assert ruta is not None and ruta.name == "07-2026_Q2.csv"
     assert d.nombre_de_lote("2026-07-Q2") == "07-2026_Q2"
-    assert d.nombre_de_lote("2025-01-Q1") == "01-2025_Q1"
+
+
+def test_el_inverso_cuadra_con_como_ingesta_lee_el_nombre(entorno):
+    """La comprobación cruzada que importa: para las 38 quincenas, al menos uno de
+    los nombres que genera este envoltorio tiene que ser un nombre que
+    `ingesta.quincena_del_lote()` sepa leer, y tiene que devolver la misma
+    quincena. Si alguien cambia uno de los dos lados, esto lo dice."""
+    from ingesta import quincena_del_lote
+
+    d, _ = entorno
+    for quincena in d.quincenas_del_contrato():
+        leidas = {quincena_del_lote(n) for n in d.nombres_de_lote(quincena)}
+        assert leidas == {quincena}, (
+            f"para {quincena} el envoltorio genera nombres que ingesta.py lee "
+            f"como {leidas}")
+
+
+def test_materializar_una_particion_de_2025_tambien_corre(entorno, columnas):
+    """La mitad del corpus es de 2025. Si esto falla, 24 de los 38 lotes no se
+    pueden procesar, que es justo lo que pasaba."""
+    d, llegada = entorno
+    escribir_lote(llegada, "11-2025_01.csv",
+                  [fila(columnas, producto=f"P{i}", direccion=f"C{i}",
+                        fecha_registro="2025/11/10") for i in range(5)], columnas)
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2025-11-Q1")
+    assert r.success
+    md = r.asset_materializations_for_node("capa_cruda")[0].metadata
+    assert md["archivo"].value.endswith("11-2025_01.csv")
 
 
 # ── «materializar la partición … y hacerlo dos veces da la misma huella» ───
