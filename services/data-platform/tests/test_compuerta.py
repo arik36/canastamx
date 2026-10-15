@@ -9,6 +9,7 @@ puede modificarlo sin tocar el archivo del repositorio.
 """
 import copy
 import json
+import os
 import re
 import subprocess
 import sys
@@ -304,15 +305,16 @@ def test_la_linea_de_comandos_escribe_las_dos_salidas(tmp_path, contrato):
                         "--lote", "07-2026_Q2"], capture_output=True, text=True, check=False)
     assert r.returncode == 0, r.stderr
     assert "2.50%" in r.stdout
-    corridas = INGESTION / "corridas"
+    # Donde escribe la compuerta: la carpeta temporal de la suite (tests/conftest.py),
+    # nunca la de la evidencia real. Hasta el 15 de octubre esta prueba escribía en
+    # la real y al final BORRABA los dos archivos, fueran suyos o no.
+    corridas = Path(os.environ["CANASTAMX_CORRIDAS"])
     paso = json.loads((corridas / "compuerta-07-2026_Q2.json").read_text(encoding="utf-8"))
     assert paso["capa"] == "COMPUERTA" and paso["resultado"] == "AVISO"
     assert paso["filas_entrada"] == 40 and paso["filas_salida"] == 39
     lineas = (corridas / "cuarentena-07-2026_Q2.jsonl").read_text(encoding="utf-8").strip().splitlines()
     assert len(lineas) == 1
     assert json.loads(lineas[0])["motivo"] == "precio_fuera_de_rango"
-    for f in ("compuerta-07-2026_Q2.json", "cuarentena-07-2026_Q2.jsonl"):
-        (corridas / f).unlink()
 
 
 # ── La población: el alcance del contrato, no el archivo ───────────────────

@@ -47,6 +47,8 @@ cuenta sus 15 minutos (SLA-D-05): sin él, los 15 minutos no tienen desde cuánd
     export CANASTAMX_LOTES=/ruta/a/los/lotes      # dónde están los archivos
     export CANASTAMX_SIMULAR=1                    # sin bucket, para probar
     export CANASTAMX_FECHA_REFERENCIA=2026-08-10  # la frescura la pide (ver abajo)
+    # CANASTAMX_CORRIDAS es opcional: dónde queda la evidencia. Por omisión,
+    # ingestion/corridas/, que no entra al repositorio.
     dagster dev -m orquestacion.definiciones
 
 Necesita `dagster` **y** `dagster-webserver`, las dos en la misma versión. Están
@@ -87,9 +89,12 @@ sys.path.insert(0, str(INGESTA))
 
 import compuerta
 import lote as reglas_de_lote
-from ingesta import leer_contrato, sha256_de
+from ingesta import CORRIDAS, leer_contrato, sha256_de
 
-SALIDAS = INGESTA / "corridas"
+# La misma carpeta que escribe ingesta.py, y no una copia de la ruta: el activo
+# de capa cruda LEE ahí el registro de la ingesta, así que si fueran dos rutas que
+# se separan, el activo dejaría de encontrarlo.
+SALIDAS = CORRIDAS
 
 # Dónde llegan los lotes y si se escribe al bucket. Son de entorno y no del
 # contrato a propósito: son cosas de la máquina, no del dato.
