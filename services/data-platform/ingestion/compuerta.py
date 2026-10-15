@@ -86,6 +86,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ingesta import (
+    CORRIDAS,
     columnas_del_contrato,
     lector,
     lectura_declarada,
@@ -95,7 +96,7 @@ from ingesta import (
 )
 
 NOMBRE_COMPUERTA = "contrato_por_fila"
-SALIDAS = Path(__file__).resolve().parent / "corridas"
+SALIDAS = CORRIDAS          # la carpeta de la evidencia: ver ingesta.CORRIDAS
 
 # Los motivos que esta compuerta sabe emitir, con la regla del contrato de la que
 # salen. La prueba `test_compuerta.py` comprueba que los cinco existan en el
