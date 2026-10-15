@@ -194,14 +194,6 @@ def _disparo(context):
     return etiquetas.get("canastamx/disparo")
 
 
-def _leer_lote(ruta):
-    import pandas as pd
-
-    if ruta.suffix.lower() == ".parquet":
-        return pd.read_parquet(ruta)
-    return pd.read_csv(ruta, dtype="string", keep_default_na=False, na_values=[""])
-
-
 # ── Activo 1 · la capa cruda ───────────────────────────────────────────────
 
 @asset(
@@ -280,7 +272,10 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
 def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
     contrato = leer_contrato()
     ruta = Path(capa_cruda["archivo"])
-    df = _leer_lote(ruta)
+    # El ALCANCE, no el archivo: las mismas filas que la ingesta escribió al
+    # bucket en el activo anterior. Ver `compuerta.leer_alcance()` y por qué
+    # leer el archivo entero medía el 5% de D-07 sobre la población equivocada.
+    df = compuerta.leer_alcance(ruta, contrato)
 
     limpias, registros, resumen = compuerta.revisar_lote(df, contrato, ruta.name)
     if limpias is None:
@@ -307,10 +302,9 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
     })
     return {"quincena": capa_cruda["quincena"], "resumen": resumen,
             "detenido": False, "registros": registros,
-            # Las columnas viajan aparte: un lote del que no sobrevive ninguna
-            # fila es un resultado posible, y `DataFrame([])` pierde las columnas.
-            "columnas": list(limpias.columns),
-            "limpias": limpias.to_dict("records")}
+            # El marco viaja tal cual: conserva sus tipos —la fecha tipada del
+            # parquet— y sus columnas aunque no sobreviva ninguna fila.
+            "limpias": limpias}
 
 
 # ── Activo 3 · la decisión de promover el lote ─────────────────────────────
@@ -323,8 +317,6 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
     compute_kind="duckdb",
 )
 def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dict:
-    import pandas as pd
-
     contrato = leer_contrato()
     quincena = filas_revisadas["quincena"]
     lote_nombre = nombre_de_lote(quincena)
@@ -335,9 +327,7 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
                                      "motivo_lote": resumen.get("motivo_lote")})
         return {"quincena": quincena, "resumen": resumen}
 
-    limpias = pd.DataFrame(filas_revisadas["limpias"],
-                           columns=filas_revisadas["columnas"],
-                           dtype="string")
+    limpias = filas_revisadas["limpias"]
     por_fila = filas_revisadas["resumen"]
 
     _, grupos, res_grupo = reglas_de_lote.revisar_grupos(limpias, contrato)
