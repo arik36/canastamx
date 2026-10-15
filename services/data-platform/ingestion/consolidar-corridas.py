@@ -21,12 +21,15 @@ es lo que este guión rescata y deja en un documento versionado.
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
 import sys
 
 AQUI = pathlib.Path(__file__).resolve().parent
 RAIZ = AQUI.parents[2]
-CORRIDAS = AQUI / "corridas"
+# Por omisión, la misma carpeta que escriben ingesta.py y la compuerta, con la
+# misma variable para moverla (ver ingesta.CORRIDAS).
+CORRIDAS = pathlib.Path(os.environ.get("CANASTAMX_CORRIDAS") or AQUI / "corridas")
 SALIDA = RAIZ / "docs" / "datos" / "ingesta-capa-cruda.md"
 CONTRATO = RAIZ / "contracts" / "qqp-v1.yaml"
 

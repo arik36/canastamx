@@ -605,3 +605,19 @@ def test_el_registro_del_lote_dice_con_que_contrato_se_juzgo(entorno, columnas):
     assert md["version_contrato"].value == version
     # La fecha que la fixture puso en CANASTAMX_FECHA_REFERENCIA.
     assert registro["fecha_de_referencia"] == "2026-08-10"
+
+
+def test_hay_una_sola_carpeta_de_evidencia_y_en_las_pruebas_no_es_la_real():
+    """`ingesta.CORRIDAS` es la única definición. La compuerta y la orquestación la
+    importan: si fueran rutas copiadas y se separaran, el activo de capa cruda
+    dejaría de encontrar el registro de la ingesta. Y durante las pruebas apunta a
+    la carpeta temporal de `conftest.py`, no a la evidencia."""
+    import os
+
+    import compuerta
+    import ingesta
+    import orquestacion.definiciones as d
+
+    assert compuerta.SALIDAS == ingesta.CORRIDAS == d.SALIDAS
+    assert str(ingesta.CORRIDAS) == os.environ["CANASTAMX_CORRIDAS"]
+    assert ingesta.CORRIDAS != PLATAFORMA / "ingestion" / "corridas"

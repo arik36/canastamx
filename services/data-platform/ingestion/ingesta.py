@@ -112,7 +112,14 @@ from urllib.parse import urlparse
 
 RAIZ = Path(__file__).resolve().parents[3]
 CONTRATO = RAIZ / "contracts" / "qqp-v1.yaml"
-CORRIDAS = Path(__file__).resolve().parent / "corridas"
+# La carpeta donde quedan los registros de corrida: la evidencia. Se define AQUÍ y
+# sólo aquí; compuerta.py, orquestacion/definiciones.py y consolidar-corridas.py
+# la importan o la leen igual. `CANASTAMX_CORRIDAS` la mueve, y es lo que hacen las
+# pruebas (tests/conftest.py) para no escribir nunca sobre la evidencia real:
+# hasta el 15 de octubre de 2026 la suite sobrescribía `lote-07-2026_Q2.json` con
+# datos de prueba y borraba `compuerta-07-2026_Q2.json`.
+CORRIDAS = Path(os.environ.get("CANASTAMX_CORRIDAS")
+                or Path(__file__).resolve().parent / "corridas")
 PREFIJO = "qqp"
 
 # Día 1–15 → Q1 · 16 en adelante → Q2. Es la convención de la fuente.
