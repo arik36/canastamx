@@ -15,6 +15,8 @@
 duckdb>=1.0        # lee Parquet y CSV, y escribe particionado a S3 (ingesta.py)
 boto3>=1.34        # borra las particiones antes de escribir · httpfs no borra
 PyYAML>=6.0        # lee contracts/qqp-v1.yaml · las 15 columnas y los 3 recortes
+pandera==0.34.1    # ANCLADA · la compuerta de calidad (compuerta.py, ADR 018)
+pandas>=2.2        # lo usa la compuerta; pandera lo trae de todos modos
 
 # Herramientas de desarrollo. El CI instala ruff por su cuenta; se listan aquí
 # para que quien clone tenga lo mismo.
@@ -25,6 +27,16 @@ pytest>=8.0        # todavía no hay pruebas; llegan en la semana 6 con la
 # NOTA · las versiones son mínimos, no anclas. Cuando el frente de datos cierre
 # la semana 7 conviene fijarlas con `pip freeze` para que el experimento de la
 # semana 13 corra sobre el mismo conjunto que se documentó.
+#
+# EXCEPCIÓN · pandera, desde el 14 de octubre de 2026. Es la que decide qué fila
+# se aparta: si cambia de versión y cambia de criterio, cambia lo que el proyecto
+# mide, y H1 deja de ser comparable entre semanas. Subirla de versión es un
+# cambio con su propia solicitud y su propia corrida de los 38 lotes.
+#
+# `pandas` NO se ancla, y conviene saberlo: su 3.0 cambió el tipo por omisión de
+# las columnas de texto, y eso ya movió el comportamiento de la compuerta una
+# vez. Si los conteos de cuarentena se mueven sin que nadie toque el contrato,
+# el primer sospechoso es pandas.
 #
 # EXCEPCIÓN · ruff, desde el 9 de octubre de 2026. El CI corría
 # `pip install ruff` sin ancla, y el día que salió ruff 0.17.0 la regla UP017
