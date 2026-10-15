@@ -480,16 +480,57 @@ def test_el_activo_juzga_el_alcance_y_no_el_archivo(entorno, columnas):
     assert promovido["filas_salida"].value == 20
 
 
-def test_el_activo_lee_parquet_sin_pyarrow(entorno, columnas, monkeypatch):
-    """Los 38 archivos del corpus son parquet. Con pyarrow bloqueado —como en el CI,
-    donde no está instalado— la partición tiene que materializarse igual."""
-    d, llegada = entorno
-    _parquet_mezclado(llegada, columnas)
-    monkeypatch.setitem(sys.modules, "pyarrow", None)
-    monkeypatch.setitem(sys.modules, "fastparquet", None)
-    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
-                            partition_key="2026-07-Q2")
-    assert r.success
+def test_el_activo_lee_parquet_sin_pyarrow(entorno, columnas):
+    """Los 38 archivos del corpus son parquet, y en el CI pyarrow no está instalado:
+    la partición tiene que materializarse igual.
+
+    **Se corre en un intérprete aparte, y la razón es la lección de esta prueba.**
+    La primera versión bloqueaba pyarrow con `monkeypatch` dentro de pytest, y en
+    una máquina que SÍ tiene pyarrow eso deja un estado que no existe en ningún
+    lado: pandas ya había cargado con pyarrow —sus columnas de texto son
+    `ArrowStringArray`— y después pyarrow deja de poder importarse. Dagster guarda
+    el marco entre activos con pickle, pickle necesita `pyarrow.lib` para guardar
+    esas columnas, y truena. Falló así en la máquina de A el 15 de octubre, con
+    83 de 84 pasando.
+
+    El código estaba bien; la prueba simulaba mal. Las dos situaciones reales
+    funcionan: con pyarrow instalado pickle lo importa sin problema, y sin pyarrow
+    pandas usa columnas de Python desde el principio. Para simular la segunda hay
+    que bloquear pyarrow ANTES de que pandas cargue, y eso sólo se puede en un
+    intérprete nuevo.
+    """
+    import subprocess
+    import textwrap
+
+    _parquet_mezclado(entorno[1], columnas)
+    codigo = textwrap.dedent(f"""
+        import sys
+        sys.modules["pyarrow"] = None          # ANTES de pandas: como en el CI
+        sys.modules["fastparquet"] = None
+        sys.path.insert(0, {str(PLATAFORMA)!r})
+        sys.path.insert(0, {str(PLATAFORMA / "ingestion")!r})
+        import pandas as pd
+        from dagster import materialize
+        from orquestacion.definiciones import (
+            capa_cruda, filas_revisadas, lote_promovido)
+        r = materialize([capa_cruda, filas_revisadas, lote_promovido],
+                        partition_key="2026-07-Q2")
+        md = r.asset_materializations_for_node("filas_revisadas")[0].metadata
+        texto = pd.Series(["x"]).array
+        print("RESULTADO", r.success, md["filas_entrada"].value,
+              type(texto).__name__)
+    """)
+    # El entorno ya trae CANASTAMX_LOTES y los demás: los puso la fixture.
+    hecho = subprocess.run([sys.executable, "-c", codigo], capture_output=True,
+                           text=True, check=False)
+    ultima = [linea for linea in hecho.stdout.splitlines()
+              if linea.startswith("RESULTADO")]
+    assert ultima, hecho.stderr[-3000:]
+    _, exito, filas, arreglo = ultima[-1].split()
+    assert exito == "True", hecho.stderr[-3000:]
+    assert filas == "20", f"revisó {filas} filas; el alcance son 20"
+    assert "Arrow" not in arreglo, (
+        f"pandas usó {arreglo}: el bloqueo llegó tarde y la prueba no simula el CI")
 
 
 def test_un_parquet_de_2025_tambien(entorno, columnas):
