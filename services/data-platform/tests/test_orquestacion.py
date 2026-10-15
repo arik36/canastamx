@@ -440,3 +440,121 @@ def test_las_compuertas_no_importan_dagster():
         assert "dagster" not in texto.lower(), (
             f"{nombre} menciona dagster; entonces irse de Dagster costaría "
             "reescribir las compuertas")
+
+
+# ── Con un lote con la forma del corpus: parquet, y casi todo fuera del alcance ─
+
+def _parquet_mezclado(llegada, columnas, nombre="07-2026_Q2.parquet"):
+    """20 filas del alcance limpias, y 140 de Nuevo León —fuera del alcance— de
+    las que 30 vienen con defecto. Si la compuerta revisara el archivo entero,
+    esas 30 la harían detener el lote."""
+    from lotes import escribir_parquet
+
+    filas = [fila(columnas, producto=f"D{i}", direccion=f"C{i}") for i in range(20)]
+    filas += [fila(columnas, estado="Nuevo León", producto=f"F{i}", direccion=f"N{i}")
+              for i in range(110)]
+    filas += [fila(columnas, estado="Nuevo León", producto="L" * 90, direccion=f"M{i}")
+              for i in range(30)]
+    return escribir_parquet(llegada / nombre, filas, columnas)
+
+
+def test_el_activo_juzga_el_alcance_y_no_el_archivo(entorno, columnas):
+    """**La prueba que habría detenido la primera corrida real.** Las 30 filas
+    defectuosas son de Nuevo León, que no es del alcance. Sobre el archivo entero
+    serían 30 de 160, el 18.75%, y el lote se detendría. Sobre el alcance son 0
+    de 20, y el lote pasa. Ésa es la diferencia entre medir el 5% de D-07 sobre la
+    población del contrato o sobre otra."""
+    d, llegada = entorno
+    _parquet_mezclado(llegada, columnas)
+
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2026-07-Q2")
+    assert r.success
+    revisadas = r.asset_materializations_for_node("filas_revisadas")[0].metadata
+    assert revisadas["filas_entrada"].value == 20, (
+        f"la compuerta revisó {revisadas['filas_entrada'].value} filas; "
+        "el alcance son 20")
+    promovido = r.asset_materializations_for_node("lote_promovido")[0].metadata
+    assert promovido["resultado"].value == "PASO", (
+        "el lote se detuvo por filas que no son del alcance")
+    assert promovido["filas_salida"].value == 20
+
+
+def test_el_activo_lee_parquet_sin_pyarrow(entorno, columnas):
+    """Los 38 archivos del corpus son parquet, y en el CI pyarrow no está instalado:
+    la partición tiene que materializarse igual.
+
+    **Se corre en un intérprete aparte, y la razón es la lección de esta prueba.**
+    La primera versión bloqueaba pyarrow con `monkeypatch` dentro de pytest, y en
+    una máquina que SÍ tiene pyarrow eso deja un estado que no existe en ningún
+    lado: pandas ya había cargado con pyarrow —sus columnas de texto son
+    `ArrowStringArray`— y después pyarrow deja de poder importarse. Dagster guarda
+    el marco entre activos con pickle, pickle necesita `pyarrow.lib` para guardar
+    esas columnas, y truena. Falló así en la máquina de A el 15 de octubre, con
+    83 de 84 pasando.
+
+    El código estaba bien; la prueba simulaba mal. Las dos situaciones reales
+    funcionan: con pyarrow instalado pickle lo importa sin problema, y sin pyarrow
+    pandas usa columnas de Python desde el principio. Para simular la segunda hay
+    que bloquear pyarrow ANTES de que pandas cargue, y eso sólo se puede en un
+    intérprete nuevo.
+    """
+    import subprocess
+    import textwrap
+
+    _parquet_mezclado(entorno[1], columnas)
+    codigo = textwrap.dedent(f"""
+        import sys
+        sys.modules["pyarrow"] = None          # ANTES de pandas: como en el CI
+        sys.modules["fastparquet"] = None
+        sys.path.insert(0, {str(PLATAFORMA)!r})
+        sys.path.insert(0, {str(PLATAFORMA / "ingestion")!r})
+        import pandas as pd
+        from dagster import materialize
+        from orquestacion.definiciones import (
+            capa_cruda, filas_revisadas, lote_promovido)
+        r = materialize([capa_cruda, filas_revisadas, lote_promovido],
+                        partition_key="2026-07-Q2")
+        md = r.asset_materializations_for_node("filas_revisadas")[0].metadata
+        texto = pd.Series(["x"]).array
+        print("RESULTADO", r.success, md["filas_entrada"].value,
+              type(texto).__name__)
+    """)
+    # El entorno ya trae CANASTAMX_LOTES y los demás: los puso la fixture.
+    hecho = subprocess.run([sys.executable, "-c", codigo], capture_output=True,
+                           text=True, check=False)
+    ultima = [linea for linea in hecho.stdout.splitlines()
+              if linea.startswith("RESULTADO")]
+    assert ultima, hecho.stderr[-3000:]
+    _, exito, filas, arreglo = ultima[-1].split()
+    assert exito == "True", hecho.stderr[-3000:]
+    assert filas == "20", f"revisó {filas} filas; el alcance son 20"
+    assert "Arrow" not in arreglo, (
+        f"pandas usó {arreglo}: el bloqueo llegó tarde y la prueba no simula el CI")
+
+
+def test_un_parquet_de_2025_tambien(entorno, columnas):
+    """Los dos errores juntos: el nombre de 2025 (#169) y el parquet."""
+    d, llegada = entorno
+    from lotes import escribir_parquet
+
+    escribir_parquet(llegada / "11-2025_01.parquet",
+                     [fila(columnas, producto=f"P{i}", direccion=f"C{i}",
+                           fecha_registro="2025/11/10") for i in range(8)], columnas)
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2025-11-Q1")
+    assert r.success
+    md = r.asset_materializations_for_node("filas_revisadas")[0].metadata
+    assert md["filas_entrada"].value == 8
+
+
+def test_ninguna_lectura_de_lotes_pasa_por_pandas():
+    """La guardia de fondo: ni la compuerta ni la orquestación leen el lote con
+    pandas. Si alguien lo vuelve a hacer, el parquet vuelve a necesitar pyarrow y
+    la población vuelve a ser el archivo entero."""
+    for ruta in (PLATAFORMA / "ingestion" / "compuerta.py",
+                 PLATAFORMA / "orquestacion" / "definiciones.py"):
+        codigo = codigo_sin_comentarios(ruta)
+        assert "read_parquet" not in codigo and "read_csv" not in codigo, (
+            f"{ruta.name} lee el lote con pandas; tiene que ser con "
+            "compuerta.leer_alcance()")

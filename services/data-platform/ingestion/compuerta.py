@@ -83,7 +83,14 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ingesta import columnas_del_contrato, leer_contrato, morir
+from ingesta import (
+    columnas_del_contrato,
+    lector,
+    lectura_declarada,
+    leer_contrato,
+    morir,
+    recorte_del_contrato,
+)
 
 NOMBRE_COMPUERTA = "contrato_por_fila"
 SALIDAS = Path(__file__).resolve().parent / "corridas"
@@ -330,11 +337,58 @@ def motivos_que_el_contrato_no_declara(contrato=None):
 
 # ── Línea de comandos ──────────────────────────────────────────────────────
 
-def _leer(ruta):
-    import pandas as pd
-    if ruta.suffix.lower() == ".parquet":
-        return pd.read_parquet(ruta)
-    return pd.read_csv(ruta, dtype="string", keep_default_na=False, na_values=[""])
+def leer_alcance(ruta, contrato, sin_recorte=False):
+    """Las filas del lote que el contrato considera suyas, y sólo ésas.
+
+    **Ésta es la población sobre la que la compuerta juzga, y no es un detalle.**
+    Un archivo del corpus trae las 32 entidades y todos los catálogos: en
+    promedio, sólo el 12.45% de sus filas es del alcance del contrato. La
+    compuerta mide el 5% de D-07 y la contención de H1 sobre **el alcance**
+    (2,658,906 filas en los 38 lotes), no sobre el corpus (21,357,873). Si
+    juzgara el archivo entero, el denominador sería otro y las cifras dejarían de
+    ser comparables con todo lo demás del proyecto.
+
+    La primera versión de esta compuerta leía el archivo entero con pandas, y eso
+    tenía dos problemas que no se veían con los lotes de prueba, porque todas sus
+    filas eran del alcance:
+
+      1. **La población equivocada.** Medido sobre un parquet con 91 filas de las
+         que 11 son del alcance: la compuerta revisaba las 91.
+      2. **`pd.read_parquet` necesita pyarrow**, que no está en `requirements.txt`.
+         Los 38 archivos del corpus son parquet, así que cualquier lote real
+         fallaba al leerse. Las pruebas no lo veían porque todas eran CSV.
+
+    Esta versión lee **exactamente como `ingesta.py`**: con su `lector()` —que
+    respeta la codificación y el formato de fecha que el contrato declara para
+    cada archivo— y con su `recorte_del_contrato()`, las mismas tres condiciones
+    (entidad, ventana y catálogo). No se reescriben aquí: una condición PARECIDA
+    no es la misma condición, y las filas que la compuerta revisa tienen que ser
+    las mismas que la ingesta escribe al bucket. DuckDB lee el parquet sin
+    pyarrow.
+
+    Una consecuencia, dicha en voz alta: con el recorte, una fila fechada fuera de
+    `alcance.ventana` ya no llega a la compuerta —la ingesta la cuenta como «fuera
+    por ventana», no como defecto—, así que el motivo `fecha_fuera_de_ventana`
+    sólo puede dispararse con `sin_recorte=True`. Es lo coherente: una fila que no
+    es del alcance no cuenta contra el 5% del alcance.
+
+    Con CSV, una fecha ilegible detiene la lectura en lugar de ir a cuarentena,
+    porque la condición de la ventana necesita la fecha. Es lo mismo que ya hace
+    `ingesta.py` con ese archivo, así que la compuerta no es más estricta que la
+    ingesta. Con el corpus no puede pasar: en parquet la fecha viene tipada.
+    """
+    import duckdb
+
+    ruta = Path(ruta)
+    decl = lectura_declarada(contrato, ruta.name)
+    # SELECT * y no las 15: si al archivo le falta una columna que no es de las
+    # del recorte, `revisar_lote()` lo devuelve como `columna_requerida_faltante`
+    # a nivel LOTE (CU-02 · 2b), que es mejor que un error de SQL.
+    sql = f"SELECT * FROM {lector(ruta, decl)}"
+    if not sin_recorte:
+        s = recorte_del_contrato(contrato)["sql"]
+        sql += f" WHERE ({s['estado']}) AND ({s['ventana']}) AND ({s['catalogo']})"
+    return duckdb.connect(":memory:").sql(sql).df()
 
 
 def main():
@@ -344,6 +398,10 @@ def main():
     p.add_argument("--motivos", action="store_true",
                    help="imprime qué motivos no están declarados en el contrato y termina")
     p.add_argument("--simular", action="store_true", help="no escribe archivos de salida")
+    p.add_argument("--sin-recorte", action="store_true", dest="sin_recorte",
+                   help="revisa el archivo COMPLETO, no sólo el alcance del contrato. "
+                        "Igual que en ingesta.py: para reprocesar si el ADR 001 o el "
+                        "005 cambian. Las cifras que salen así NO son del alcance")
     a = p.parse_args()
 
     contrato = leer_contrato()
@@ -363,7 +421,7 @@ def main():
         morir(f"no encuentro {ruta}")
     lote = a.lote or ruta.stem
 
-    df = _leer(ruta)
+    df = leer_alcance(ruta, contrato, sin_recorte=a.sin_recorte)
     limpias, cuarentena, resumen = revisar_lote(df, contrato, nombre_archivo=ruta.name)
     if limpias is None:
         print(f"✗ lote detenido: {resumen['motivo_lote']} · faltan "
