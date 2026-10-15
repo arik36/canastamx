@@ -358,6 +358,13 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
     registro = SALIDAS / f"lote-{lote_nombre}.json"
     registro.write_text(json.dumps({
         "lote": lote_nombre, "quincena": quincena,
+        # Con qué contrato se juzgó y contra qué fecha se midió la frescura. Las
+        # dos son columnas NOT NULL de la tabla `corrida` del esquema de
+        # operación, y sin ellas un registro viejo y uno nuevo se ven iguales: el
+        # 15 de octubre, después de la 1.3.5, se leyó un registro de la 1.3.4 y lo
+        # único que avisó fue un KeyError.
+        "version_contrato": contrato["version"],
+        "fecha_de_referencia": frescura.get("fecha_referencia") or FECHA_REFERENCIA,
         "corrida": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         # El instante del disparo lo pone el sensor en las etiquetas. En una
         # corrida hecha a mano no hay, y eso no es un error: es que nadie la
@@ -372,9 +379,17 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         "umbral": resumen["umbral"],
         "filas_salida": resumen["filas_salida"],
         "grupos_en_colision": res_grupo["grupos_en_colision"],
+        # Los tres cubos de la clave de fila, en grupos y filas sobrantes: es lo
+        # que el contrato 1.3.3 pidió volver a medir en la primera corrida, y
+        # contra lo que se compara la deduplicación de la semana del 19.
+        "cubos_de_la_clave": MetadataValue.json({
+            cubo: {"grupos": res_grupo[f"grupos_{cubo}"],
+                   "sobrantes": res_grupo[f"sobrantes_{cubo}"]}
+            for cubo in ("captura_doble", "observaciones_multiples", "en_colision")}),
         "frescura": MetadataValue.json(frescura),
         "por_motivo": MetadataValue.json(resumen["por_motivo"]),
         "registro": str(registro),
+        "version_contrato": contrato["version"],
     })
     return {"quincena": quincena, "resumen": resumen}
 
