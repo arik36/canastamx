@@ -188,13 +188,81 @@ def test_cada_motivo_existe_en_el_catalogo_con_nivel_fila(motivo):
     assert fila_sql.group(2) == "CUARENTENA"
 
 
-def test_los_tres_motivos_sin_declarar_son_los_que_el_catalogo_marca():
-    """`en_contrato = false` en el catálogo y «sin declarar» en la compuerta
-    tienen que ser la misma lista. Es el pendiente del 9 de noviembre."""
-    del_catalogo = {m for m in MOTIVOS
-                    if re.search(rf"\('{m}',[^)]*?,\s*false,", ESQUEMA_SQL)}
-    assert set(motivos_que_el_contrato_no_declara()) == del_catalogo
-    assert del_catalogo == {"valor_requerido_vacio", "largo_excedido", "tipo_invalido"}
+def test_ningun_motivo_queda_sin_declarar_y_el_catalogo_lo_dice():
+    """Era el pendiente del 9 de noviembre, y lo cerró la 1.3.5: la compuerta no
+    emite ningún motivo que el contrato no declare como dato, y el catálogo del
+    esquema ya no marca ninguno de nivel FILA con `en_contrato = false`."""
+    assert motivos_que_el_contrato_no_declara() == []
+    sin_declarar = re.findall(r"\('(\w+)',\s*'FILA',[^)]*?,\s*false,", ESQUEMA_SQL)
+    assert sin_declarar == []
+
+
+# ── Los motivos de fila, en los tres lugares que los nombran (1.3.5) ───────
+
+ANALITICA = (RAIZ / "docs" / "analisis" / "openapi" / "analitica.yaml").read_text(
+    encoding="utf-8")
+
+
+def _catalogo_sql_de_fila():
+    """{codigo: regla} de las filas del catálogo con nivel FILA."""
+    return dict(re.findall(
+        r"\('(\w+)',\s*'FILA',\s*'\w+',\s*'([^']+)'", ESQUEMA_SQL))
+
+
+def test_los_motivos_de_fila_son_los_mismos_en_contrato_esquema_e_interfaz():
+    """**La prueba que justifica la 1.3.5.** Tres documentos nombran los motivos
+    de cuarentena: el contrato, el catálogo del esquema de operación y el `enum`
+    `MotivoDeCuarentena` de la interfaz analítica. Si se separan, la consola
+    filtra por un motivo que la compuerta no emite, o la base rechaza uno que sí
+    emite. Es la falla que este proyecto estudia, aplicada a sus propios papeles.
+    """
+    del_contrato = CONTRATO["motivos_de_fila"]
+    del_esquema = _catalogo_sql_de_fila()
+    enum = re.search(r"MotivoDeCuarentena:.*?enum:\s*\[([^\]]+)\]", ANALITICA, re.DOTALL)
+    assert enum, "no encontré el enum MotivoDeCuarentena en analitica.yaml"
+    de_la_interfaz = {m.strip() for m in enum.group(1).split(",")}
+
+    assert set(del_contrato) == set(del_esquema) == de_la_interfaz
+    assert del_contrato == del_esquema, (
+        "mismos motivos, distinta regla: "
+        + str({m: (del_contrato[m], del_esquema[m]) for m in del_contrato
+               if del_contrato[m] != del_esquema[m]}))
+
+
+def test_la_regla_de_cada_motivo_existe_en_el_contrato():
+    """Una regla que no existe es un nombre que apunta al vacío. `*` quiere decir
+    «alguna columna»: basta con que una la declare."""
+    for motivo, regla in CONTRATO["motivos_de_fila"].items():
+        pasos, nodos = regla.split("."), [CONTRATO]
+        for paso in pasos:
+            siguientes = []
+            for nodo in nodos:
+                if not isinstance(nodo, dict):
+                    continue
+                if paso == "*":
+                    siguientes += list(nodo.values())
+                elif paso in nodo:
+                    siguientes.append(nodo[paso])
+            nodos = siguientes
+        assert nodos, f"{motivo} dice venir de `{regla}`, y el contrato no la trae"
+
+
+def test_cada_motivo_de_la_compuerta_esta_en_el_contrato_con_la_misma_regla():
+    for motivo, regla in MOTIVOS.items():
+        assert CONTRATO["motivos_de_fila"].get(motivo) == regla, motivo
+
+
+def test_un_comentario_ya_no_cuenta_como_declaracion(contrato):
+    """Hasta la 1.3.4 la función buscaba sobre el texto del contrato, y dos
+    motivos «estaban» porque los nombraba un comentario. Sin el catálogo como
+    dato, ahora los cinco faltan, aunque el texto siga mencionándolos."""
+    sin_catalogo = {k: v for k, v in contrato.items() if k != "motivos_de_fila"}
+    assert set(motivos_que_el_contrato_no_declara(sin_catalogo)) == set(MOTIVOS)
+
+
+def test_una_regla_cambiada_tambien_es_no_declarar(contrato):
+    contrato["motivos_de_fila"]["largo_excedido"] = "columnas.*.otra_cosa"
+    assert motivos_que_el_contrato_no_declara(contrato) == ["largo_excedido"]
 
 
 def test_el_registro_de_cuarentena_tiene_la_forma_de_la_tabla(contrato):

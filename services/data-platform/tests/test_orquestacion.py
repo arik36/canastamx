@@ -548,11 +548,35 @@ def test_un_parquet_de_2025_tambien(entorno, columnas):
     assert md["filas_entrada"].value == 8
 
 
+def test_los_tres_cubos_viajan_en_el_linaje_del_lote(entorno, columnas):
+    """Son la cifra que el contrato 1.3.3 pidió volver a medir en la primera
+    corrida, y contra la que se compara la deduplicación de la semana del 19."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", [
+        fila(columnas, producto="Frijol", precio="30.00"),
+        fila(columnas, producto="Frijol", precio="30.50"),
+        fila(columnas, producto="Arroz", precio="20.00"),
+        fila(columnas, producto="Arroz", precio="37.00"),
+    ] + [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(40)],
+        columnas)
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2026-07-Q2")
+    cubos = r.asset_materializations_for_node(
+        "lote_promovido")[0].metadata["cubos_de_la_clave"].value
+    assert cubos["captura_doble"] == {"grupos": 1, "sobrantes": 1}
+    assert cubos["observaciones_multiples"] == {"grupos": 1, "sobrantes": 1}
+    assert cubos["en_colision"] == {"grupos": 0, "sobrantes": 0}
+
+
 def test_ninguna_lectura_de_lotes_pasa_por_pandas():
-    """La guardia de fondo: ni la compuerta ni la orquestación leen el lote con
+    """La guardia de fondo: ni las compuertas ni la orquestación leen el lote con
     pandas. Si alguien lo vuelve a hacer, el parquet vuelve a necesitar pyarrow y
-    la población vuelve a ser el archivo entero."""
+    la población vuelve a ser el archivo entero.
+
+    `lote.py` se agregó el 15 de octubre: su línea de comandos seguía leyendo el
+    archivo entero con pandas después del #170, porque esta guardia no la miraba."""
     for ruta in (PLATAFORMA / "ingestion" / "compuerta.py",
+                 PLATAFORMA / "ingestion" / "lote.py",
                  PLATAFORMA / "orquestacion" / "definiciones.py"):
         codigo = codigo_sin_comentarios(ruta)
         assert "read_parquet" not in codigo and "read_csv" not in codigo, (

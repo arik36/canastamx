@@ -372,6 +372,13 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         "umbral": resumen["umbral"],
         "filas_salida": resumen["filas_salida"],
         "grupos_en_colision": res_grupo["grupos_en_colision"],
+        # Los tres cubos de la clave de fila, en grupos y filas sobrantes: es lo
+        # que el contrato 1.3.3 pidió volver a medir en la primera corrida, y
+        # contra lo que se compara la deduplicación de la semana del 19.
+        "cubos_de_la_clave": MetadataValue.json({
+            cubo: {"grupos": res_grupo[f"grupos_{cubo}"],
+                   "sobrantes": res_grupo[f"sobrantes_{cubo}"]}
+            for cubo in ("captura_doble", "observaciones_multiples", "en_colision")}),
         "frescura": MetadataValue.json(frescura),
         "por_motivo": MetadataValue.json(resumen["por_motivo"]),
         "registro": str(registro),

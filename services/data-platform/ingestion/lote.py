@@ -4,19 +4,20 @@
 `compuerta.py` revisa fila por fila: Pandera mira una fila y dice si cumple el
 contrato. Hay reglas que con una fila no se pueden ni plantear:
 
-  · **Colisión de precio alta** (contrato 1.3.3 · `clave_de_fila`). Dos filas con
-    la misma clave y precios que difieren en más de $50: no se sabe cuál precio es
-    el bueno. Para verlo hacen falta las dos filas, y la decisión es sobre el
-    GRUPO, no sobre una fila.
+  · **La clave de fila** (contrato · `clave_de_fila`). Filas con la misma clave
+    forman un grupo, y la diferencia entre el precio mayor y el menor del grupo
+    lo pone en uno de tres cubos: captura doble, observaciones múltiples o
+    colisión alta. Sólo la colisión alta aparta filas, y aparta el GRUPO
+    completo: con más de $50 de diferencia no se sabe cuál precio es el bueno.
   · **Frescura** (contrato · `frescura`). Son días desde el `fecha_registro` más
     reciente que se logró ingerir. Eso es un máximo sobre el lote entero.
 
-Las dos se calculan **en DuckDB** y no en pandas, y no es preferencia: la
-normalización canónica que el contrato manda usar para comparar claves está
-escrita en el contrato como **expresión SQL de DuckDB**
-(`normalizacion.canonica`). Reimplementarla en pandas sería escribir una
-normalización PARECIDA, que es justo el error que el contrato documenta en esa
-misma línea.
+Las dos se calculan **en DuckDB** y no en pandas, y no es preferencia: las dos
+normalizaciones con que el contrato manda comparar la clave están escritas en el
+contrato como **expresiones SQL de DuckDB** (`normalizacion.canonica` y
+`normalizacion.mayusculas_sin_acentos`). Reimplementarlas en pandas sería
+escribir una normalización PARECIDA, que es justo el error que el contrato
+documenta en el párrafo de `canonica`.
 
 ## Qué se lee del contrato y qué NO se escribe aquí
 
@@ -24,31 +25,44 @@ Igual que en `compuerta.py`: ninguna cifra del contrato vive en este archivo.
 
 | Del contrato | Para qué |
 |---|---|
-| `normalizacion.canonica` | la expresión SQL con que se comparan las claves |
+| `normalizacion.canonica` · `.mayusculas_sin_acentos` | las expresiones SQL |
 | `normalizacion.orden` | que reparar el `?` va ANTES de normalizar |
 | `normalizacion.reparar_interrogantes.diccionario` | las 1,650 reparaciones |
 | `clave_de_fila.columnas` | qué columnas forman el grupo |
-| `clave_de_fila.colision_precio_alta.mas_de` | el umbral de la colisión alta |
+| `clave_de_fila.normaliza_por_columna` | con qué expresión se compara cada una |
+| `clave_de_fila.captura_doble.menos_de` | la frontera de la captura doble ($1) |
+| `clave_de_fila.colision_precio_alta.mas_de` | la frontera de la colisión alta ($50) |
 | `clave_de_fila.colision_precio_alta.a_cuarentena` | si va el grupo o la fila |
 | `frescura.avisa_dias` · `frescura.bloquea_dias` | los dos umbrales |
 | `frescura.no_aplica_mientras` | por qué hoy la frescura no aplica |
 
 ## Lo que este archivo NO hace, y por qué
 
-**No deduplica la captura doble.** El contrato dice qué hacer
-(`clave_de_fila.desempate: min_precio`) pero el umbral que distingue una captura
-doble de una observación múltiple —el $1— está sólo en un **comentario** de esa
-línea, no como dato. Aplicarlo obligaría a escribir `1` en este código, que es
-exactamente lo que el proyecto decidió no hacer. Así que no se aplica y se
-reporta: `cifras_que_el_contrato_no_declara()`. Un comentario no es una
-declaración, y ningún programa puede obedecerlo.
-"""
+**No deduplica la captura doble: la cuenta.** Deduplicar es transformar, y las
+transformaciones de capa cruda a intermedia son de la semana del 19 al 25 de
+octubre (cronograma, semana 8). Aquí se cuentan los tres cubos —grupos y filas
+sobrantes de cada uno— para que la deduplicación de la semana que entra se
+compruebe contra estas cifras, y para volver a medir lo que el contrato 1.3.3
+pidió medir en la primera corrida de la compuerta.
 
-from __future__ import annotations
+## Dos errores de la versión anterior, corregidos el 15 de octubre de 2026
+
+1. **La marca se comparaba en forma canónica.** El contrato dice, desde 1.3.3, que
+   la marca se compara en mayúsculas sin acentos (`normalizacion.marca.a`, ADR
+   002 · 3) y las otras cuatro columnas en forma canónica. La canónica quita la
+   puntuación y une `Kellogg's` con `Kellogg´s`; la de la marca no. Esta
+   compuerta aplicaba la canónica a las cinco. La 1.3.5 lo deja como dato en
+   `clave_de_fila.normaliza_por_columna` y aquí se lee.
+2. **La cuarentena de colisión salía con nivel `GRUPO`.** La tabla `cuarentena`
+   del esquema de operación sólo acepta `FILA` —su `CHECK (nivel = 'FILA')` y su
+   llave foránea al catálogo lo exigen—, y el grupo va en la columna `grupo`.
+   Cargar esta cuarentena habría fallado fila por fila el día que la base exista.
+"""
 
 import csv
 import datetime as dt
 import json
+import numbers
 import re
 import sys
 from pathlib import Path
@@ -60,15 +74,23 @@ from ingesta import CONTRATO, leer_contrato
 NOMBRE_COMPUERTA = "lote_contra_el_contrato"
 
 # Igual que en compuerta.py: el motivo apunta a la regla del contrato que lo
-# produce. Si el contrato deja de declararla, la compuerta deja de poder emitirlo.
+# produce, y tiene que estar en `motivos_de_fila`. Se DECIDE sobre el grupo, pero
+# se REGISTRA por fila, con nivel FILA y el grupo anotado: así lo pide la tabla
+# `cuarentena` del esquema de operación.
 MOTIVOS_DE_GRUPO = {
     "colision_precio_alta": "clave_de_fila.colision_precio_alta",
 }
 
-# El umbral de la captura doble. Está en el contrato, pero en prosa.
-CIFRAS_EN_PROSA = {
-    "umbral_de_captura_doble": "clave_de_fila.desempate",
+# Las cifras que esta compuerta necesita del contrato COMO DATO. Hasta 1.3.4 el
+# umbral de la captura doble vivía en un comentario y no se podía obedecer.
+CIFRAS_DEL_CONTRATO = {
+    "umbral_de_captura_doble": "clave_de_fila.captura_doble.menos_de",
 }
+
+# Las normalizaciones que la clave de fila puede pedir. Cada nombre es una
+# expresión que el contrato declara en `normalizacion`; `ninguna` compara el valor
+# tal como llegó, que es lo que se hace con una fecha.
+NORMALIZACIONES = ("canonica", "mayusculas_sin_acentos", "ninguna")
 
 
 def _con():
@@ -77,25 +99,48 @@ def _con():
     return duckdb.connect(":memory:")
 
 
-def expresion_canonica(contrato, columna):
-    """La normalización canónica del contrato, con `col` sustituida por la columna.
+def _nodo(contrato, ruta):
+    """El valor en una ruta del contrato como `a.b.c`, o None si no está."""
+    nodo = contrato
+    for paso in ruta.split("."):
+        if not isinstance(nodo, dict) or paso not in nodo:
+            return None
+        nodo = nodo[paso]
+    return nodo
 
-    Se lee; no se escribe. El contrato guarda la expresión completa a propósito, y
-    dice por qué: «una normalización PARECIDA no es la misma normalización».
+
+def expresion(contrato, nombre, columna):
+    """Una normalización del contrato, con `col` sustituida por la columna.
+
+    Se lee; no se escribe. El contrato guarda `canonica` con su explicación
+    debajo, así que la expresión es lo que va hasta el primer renglón en blanco;
+    `mayusculas_sin_acentos` es un solo renglón.
     """
-    plantilla = contrato["normalizacion"]["canonica"]
-    # El contrato guarda la expresión y, debajo, la explicación de por qué está
-    # completa. La expresión es lo que va hasta el primer renglón en blanco.
-    expresion = plantilla.split("\n\n")[0].strip()
+    plantilla = contrato["normalizacion"].get(nombre)
+    if plantilla is None:
+        raise ValueError(
+            f"el contrato no declara la expresión de `normalizacion.{nombre}`")
+    if not isinstance(plantilla, str):
+        # `normalizacion.marca` es un diccionario ({a: …}), no una expresión: pedir
+        # su expresión es un error de quien llama, y se dice así.
+        raise TypeError(
+            f"`normalizacion.{nombre}` del contrato no es una expresión SQL: "
+            f"es {type(plantilla).__name__}")
+    sql = plantilla.split("\n\n")[0].strip()
     # `col` como palabra completa: un reemplazo ingenuo también tocaría un `col`
     # dentro de otro identificador el día que la expresión crezca.
-    nueva, n = re.subn(r"\bcol\b", f'"{columna}"', expresion)
+    nueva, n = re.subn(r"\bcol\b", f'"{columna}"', sql)
     if n != 1:
         raise ValueError(
-            f"`normalizacion.canonica` del contrato menciona `col` {n} veces; "
+            f"`normalizacion.{nombre}` del contrato menciona `col` {n} veces; "
             "se esperaba exactamente una, para saber dónde va la columna"
         )
     return nueva
+
+
+def expresion_canonica(contrato, columna):
+    """La normalización canónica. Se queda por compatibilidad: es `expresion()`."""
+    return expresion(contrato, "canonica", columna)
 
 
 def reparaciones(contrato, columnas=None):
@@ -124,23 +169,36 @@ def reparaciones(contrato, columnas=None):
 
 
 def cifras_que_el_contrato_no_declara(contrato=None):
-    """Qué cifras usa esta compuerta que el contrato sólo tiene en prosa.
+    """Qué cifras de `CIFRAS_DEL_CONTRATO` no están en el contrato como número.
 
-    Hermana de `compuerta.motivos_que_el_contrato_no_declara()`, y por la misma
-    razón: se busca sobre el TEXTO del contrato, porque un comentario desaparece al
-    interpretar el YAML. Hoy devuelve el umbral de la captura doble, cuyo `$1` vive
-    en el comentario de `clave_de_fila.desempate`.
+    Hermana de `compuerta.motivos_que_el_contrato_no_declara()`. Hasta 1.3.4 se
+    buscaba sobre el texto y devolvía el umbral de la captura doble, cuyo `$1`
+    estaba en un comentario. Desde 1.3.5 se busca sobre el DATO, que es lo único
+    que un programa puede obedecer: un comentario ya no cuenta.
     """
     contrato = contrato or leer_contrato()
-    faltan = []
-    clave = contrato["clave_de_fila"]
-    if clave.get("desempate") and "umbral_de_captura_doble" not in str(clave):
-        faltan.append("umbral_de_captura_doble")
-    return faltan
+    return [nombre for nombre, ruta in CIFRAS_DEL_CONTRATO.items()
+            if not isinstance(_nodo(contrato, ruta), numbers.Real)
+            or isinstance(_nodo(contrato, ruta), bool)]
+
+
+def _normalizacion_de(contrato, columna):
+    """Con qué se compara una columna de la clave: lo dice el contrato, columna por
+    columna. Si una columna de la clave no lo dice, la compuerta se niega: adivinar
+    es como se coló la canónica en la marca."""
+    por_columna = contrato["clave_de_fila"].get("normaliza_por_columna") or {}
+    nombre = por_columna.get(columna)
+    if nombre not in NORMALIZACIONES:
+        raise ValueError(
+            f"`clave_de_fila.normaliza_por_columna.{columna}` dice «{nombre}»; "
+            f"tiene que ser una de {', '.join(NORMALIZACIONES)}"
+        )
+    return nombre
 
 
 def _sql_de_la_clave(contrato, columnas_clave):
-    """Las expresiones que forman la clave, reparadas y normalizadas, en ese orden.
+    """Las expresiones que forman la clave: reparadas y normalizadas, en ese orden,
+    cada columna con la normalización que el contrato le asigna.
 
     El orden lo manda el contrato (`normalizacion.orden`), y no es cosmético:
     normalizar primero borra el `?` del valor roto y el diccionario ya no lo
@@ -157,26 +215,52 @@ def _sql_de_la_clave(contrato, columnas_clave):
         # La reparación entra como COALESCE contra la tabla del diccionario, que se
         # une por (columna, valor tal como llegó).
         reparado = f'COALESCE(d_{c}.reparado, CAST(l."{c}" AS VARCHAR))'
-        canonica = expresion_canonica(contrato, "__v__").replace(
-            '"__v__"', f"({reparado})"
-        )
-        partes.append(f"{canonica} AS k_{c}")
+        nombre = _normalizacion_de(contrato, c)
+        if nombre == "ninguna":
+            partes.append(f"{reparado} AS k_{c}")
+            continue
+        sql = expresion(contrato, nombre, "__v__").replace(
+            '"__v__"', f"({reparado})")
+        partes.append(f"{sql} AS k_{c}")
     return partes
 
 
+def _resumen_vacio():
+    return {"filas_entrada": 0, "grupos": 0,
+            "grupos_captura_doble": 0, "sobrantes_captura_doble": 0,
+            "grupos_observaciones_multiples": 0,
+            "sobrantes_observaciones_multiples": 0,
+            "grupos_en_colision": 0, "sobrantes_en_colision": 0,
+            "filas_en_cuarentena": 0, "registros_de_cuarentena": 0,
+            "filas_salida": 0, "por_motivo": {},
+            "cifras_que_el_contrato_no_declara": []}
+
+
 def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
-    """Devuelve (limpias, registros, resumen) para las reglas de GRUPO.
+    """Devuelve (limpias, registros, resumen) para las reglas de la clave de fila.
 
     Misma forma que `compuerta.revisar_lote()` a propósito: las dos listas de
     cuarentena se concatenan sin convertir nada, y el resumen de las dos entra al
     mismo `decidir_promocion()`.
+
+    El resumen cuenta los tres cubos con grupos y **filas sobrantes** —las de un
+    grupo menos la que se queda—, que es como el contrato 1.3.3 da sus cifras
+    (72,631 · 2,105 · 256 sobre el alcance, medidas sin normalizar). Así la suma
+    de los 38 lotes se compara directo contra ésas.
     """
     import pandas as pd
 
     contrato = contrato or leer_contrato()
+    faltan = cifras_que_el_contrato_no_declara(contrato)
+    if faltan:
+        raise ValueError(
+            "el contrato no declara como dato: " + ", ".join(
+                f"{n} ({CIFRAS_DEL_CONTRATO[n]})" for n in faltan)
+            + ". Sin eso la compuerta tendría que escribir la cifra a mano")
     clave = contrato["clave_de_fila"]
     columnas_clave = list(clave["columnas"])
-    umbral = clave["colision_precio_alta"]["mas_de"]
+    menos_de = clave["captura_doble"]["menos_de"]
+    mas_de = clave["colision_precio_alta"]["mas_de"]
     alcance = clave["colision_precio_alta"]["a_cuarentena"]
     if alcance != "grupo_completo":
         raise ValueError(
@@ -186,9 +270,7 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
 
     columnas = list(df.columns)
     if df.empty:
-        return df, [], {"filas_entrada": 0, "grupos": 0, "grupos_en_colision": 0,
-                        "filas_en_cuarentena": 0, "registros_de_cuarentena": 0,
-                        "filas_salida": 0, "por_motivo": {}}
+        return df, [], _resumen_vacio()
 
     dic = reparaciones(contrato, columnas_clave)
     filas_dic = [{"columna": k[0], "valor_roto": k[1], "reparado": v}
@@ -209,7 +291,9 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
 
     # TRY_CAST y no CAST: una fila con el precio ilegible ya la aparta
     # `compuerta.py` con motivo `tipo_invalido`. Aquí no se vuelve a juzgar: se
-    # deja fuera del cálculo de la diferencia para no inventar una colisión.
+    # deja fuera del cálculo de la diferencia para no inventar una colisión. Y
+    # DECIMAL(12,2) porque lo pide `columnas.precio.se_compara_como`: en flotante,
+    # una diferencia de $1.00 sale 0.99999 y cae en el cubo equivocado.
     con.execute(f"""
         CREATE OR REPLACE TABLE con_clave AS
         SELECT l.__i__,
@@ -218,27 +302,35 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
         FROM lote l
         {uniones}
     """)
+    # Las fronteras van como parámetros, no pegadas en el SQL: son cifras del
+    # contrato y no se escriben aquí ni siquiera de paso.
     con.execute(f"""
         CREATE OR REPLACE TABLE grupos AS
         SELECT md5(concat_ws(chr(31), {ks})) AS grupo,
                count(*)                      AS filas,
-               max(__precio__) - min(__precio__) AS diferencia
+               max(__precio__) - min(__precio__) AS diferencia,
+               CASE WHEN max(__precio__) - min(__precio__) < $menos_de
+                        THEN 'captura_doble'
+                    WHEN max(__precio__) - min(__precio__) > $mas_de
+                        THEN 'colision'
+                    ELSE 'observaciones_multiples' END AS cubo
         FROM con_clave
         WHERE __precio__ IS NOT NULL
         GROUP BY {ks}
         HAVING count(*) > 1
-    """)
+    """, {"menos_de": menos_de, "mas_de": mas_de})
     en_colision = con.execute(f"""
         SELECT c.__i__, g.grupo, g.diferencia, g.filas
         FROM con_clave c
         JOIN grupos g ON g.grupo = md5(concat_ws(chr(31), {ks}))
-        WHERE g.diferencia > {umbral}
+        WHERE g.cubo = 'colision'
         ORDER BY c.__i__
     """).fetchall()
-    totales = con.execute("""
-        SELECT count(*), coalesce(sum(filas), 0)
-        FROM grupos
-    """).fetchone()
+    por_cubo = {cubo: (int(grupos), int(sobrantes)) for cubo, grupos, sobrantes in
+                con.execute("""
+                    SELECT cubo, count(*), sum(filas - 1)
+                    FROM grupos GROUP BY cubo
+                """).fetchall()}
 
     from compuerta import huella
 
@@ -249,7 +341,10 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
                     (str(v) if v is not None else None)) for c, v in fila.items()}
         registros.append({
             "motivo": "colision_precio_alta",
-            "nivel": "GRUPO",
+            # FILA y no GRUPO: lo exige la tabla `cuarentena` del esquema de
+            # operación. El grupo va en `grupo`, que esa tabla obliga a llenar
+            # cuando el motivo es éste.
+            "nivel": "FILA",
             "compuerta": compuerta,
             "huella_fila": huella(fila, columnas),
             "grupo": grupo,
@@ -261,17 +356,26 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
         })
         indices.append(i)
 
+    def cubo(nombre):
+        return por_cubo.get(nombre, (0, 0))
+
     limpias = df.drop(index=[df.index[i] for i in indices]) if indices else df
     resumen = {
         "filas_entrada": len(df),
-        "grupos": int(totales[0]),
-        "grupos_en_colision": len({r["grupo"] for r in registros}),
+        "grupos": sum(g for g, _ in por_cubo.values()),
+        "grupos_captura_doble": cubo("captura_doble")[0],
+        "sobrantes_captura_doble": cubo("captura_doble")[1],
+        "grupos_observaciones_multiples": cubo("observaciones_multiples")[0],
+        "sobrantes_observaciones_multiples": cubo("observaciones_multiples")[1],
+        "grupos_en_colision": cubo("colision")[0],
+        "sobrantes_en_colision": cubo("colision")[1],
         "filas_en_cuarentena": len(indices),
         "registros_de_cuarentena": len(registros),
         "filas_salida": len(limpias),
-        "umbral_de_colision": umbral,
+        "umbral_de_captura_doble": menos_de,
+        "umbral_de_colision": mas_de,
         "por_motivo": {"colision_precio_alta": len(registros)} if registros else {},
-        "cifras_en_prosa_no_aplicadas": cifras_que_el_contrato_no_declara(contrato),
+        "cifras_que_el_contrato_no_declara": [],
     }
     return limpias, registros, resumen
 
@@ -341,49 +445,51 @@ def revisar_frescura(df, contrato=None, fecha_referencia=None, corpus_congelado=
     }
 
 
+
 def main():
     import argparse
 
-    import pandas as pd
+    from compuerta import leer_alcance
 
     ap = argparse.ArgumentParser(
-        description="Las comprobaciones de lote completo: colisión y frescura")
+        description="Las comprobaciones de lote completo: la clave de fila y la "
+                    "frescura, sobre el alcance del contrato")
     ap.add_argument("archivo", nargs="?", help="el lote (.parquet o .csv)")
     ap.add_argument("--fecha-referencia", dest="fecha",
                     help="la fecha contra la que se mide la frescura "
                          "(AAAA-MM-DD). El contrato la pide como parámetro")
-    ap.add_argument("--cifras-en-prosa", action="store_true",
-                    help="qué cifras usa esta compuerta que el contrato sólo "
-                         "tiene en comentarios, y por eso no se aplican")
+    ap.add_argument("--cifras", action="store_true",
+                    help="qué cifras necesita esta compuerta del contrato como "
+                         "dato, y si el contrato las declara")
     a = ap.parse_args()
 
     contrato = leer_contrato()
 
-    if a.cifras_en_prosa:
+    if a.cifras:
         faltan = cifras_que_el_contrato_no_declara(contrato)
-        print(f"contrato {contrato['version']} · cifras en prosa: "
-              f"{len(faltan)} de {len(CIFRAS_EN_PROSA)}")
-        for c in faltan:
-            print(f"  ✗ {c:28} declarada en prosa en {CIFRAS_EN_PROSA[c]}")
-        if faltan:
-            print("\n  No se aplican. Aplicarlas obligaría a escribir la cifra en "
-                  "el código,\n  que es lo que la compuerta existe para evitar.")
-        return
+        print(f"contrato {contrato['version']} · cifras que esta compuerta lee:")
+        for nombre, ruta in CIFRAS_DEL_CONTRATO.items():
+            marca = "✗ sin declarar" if nombre in faltan else "✓ declarada   "
+            print(f"  {marca}  {nombre:26} {ruta} = {_nodo(contrato, ruta)}")
+        return 1 if faltan else 0
 
     if not a.archivo:
         ap.error("falta el archivo del lote")
 
+    # El ALCANCE, con la misma lectura que la ingesta y la compuerta de fila: ver
+    # `compuerta.leer_alcance()`. Hasta el 15 de octubre esta línea leía el
+    # archivo entero con pandas, igual que la compuerta antes del #170.
     ruta = Path(a.archivo).expanduser().resolve()
-    df = (pd.read_parquet(ruta) if ruta.suffix.lower() == ".parquet"
-          else pd.read_csv(ruta, dtype="string", keep_default_na=False, na_values=[""]))
+    df = leer_alcance(ruta, contrato)
 
     limpias, _registros, resumen = revisar_grupos(df, contrato)
     frescura = revisar_frescura(df, contrato, a.fecha)
 
-    print(json.dumps({"colision": resumen, "frescura": frescura},
-                     ensure_ascii=False, indent=2))
+    print(json.dumps({"clave_de_fila": resumen, "frescura": frescura},
+                     ensure_ascii=False, indent=2, default=str))
     print(f"\nfilas de salida: {len(limpias):,}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
