@@ -174,3 +174,5 @@ no en Expo web: el servicio no configura CORS para el navegador.
 
 TypeScript y el empaquetado no acreditan estas pruebas de Android: deben
 realizarse con el servicio real y las capturas correspondientes.
+
+Evidencia de la prueba realizada en BlueStacks con Android 11: [respuesta, refresco, error y recuperación](docs/evidencia/t039/README.md).
