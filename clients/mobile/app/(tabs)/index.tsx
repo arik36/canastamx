@@ -1,13 +1,15 @@
 import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text } from "react-native";
+import { EstadoDominio } from "../../components/EstadoDominio";
 import { PantallaVacia } from "../../components/PantallaVacia";
 import { colors, fonts, fontSizes, radii, spacing } from "../../theme/design-system";
 
-export default function BusquedaDeArticulos() {
+export default function Inicio() {
   const router = useRouter();
 
   return (
-    <PantallaVacia title="Búsqueda de artículos">
+    <PantallaVacia title="Inicio">
+      <EstadoDominio />
       <Pressable
         accessibilityRole="button"
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
