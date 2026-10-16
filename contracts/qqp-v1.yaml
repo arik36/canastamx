@@ -1,8 +1,33 @@
 contrato: qqp
-version: 1.3.4
+version: 1.3.5
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-10-06
+fecha: 2026-10-15
 autor: alm
+
+# ── Qué cambió en 1.3.5 ─────────────────────────────────────────────────────
+#
+# Tres cosas que el contrato decía sólo en COMENTARIOS pasan a ser DATO. Un
+# comentario desaparece al interpretar el YAML: ningún programa puede obedecerlo,
+# y la compuerta que lo necesitaba tenía que escribir la cifra a mano o adivinar.
+# Ninguna de las 15 columnas cambia, y ninguna regla cambia de valor.
+#
+#   · `motivos_de_fila`, nuevo: los ocho motivos de cuarentena con la regla de la
+#     que sale cada uno. Tres no tenían nombre en el contrato
+#     (`valor_requerido_vacio`, `largo_excedido`, `tipo_invalido`) y dos sólo lo
+#     tenían en un comentario (`fecha_fuera_de_ventana`, `precio_fuera_de_rango`).
+#     Es el mismo catálogo que `docs/datos/esquema-de-operacion.sql` §1 con nivel
+#     FILA y que el `enum` `MotivoDeCuarentena` de `analitica.yaml`; una prueba
+#     comprueba que los tres digan lo mismo.
+#   · `clave_de_fila.captura_doble.menos_de: 1`. El $1 que separa una captura
+#     doble de una observación múltiple estaba en el comentario de `desempate`.
+#     La deduplicación es de la semana del 19 de octubre y se construye leyéndolo.
+#   · `clave_de_fila.normaliza_por_columna`: con qué se compara cada columna de la
+#     clave. Lo decía el comentario de 1.3.3 —marca en mayúsculas sin acentos, las
+#     otras cuatro en forma canónica—, y la compuerta de lote, que lo tenía que
+#     leer, aplicó la canónica a las cinco. Junto con eso,
+#     `normalizacion.mayusculas_sin_acentos` deja de ser sólo un nombre: lleva su
+#     expresión, la misma que `ingesta.py` usa desde septiembre para `estado` y
+#     `catalogo`, por la misma razón que `canonica` la lleva.
 
 # ── Qué cambió en 1.3.4 ─────────────────────────────────────────────────────
 #
@@ -259,6 +284,16 @@ normalizacion:
     salieron como artículos distintos con parecido 1.000, cuando la
     normalización real ya los une en `kellogg s`.
 
+  # 1.3.5 · La regla de `marca`, `catalogo` y `estado`, abajo. Hasta 1.3.4 sólo
+  # tenía nombre, y la expresión vivía escrita en `ingesta.py`. Es la que el
+  # párrafo de `canonica` describe como la que NO une `Kellogg's` con
+  # `Kellogg´s`: quita mayúsculas y acentos, no puntuación. Para la marca eso es
+  # lo que se quiere, porque `S/m` es una categoría propia (ADR 002 · 3) y no se
+  # puede volver `s m`. Una prueba comprueba que `ingesta.py` y este campo den lo
+  # mismo. Va en un solo renglón, entre comillas, para que lo que se lee sea sólo
+  # la expresión: la explicación es esto, que es comentario porque no es regla.
+  mayusculas_sin_acentos: "upper(strip_accents(trim(col)))"
+
   orden: [reparar_interrogantes, canonica]
   # El orden no es cosmético: si se normaliza antes de reparar, `camar n` y
   # `camaron` siguen siendo dos claves distintas y el bug sobrevive.
@@ -467,10 +502,24 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
   colisiones_conocidas: 74992  # medido sobre el alcance del contrato (ver `medicion`)
-  desempate: min_precio           # sólo en la captura doble (menos de $1)
-  compara: [repara_interrogantes, normalizacion_canonica]   # 1.3.3
-  # producto, presentación, nombre comercial y dirección en su forma canónica
-  # (la misma de la clave de artículo); marca en mayúsculas sin acentos.
+  desempate: min_precio           # sólo en la captura doble: ver `captura_doble`
+  compara: [repara_interrogantes, normalizacion_canonica]   # 1.3.3 · cuál, por columna: abajo
+  normaliza_por_columna:          # 1.3.5 · antes, un comentario de 1.3.3
+    producto: canonica            # la misma de la clave de artículo
+    presentacion: canonica
+    marca: mayusculas_sin_acentos # la de `normalizacion.marca.a` (ADR 002 · 3)
+    nombre_comercial: canonica
+    direccion: canonica
+    fecha_registro: ninguna       # es fecha y se compara como fecha
+  # Los tres cubos de un grupo, por la diferencia entre su precio mayor y menor
+  # (como DECIMAL(12,2): ver `columnas.precio.razon_del_casteo`):
+  #   · menos de `captura_doble.menos_de`   → captura doble: se deduplica y queda
+  #                                           una, la de `desempate`
+  #   · de ahí a `colision_precio_alta.mas_de`, inclusive los dos extremos
+  #                                         → observaciones múltiples: quedan todas
+  #   · más de `colision_precio_alta.mas_de` → colisión alta: el grupo a cuarentena
+  captura_doble:                  # 1.3.5 · el $1 estaba en el comentario de `desempate`
+    menos_de: 1
   colision_precio_alta:           # 1.3.3
     mas_de: 50
     a_cuarentena: grupo_completo   # todas las filas del grupo, no sólo la sobrante
@@ -524,6 +573,25 @@ promocion_del_lote:              # 1.3.4 · D-07 · RF-D07 del protocolo · CU-0
     malas se bloquea completo. Cuenta como contención, pero se registra como
     «lote bloqueado», no como «filas en cuarentena».
 
+motivos_de_fila:                 # 1.3.5 · los motivos de cuarentena, como DATO
+  # Cada motivo, con la regla de este contrato que lo produce. Todos son de nivel
+  # FILA y su efecto es la cuarentena: la fila se aparta con su motivo, una vez
+  # por motivo. `colision_precio_alta` también: se decide sobre el grupo, pero lo
+  # que va a cuarentena son sus filas, cada una con el grupo anotado.
+  #
+  # Es el mismo catálogo que `docs/datos/esquema-de-operacion.sql` §1 (las filas
+  # con nivel FILA) y que el `enum` `MotivoDeCuarentena` de `analitica.yaml`. Los
+  # motivos de LOTE y de CORRIDA siguen sólo allá. Para agregar uno aquí hay que
+  # agregarlo en los tres lugares a la vez: hay una prueba que lo exige.
+  valor_requerido_vacio:      columnas.*.valor_requerido
+  largo_excedido:             columnas.*.largo_maximo
+  tipo_invalido:              columnas.*.tipo
+  fecha_fuera_de_ventana:     columnas.fecha_registro.al_estar_fuera_de_rango
+  precio_fuera_de_rango:      columnas.precio.al_exceder
+  colision_precio_alta:       clave_de_fila.colision_precio_alta
+  codificacion_irrecuperable: normalizacion.reparar_interrogantes.sin_gemelo
+  revision_humana:            normalizacion.reparar_interrogantes.ambiguo.empate
+
 columnas:
   # `columna_requerida`  : el archivo tiene que traer la columna. Si no, es
   #                        deriva de esquema, no un descuido de captura.
@@ -562,7 +630,7 @@ columnas:
     valor_requerido: true
     formato: ver_archivo.formato_de_fecha   # POR ARCHIVO, no lista de formatos
     rango_aceptado: {desde: "2025-01-01", hasta: hoy}
-    al_estar_fuera_de_rango: cuarentena     # motivo fecha_fuera_de_ventana
+    al_estar_fuera_de_rango: cuarentena     # motivo: ver `motivos_de_fila`
 
   latitud:
     tipo: decimal
@@ -598,7 +666,7 @@ columnas:
                                     #                        Copa Menstrual, Ron  (5 productos)
       "FRUTAS Y LEGUMBRES": 650     # obs.  498.00 · ancla: Castañas (45) y Jamaica (2,284)
       PACIC: 400                    # obs.  299.00 · ancla ÚNICA: Carne Res (8,630 filas)
-    al_exceder: cuarentena     # motivo precio_fuera_de_rango; nunca rechazo silencioso
+    al_exceder: cuarentena     # motivo: ver `motivos_de_fila`; nunca rechazo silencioso
 
     razon_del_techo: >
       POR QUÉ NO EL MÁXIMO EXACTO. 1775.00 es el máximo de PESCADOS Y MARISCOS

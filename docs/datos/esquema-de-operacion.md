@@ -110,7 +110,7 @@ erDiagram
 
 | Tabla | Qué guarda | De dónde sale | Quién escribe |
 |---|---|---|---|
-| `motivo` | El catálogo de las 18 reglas que apartan filas, detienen un lote o avisan | El contrato 1.3.4 y CU-01 | Se siembra con el SQL |
+| `motivo` | El catálogo de las 18 reglas que apartan filas, detienen un lote o avisan | El contrato 1.3.5 (`motivos_de_fila`) y CU-01 | Se siembra con el SQL |
 | `corrida` | Una fila por corrida. Un lote reprocesado tiene varias, y la vigente es la última | CU-01, CU-02 (paso 8), RF-08 | Plataforma |
 | `paso` | Cada etapa de la corrida, con filas de entrada y salida y su hora | El linaje de CU-05 (paso 5) y RF-12 | Plataforma |
 | `cuarentena` | Cada fila apartada, con su motivo, su compuerta y la fila tal como llegó | CU-02 (3a, 4a y 5a), SLA-D-09 | Plataforma |
@@ -157,10 +157,13 @@ automática, CU-06 · 3a). Con eso reescribe `dim_articulo.articulo_canonico_key
 | `frescura_avisa` | Corrida | Aviso | `frescura.avisa_dias` (20) |
 | `frescura_bloquea` | Corrida | Deja de publicarse vigente | `frescura.bloquea_dias` (45) |
 
-**Tres motivos todavía no tienen nombre en el contrato.** El contrato declara
-`valor_requerido`, `largo_maximo` y `tipo` en cada columna, pero no qué pasa cuando
-se incumplen. El protocolo pide declararlo antes de construir la compuerta (semana
-del 9 de noviembre). Los nombres de esta tabla son la propuesta.
+**Los ocho motivos de fila están declarados en el contrato desde la 1.3.5** (15 de
+octubre de 2026), en `motivos_de_fila`, cada uno con su regla. Hasta la 1.3.4, tres
+(`valor_requerido_vacio`, `largo_excedido`, `tipo_invalido`) no tenían nombre en el
+contrato —éste los proponía— y dos más (`fecha_fuera_de_ventana`,
+`precio_fuera_de_rango`) sólo lo tenían en un comentario. El catálogo de esta
+tabla, el del contrato y el `enum` `MotivoDeCuarentena` de `analitica.yaml` tienen
+que decir lo mismo, y `tests/test_compuerta.py` lo comprueba.
 
 ## 4 · Las vistas que lee la interfaz analítica
 
@@ -220,6 +223,6 @@ Al terminar no deja nada en la base.
 
 | Qué | Quién · cuándo |
 |---|---|
-| Declarar en el contrato los tres motivos que faltan | A · antes de construir la compuerta (semana del 9 de noviembre) |
+| ~~Declarar en el contrato los tres motivos que faltan~~ | **Hecho** el 15 de octubre de 2026: contrato 1.3.5, `motivos_de_fila` |
 | Las tablas del experimento de H1: qué filas se inyectaron y con qué tipología | A · T075 |
 | Cuánto tiempo se guardan las filas de `cuarentena`. Hoy son como máximo 5,992 filas, poco espacio | A · antes del despliegue |
