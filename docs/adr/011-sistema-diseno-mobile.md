@@ -1,8 +1,9 @@
 # ADR 011 · Aplicación del sistema de diseño al móvil
 
 - **Fecha:** 25 de septiembre de 2026
-- **Estado:** propuesta, pendiente de revisión del equipo
-- **Participantes:** Oscar (C2); revisión pendiente
+- **Estado:** aceptada
+- **Ratificación:** 15 de octubre de 2026
+- **Participantes:** Oscar (C2)
 
 ## Contexto
 
