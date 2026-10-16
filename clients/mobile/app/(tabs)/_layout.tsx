@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { AccesoAlertas } from "../../components/AccesoAlertas";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, fonts, fontSizes, radii, spacing } from "../../theme/design-system";
 
@@ -10,7 +11,12 @@ export default function TabLayout() {
       initialRouteName="index"
       backBehavior="initialRoute"
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        headerTitleStyle: { fontFamily: fonts.semibold, fontSize: fontSizes.subtitle },
+        headerRight: () => <AccesoAlertas campana />,
         sceneStyle: { backgroundColor: colors.background },
         tabBarLabelPosition: "beside-icon",
         tabBarIcon: () => null,
@@ -42,8 +48,9 @@ export default function TabLayout() {
         name="index"
         options={{ title: "Inicio", tabBarLabel: "Inicio" }}
       />
-      <Tabs.Screen name="canasta" options={{ title: "Mi canasta" }} />
-      <Tabs.Screen name="alertas" options={{ title: "Alertas" }} />
+      <Tabs.Screen name="descubrir" options={{ title: "Descubrir" }} />
+      <Tabs.Screen name="canasta" options={{ title: "Canasta" }} />
+      <Tabs.Screen name="cuenta" options={{ title: "Cuenta" }} />
     </Tabs>
   );
 }
