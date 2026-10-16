@@ -46,6 +46,10 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
+          name="alertas"
+          options={{ title: "", headerBackTitle: "Volver" }}
+        />
+        <Stack.Screen
           name="articulo/[id]"
           options={{ title: "", headerBackTitle: "Inicio" }}
         />

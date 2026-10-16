@@ -8,7 +8,7 @@ export default function Inicio() {
   const router = useRouter();
 
   return (
-    <PantallaVacia title="Inicio">
+    <PantallaVacia title="Inicio" withHeader>
       <EstadoDominio />
       <Pressable
         accessibilityRole="button"
