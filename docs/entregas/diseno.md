@@ -220,19 +220,33 @@ Vienen de los datos y del contrato:
 
 ## 7 · Lo que el prototipo todavía no cumple
 
-| # | Dónde | Qué hay | Qué debe haber | Quién |
-|---|---|---|---|---|
-| 1 | Consola | INC-2831 «18 columnas vs 15» en rojo, con el lote «rechazado» | Aviso en azul; el lote entra completo | D |
-| 2 | Consola | INC-2829 «duplicados» en naranja | Una captura doble no es incidente: se resuelve sola | D |
-| 3 | Consola | Frescura «2ª de septiembre · al día», lote «L-2026-Q18» | `07-2026_Q2`; frescura «no aplica: la fuente no publica desde julio» | D |
-| 4 | Consola | «1,896 registros retenidos» | Como máximo 5,992, el 0.23% del alcance | D |
-| 5 | App · Descubrir | «Media de costo por tienda» (Walmart $44.80), sin población | El índice por cadena de T031 (1.000 = precio típico), con mes y número de artículos | D y C2 |
-| 6 | App · Canasta | Grupos por sucursal («Walmart · Plaza Mayor») y «Sucursal no verificada» | Por cadena, con «sin precio» | D y C2 |
-| 7 | App · Detalle | Umbral fijo en el 95% del precio | Lo elige la persona, dentro del rango histórico | D y C2 |
-| 8 | App · Tarjetas | Fotos sin marcar | Ícono de catálogo, o «Imagen ilustrativa» como ya hace el detalle | D |
-| 9 | Web · Detalle | «Precio promedio regional · media ponderada»; el máximo en rojo | «Precio típico (mediana)»; el máximo en tinta | D |
-| 10 | Datos de ejemplo | Fechas «11 sep 2026» | Fechas hasta julio de 2026 | D |
-| 11 | App · Descubrir | Listas «Despensa Quincenal», «Fiesta Navidad» y «Desayunos» | No las pide ningún caso de uso ni requerimiento. Se definen o se quitan | D y C2 |
-| 12 | App · Cuenta | El nombre «Karen Alejandra» y una foto de perfil | El correo de la cuenta y un avatar con su inicial: la cuenta no tiene nombre ni foto (P-13) | D y C2 |
-| 13 | Web · Barra lateral | «Analista Ruiz» | El correo y el rol de la sesión (P-07 y P-13) | D |
-| 14 | Web · Cola | Cobertura 81.4% y precisión 97.3% | Son inventadas, y la cobertura queda por debajo de la meta de H3 (85%). «Se mide en T058», o la cifra real con su población | D |
+| # | Dónde | Qué hay | Qué debe haber | Quién | Estado |
+|---|---|---|---|---|---|
+| 1 | Consola | INC-2831 «18 columnas vs 15» en rojo, con el lote «rechazado» | Aviso en azul; el lote entra completo | D | Pendiente |
+| 2 | Consola | INC-2829 «duplicados» en naranja | Una captura doble no es incidente: se resuelve sola | D | Pendiente |
+| 3 | Consola | Frescura «2ª de septiembre · al día», lote «L-2026-Q18» | `07-2026_Q2`; frescura «no aplica: la fuente no publica desde julio» | D | Pendiente |
+| 4 | Consola | «1,896 registros retenidos» | Como máximo 5,992, el 0.23% del alcance | D | Pendiente |
+| 5 | App · Descubrir | «Media de costo por tienda» (Walmart $44.80), sin población | El índice por cadena de T031 (1.000 = precio típico), con mes y número de artículos | D y C2 | Pendiente |
+| 6 | App · Canasta | Grupos por sucursal («Walmart · Plaza Mayor») y «Sucursal no verificada» | Por cadena, con «sin precio» | D y C2 | Pendiente |
+| 7 | App · Detalle | Umbral fijo en el 95% del precio | Lo elige la persona, dentro del rango histórico | D y C2 | Pendiente |
+| 8 | App · Tarjetas | Fotos sin marcar | Ícono de catálogo, o «Imagen ilustrativa» como ya hace el detalle | D | Pendiente |
+| 9 | Web · Detalle | «Precio promedio regional · media ponderada»; el máximo en rojo | «Precio típico (mediana)»; el máximo en tinta | D | Pendiente |
+| 10 | Datos de ejemplo | Fechas «11 sep 2026» | Fechas hasta julio de 2026 | D | Pendiente |
+| 11 | App · Descubrir | Listas «Despensa Quincenal», «Fiesta Navidad» y «Desayunos» | No las pide ningún caso de uso ni requerimiento. Se definen o se quitan | D y C2 | Pendiente |
+| 12 | App · Cuenta | El nombre «Karen Alejandra» y una foto de perfil | El correo de la cuenta y un avatar con su inicial: la cuenta no tiene nombre ni foto (P-13) | D y C2 | Resuelto en Figma · 11 oct |
+| 13 | Web · Barra lateral | «Analista Ruiz» | El correo y el rol de la sesión (P-07 y P-13) | D | Resuelto en Figma · 11 oct |
+| 14 | Web · Cola | Cobertura 81.4% y precisión 97.3% | Son inventadas, y la cobertura queda por debajo de la meta de H3 (85%). «Se mide en T058», o la cifra real con su población | D | Resuelto en Figma · 11 oct |
+
+**Qué significa cada estado.** «Pendiente» es que el prototipo todavía no lo
+cumple. «Resuelto en Figma» es que el prototipo ya lo cumple, con la fecha en que
+se corrigió. Los dos estados hablan del **prototipo**, no del documento: las ocho
+capturas de la entrega 2 (figuras 13 a 20 del Word, del 9 de octubre) son las de
+antes de la corrección, y eso se declara en
+`docs/entregas/2026-10-09/README.md` §«Una nota sobre las figuras 13 a 20». Las
+capturas corregidas entran en la entrega del 4 de noviembre.
+
+**Por qué el renglón se queda aunque esté resuelto.** Estos puntos se citan por
+número desde `docs/equipo/propagacion-decisiones-07-oct.md`,
+`docs/equipo/decisiones-pendientes.md` y las fichas de planeación. Si se borrara el
+renglón al resolverlo, los números de los demás se moverían y esas citas quedarían
+apuntando a otro punto. Por eso se marca el estado y no se quita la fila.

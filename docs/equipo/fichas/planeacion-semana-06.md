@@ -400,8 +400,9 @@ npx expo start
 
 ### De qué depende, y qué revisar antes
 
-- [ ] **Tu deuda:** las capturas corregidas del prototipo, y marcar los puntos 12,
-      13 y 14 de `diseno.md` §7 como resueltos.
+- [ ] **Tu deuda:** las capturas corregidas del prototipo. Los puntos 12, 13 y 14
+      de `diseno.md` §7 ya quedaron marcados como resueltos; §7 ahora tiene columna
+      «Estado», así que los que falten se marcan ahí, sin borrar el renglón.
 - [ ] **El ADR del cliente web** (Next.js o el Vite que exporta Figma) sigue sin
       escribirse, y es tuyo. Va antes del código, por la misma razón que el 007 de
       Oscar.
