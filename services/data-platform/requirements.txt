@@ -17,12 +17,14 @@ boto3>=1.34        # borra las particiones antes de escribir · httpfs no borra
 PyYAML>=6.0        # lee contracts/qqp-v1.yaml · las 15 columnas y los 3 recortes
 pandera==0.34.1    # ANCLADA · la compuerta de calidad (compuerta.py, ADR 018)
 pandas>=2.2        # lo usa la compuerta; pandera lo trae de todos modos
+dagster==1.11.14           # ANCLADA · los tres activos y el sensor (ADR 016)
+dagster-webserver==1.11.14 # ANCLADA · es lo que hace `dagster dev`; va a la par
 
 # Herramientas de desarrollo. El CI instala ruff por su cuenta; se listan aquí
 # para que quien clone tenga lo mismo.
 ruff==0.17.0       # ANCLADA, y también en ci.yml. Ver la nota de abajo.
-pytest>=8.0        # todavía no hay pruebas; llegan en la semana 6 con la
-                   # compuerta de calidad contra el contrato
+pytest>=8.0        # 70 pruebas · la ingesta, la compuerta de fila, las reglas
+                   # de lote y los activos de Dagster
 
 # NOTA · las versiones son mínimos, no anclas. Cuando el frente de datos cierre
 # la semana 7 conviene fijarlas con `pip freeze` para que el experimento de la
@@ -32,6 +34,18 @@ pytest>=8.0        # todavía no hay pruebas; llegan en la semana 6 con la
 # se aparta: si cambia de versión y cambia de criterio, cambia lo que el proyecto
 # mide, y H1 deja de ser comparable entre semanas. Subirla de versión es un
 # cambio con su propia solicitud y su propia corrida de los 38 lotes.
+#
+# EXCEPCIÓN · dagster y dagster-webserver, desde el 14 de octubre de 2026, y van
+# a la MISMA versión: el webserver habla GraphQL con el núcleo y desfasarlos es
+# pedir un error que no dice qué pasó. Se anclan por dos razones. La primera es la
+# de pandera: las particiones son los lotes y el linaje es la evidencia de RF-12,
+# así que un cambio de versión que mueva cómo se nombran o se guardan mueve la
+# evidencia del experimento. La segunda es el ADR 016, que le puso fecha de salida
+# al 25 de octubre: la decisión se juzga sobre una versión concreta, no sobre
+# «Dagster» en abstracto.
+#
+# `dagster dev` necesita las DOS. Con sólo `dagster` el comando existe y falla
+# pidiendo el webserver, que es un rato perdido por una línea que faltaba aquí.
 #
 # `pandas` NO se ancla, y conviene saberlo: su 3.0 cambió el tipo por omisión de
 # las columnas de texto, y eso ya movió el comportamiento de la compuerta una

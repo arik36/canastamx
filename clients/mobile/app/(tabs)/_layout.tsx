@@ -40,7 +40,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: "Búsqueda de artículos", tabBarLabel: "Búsqueda" }}
+        options={{ title: "Inicio", tabBarLabel: "Inicio" }}
       />
       <Tabs.Screen name="canasta" options={{ title: "Mi canasta" }} />
       <Tabs.Screen name="alertas" options={{ title: "Alertas" }} />

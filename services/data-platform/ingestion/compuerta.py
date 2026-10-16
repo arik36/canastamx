@@ -28,18 +28,20 @@ Por eso aquí no hay ni un solo `65` escrito a mano. Si lo ves, es un error.
 
 LOS CINCO MOTIVOS QUE EMITE, Y LOS QUE NO
 -----------------------------------------
-De fila, y los cinco están en el catálogo de `docs/datos/esquema-de-operacion.sql`:
+De fila. Los cinco están declarados en el contrato desde la 1.3.5
+(`motivos_de_fila`), con la misma regla que el catálogo de
+`docs/datos/esquema-de-operacion.sql`:
 
-    valor_requerido_vacio    columnas.*.valor_requerido        en_contrato: false
-    largo_excedido           columnas.*.largo_maximo           en_contrato: false
-    tipo_invalido            columnas.*.tipo                   en_contrato: false
-    fecha_fuera_de_ventana   columnas.fecha_registro.rango     en_contrato: true
-    precio_fuera_de_rango    columnas.precio.al_exceder        en_contrato: true
+    valor_requerido_vacio    columnas.*.valor_requerido
+    largo_excedido           columnas.*.largo_maximo
+    tipo_invalido            columnas.*.tipo
+    fecha_fuera_de_ventana   columnas.fecha_registro.al_estar_fuera_de_rango
+    precio_fuera_de_rango    columnas.precio.al_exceder
 
-**Los tres primeros todavía no están declarados en el contrato.** El catálogo ya
-los marca con `en_contrato = false` y el protocolo pide declararlos antes del 9 de
-noviembre. Esta compuerta los produce hoy, y `--motivos` imprime cuáles le faltan
-al contrato: ésa es la lista de trabajo, generada en vez de recordada.
+Hasta la 1.3.4, los tres primeros no tenían nombre en el contrato y los dos
+últimos sólo lo tenían en un comentario. `--motivos` revisa que el contrato los
+declare como DATO y con la misma regla: si alguien quita uno o le cambia la
+regla, lo dice.
 
 Lo que **no** emite, a propósito, porque necesita ver más de una fila y vive en
 DuckDB: `colision_precio_alta` (compara grupos), `codificacion_irrecuperable` y
@@ -83,10 +85,18 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ingesta import columnas_del_contrato, leer_contrato, morir
+from ingesta import (
+    CORRIDAS,
+    columnas_del_contrato,
+    lector,
+    lectura_declarada,
+    leer_contrato,
+    morir,
+    recorte_del_contrato,
+)
 
 NOMBRE_COMPUERTA = "contrato_por_fila"
-SALIDAS = Path(__file__).resolve().parent / "corridas"
+SALIDAS = CORRIDAS          # la carpeta de la evidencia: ver ingesta.CORRIDAS
 
 # Los motivos que esta compuerta sabe emitir, con la regla del contrato de la que
 # salen. La prueba `test_compuerta.py` comprueba que los cinco existan en el
@@ -308,33 +318,79 @@ def decidir_promocion(resumen, contrato):
 
 
 def motivos_que_el_contrato_no_declara(contrato=None):
-    """Qué motivos de esta compuerta no aparecen en el contrato. Es la lista de
-    trabajo de `pendientes`, generada en vez de recordada: pendiente antes del 9
-    de noviembre.
+    """Qué motivos de esta compuerta el contrato no declara en `motivos_de_fila`,
+    o declara con otra regla.
 
-    Se busca sobre el **texto** del contrato, no sobre el YAML ya interpretado, y
-    la razón vale la pena: hoy `fecha_fuera_de_ventana` y `precio_fuera_de_rango`
-    sólo aparecen en sendos COMENTARIOS (líneas 565 y 601 de la 1.3.4), y un
-    comentario desaparece al interpretar el archivo. Buscar sobre el texto es lo
-    que hace un humano al leerlo.
+    Hasta la 1.3.4 esta función buscaba sobre el TEXTO del contrato, porque dos de
+    los cinco motivos sólo aparecían en comentarios, y un comentario desaparece al
+    interpretar el YAML. Desde la 1.3.5 el contrato los nombra como DATO y aquí se
+    busca sobre el dato: un comentario ya no cuenta como declaración, porque
+    ningún programa puede obedecerlo.
 
-    Que estén nada más en un comentario es, de todas formas, la mitad del
-    problema: un comentario no es una declaración y ningún programa puede
-    obedecerlo. Lo que el contrato necesita en la 1.3.5 es nombrar los cinco
-    motivos como DATO, no en prosa.
+    Que la regla coincida importa tanto como el nombre. Si el contrato dice que
+    `largo_excedido` sale de `columnas.*.largo_maximo` y esta compuerta lo
+    produce desde otra regla, los dos dicen lo mismo con palabras distintas: es la
+    falla que este proyecto estudia.
     """
-    from ingesta import CONTRATO
-    texto = CONTRATO.read_text(encoding="utf-8")
-    return [m for m in MOTIVOS if m not in texto]
+    contrato = contrato or leer_contrato()
+    declarados = contrato.get("motivos_de_fila") or {}
+    return [m for m, regla in MOTIVOS.items() if declarados.get(m) != regla]
 
 
 # ── Línea de comandos ──────────────────────────────────────────────────────
 
-def _leer(ruta):
-    import pandas as pd
-    if ruta.suffix.lower() == ".parquet":
-        return pd.read_parquet(ruta)
-    return pd.read_csv(ruta, dtype="string", keep_default_na=False, na_values=[""])
+def leer_alcance(ruta, contrato, sin_recorte=False):
+    """Las filas del lote que el contrato considera suyas, y sólo ésas.
+
+    **Ésta es la población sobre la que la compuerta juzga, y no es un detalle.**
+    Un archivo del corpus trae las 32 entidades y todos los catálogos: en
+    promedio, sólo el 12.45% de sus filas es del alcance del contrato. La
+    compuerta mide el 5% de D-07 y la contención de H1 sobre **el alcance**
+    (2,658,906 filas en los 38 lotes), no sobre el corpus (21,357,873). Si
+    juzgara el archivo entero, el denominador sería otro y las cifras dejarían de
+    ser comparables con todo lo demás del proyecto.
+
+    La primera versión de esta compuerta leía el archivo entero con pandas, y eso
+    tenía dos problemas que no se veían con los lotes de prueba, porque todas sus
+    filas eran del alcance:
+
+      1. **La población equivocada.** Medido sobre un parquet con 91 filas de las
+         que 11 son del alcance: la compuerta revisaba las 91.
+      2. **`pd.read_parquet` necesita pyarrow**, que no está en `requirements.txt`.
+         Los 38 archivos del corpus son parquet, así que cualquier lote real
+         fallaba al leerse. Las pruebas no lo veían porque todas eran CSV.
+
+    Esta versión lee **exactamente como `ingesta.py`**: con su `lector()` —que
+    respeta la codificación y el formato de fecha que el contrato declara para
+    cada archivo— y con su `recorte_del_contrato()`, las mismas tres condiciones
+    (entidad, ventana y catálogo). No se reescriben aquí: una condición PARECIDA
+    no es la misma condición, y las filas que la compuerta revisa tienen que ser
+    las mismas que la ingesta escribe al bucket. DuckDB lee el parquet sin
+    pyarrow.
+
+    Una consecuencia, dicha en voz alta: con el recorte, una fila fechada fuera de
+    `alcance.ventana` ya no llega a la compuerta —la ingesta la cuenta como «fuera
+    por ventana», no como defecto—, así que el motivo `fecha_fuera_de_ventana`
+    sólo puede dispararse con `sin_recorte=True`. Es lo coherente: una fila que no
+    es del alcance no cuenta contra el 5% del alcance.
+
+    Con CSV, una fecha ilegible detiene la lectura en lugar de ir a cuarentena,
+    porque la condición de la ventana necesita la fecha. Es lo mismo que ya hace
+    `ingesta.py` con ese archivo, así que la compuerta no es más estricta que la
+    ingesta. Con el corpus no puede pasar: en parquet la fecha viene tipada.
+    """
+    import duckdb
+
+    ruta = Path(ruta)
+    decl = lectura_declarada(contrato, ruta.name)
+    # SELECT * y no las 15: si al archivo le falta una columna que no es de las
+    # del recorte, `revisar_lote()` lo devuelve como `columna_requerida_faltante`
+    # a nivel LOTE (CU-02 · 2b), que es mejor que un error de SQL.
+    sql = f"SELECT * FROM {lector(ruta, decl)}"
+    if not sin_recorte:
+        s = recorte_del_contrato(contrato)["sql"]
+        sql += f" WHERE ({s['estado']}) AND ({s['ventana']}) AND ({s['catalogo']})"
+    return duckdb.connect(":memory:").sql(sql).df()
 
 
 def main():
@@ -344,6 +400,10 @@ def main():
     p.add_argument("--motivos", action="store_true",
                    help="imprime qué motivos no están declarados en el contrato y termina")
     p.add_argument("--simular", action="store_true", help="no escribe archivos de salida")
+    p.add_argument("--sin-recorte", action="store_true", dest="sin_recorte",
+                   help="revisa el archivo COMPLETO, no sólo el alcance del contrato. "
+                        "Igual que en ingesta.py: para reprocesar si el ADR 001 o el "
+                        "005 cambian. Las cifras que salen así NO son del alcance")
     a = p.parse_args()
 
     contrato = leer_contrato()
@@ -353,7 +413,7 @@ def main():
         for m, regla in MOTIVOS.items():
             print(f"  {'✗ sin declarar' if m in faltan else '✓ declarado   '}  {m:24} {regla}")
         if faltan:
-            print(f"\nFaltan {len(faltan)} por declarar en el contrato, antes del 9 de noviembre.")
+            print(f"\nFaltan {len(faltan)} en `motivos_de_fila`, o están con otra regla.")
         return 0 if not faltan else 1
 
     if not a.archivo:
@@ -363,7 +423,7 @@ def main():
         morir(f"no encuentro {ruta}")
     lote = a.lote or ruta.stem
 
-    df = _leer(ruta)
+    df = leer_alcance(ruta, contrato, sin_recorte=a.sin_recorte)
     limpias, cuarentena, resumen = revisar_lote(df, contrato, nombre_archivo=ruta.name)
     if limpias is None:
         print(f"✗ lote detenido: {resumen['motivo_lote']} · faltan "

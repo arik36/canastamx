@@ -1,50 +1,72 @@
-# ADR 007 · Navegación móvil con pestañas y pila
+# ADR 007 · Navegación móvil con cuatro pestañas y pila
 
 - **Fecha:** 15 de septiembre de 2026
-- **Estado:** propuesta, pendiente de revisión del equipo
-- **Participantes:** Oscar (C2); revisión pendiente
-
-> **Nota · 6 de octubre de 2026 · D-01.** El equipo votó **cuatro pestañas:
-> Inicio, Descubrir, Canasta y Cuenta** (opción B), que son las del prototipo. Este
-> ADR dice tres (Búsqueda, Mi canasta y Alertas), y descartaba cuatro con otra
-> composición. C2 lo reescribe con esa decisión antes de ratificarlo: las cuatro
-> pestañas, el detalle de artículo como ruta de la pila, y Mis alertas detrás de la
-> campana y de Cuenta. La navegación completa está en `docs/analisis/navegacion.md`.
+- **Ratificación:** 15 de octubre de 2026
+- **Estado:** aceptada
+- **Participantes:** Oscar (C2); decisión D-01 acordada por C2 y D el 6 de octubre de 2026
 
 ## Contexto
 
-T014 dejó la base de Expo SDK 55 y dos pantallas. La tarea de navegación de
-la semana 2 requiere cuatro pantallas vacías. El ADR 002 establece el término
+T014 dejó la base de Expo SDK 55 y T023 incorporó la navegación inicial. El
+6 de octubre de 2026, C2 y D acordaron en D-01 utilizar las cuatro pestañas del
+prototipo: Inicio, Descubrir, Canasta y Cuenta. Esta decisión sustituye la
+propuesta de tres pestañas de este ADR y se describe en
+[navegacion.md](../analisis/navegacion.md). El ADR 002 establece el término
 «artículo» para la combinación de producto y presentación.
 
 ## Decisión
 
-Se utiliza Expo Router, ya instalado, con tres pestañas: Búsqueda, Mi canasta
-y Alertas. Una pila raíz contiene esas pestañas y la ruta dinámica
-`/articulo/[id]`. El detalle se abre desde Búsqueda y permite regresar mediante
-la flecha del encabezado o el botón/gesto Atrás de Android.
+Se utiliza Expo Router con cuatro pestañas hermanas, en este orden: **Inicio,
+Descubrir, Canasta y Cuenta**. Las rutas del grupo `(tabs)` son `index`,
+`descubrir`, `canasta` y `cuenta`. Inicio contiene la búsqueda de artículos;
+Descubrir corresponde al panorama y a la sección «Precios que bajaron»;
+Canasta reúne las canastas de la persona; Cuenta reúne el acceso a la sesión,
+el perfil y las opciones de la cuenta, según `navegacion.md`.
 
-Los componentes se llaman `BusquedaDeArticulos`, `DetalleDeArticulo`,
-`MiCanasta` y `Alertas`. Cada pantalla contiene su título; Búsqueda incluye
-además el botón temporal requerido para probar el detalle. Su identificador
-`prueba` sirve únicamente para recorrer la ruta, no representa datos del catálogo
-ni define la futura clave de artículo del servicio.
+Una pila raíz contiene el grupo de pestañas, el detalle de artículo
+`/articulo/[id]` y **Mis alertas** en `/alertas`. El detalle se abre desde
+Inicio o Descubrir y se cierra mediante la flecha del encabezado o el
+botón/gesto Atrás de Android. No ocupa una pestaña propia.
+
+Mis alertas se abre desde la campana de la barra superior o desde Cuenta y
+permite regresar mediante la pila. Su archivo queda fuera de `(tabs)`;
+la URL `/alertas` se conserva porque los grupos entre paréntesis no forman
+parte de la URL. El título de regreso a Inicio sustituye a «Búsqueda».
+
+Esta decisión fija la navegación. La incorporación de la pantalla de acceso,
+los datos y las llamadas a servicios se realiza en sus tareas correspondientes.
+El identificador temporal `prueba` del botón de detalle sólo permite recorrer
+la ruta; no representa un artículo del catálogo ni define su identidad futura.
 
 ## Alternativas descartadas
 
-- Cuatro pestañas: el detalle depende de la selección en Búsqueda, no es
-  una sección hermana.
-- Enlaces desde Búsqueda hacia Canasta y Alertas: la ficha exige acceso por
-  pestañas.
-- Incorporar datos, filtros o llamadas al servicio: pertenecen a tareas futuras.
+- Mantener Búsqueda, Mi canasta y Alertas como tres pestañas: contradice D-01,
+  omite Descubrir y Cuenta y deja la sesión sin su sección de destino.
+- Usar el detalle de artículo como una cuarta pestaña: depende de un artículo
+  seleccionado y pertenece a la pila, no a una sección hermana.
+- Mantener Mis alertas en la barra inferior: D-01 establece su acceso desde
+  la campana y Cuenta, y reserva la barra para las cuatro secciones acordadas.
+- Sustituir las pestañas por enlaces desde Inicio: dificultaría el acceso
+  directo y persistente a Descubrir, Canasta y Cuenta.
 
 ## Consecuencias
 
-Se conservan Node 20, Expo SDK 55 y las dependencias de T014. Las rutas previas
-`/` y `/canasta` conservan su URL al moverse al grupo `(tabs)`.
-El sistema de diseño se aplicará en T028. La evidencia de cierre debe recorrer
-las cuatro pantallas en un teléfono real y adjuntarse al issue de esta tarea.
+La implementación debe declarar cuatro `Tabs.Screen`, renombrar Búsqueda como
+Inicio, crear Descubrir y Cuenta y mover Mis alertas a la pila raíz. Las rutas
+`/`, `/canasta` y `/alertas` conservan su URL; se incorporan `/descubrir` y
+`/cuenta`. Deben actualizarse las importaciones al mover el archivo de alertas.
+
+Se conservan Node 20, Expo SDK 55 y el sistema de diseño del ADR 011. Las
+pantallas mantienen el alcance de cada tarea; esta ratificación no introduce
+operaciones de negocio ni una implementación de sesión.
+
+La verificación en Android debe recorrer las cuatro pestañas, abrir y cerrar
+el detalle, y entrar y regresar de Mis alertas desde la campana y Cuenta.
+Cuenta queda disponible antes de implementar el acceso; la primera llamada
+real de T039 se muestra en Inicio.
 
 Referencias: [ADR 002](002-identidad-del-articulo.md),
 [ADR 006](006-entorno-mobile-expo.md),
-[pestañas de Expo Router](https://docs.expo.dev/router/advanced/tabs/).
+[ADR 011](011-sistema-diseno-mobile.md),
+[D-01](../equipo/decisiones-pendientes.md),
+[navegación acordada](../analisis/navegacion.md).

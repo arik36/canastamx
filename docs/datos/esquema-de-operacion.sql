@@ -21,7 +21,11 @@ SET search_path = operacion;
 -- ── 1 · Catálogo de motivos ─────────────────────────────────────────────────
 -- Un motivo por regla del contrato que aparta filas, detiene un lote o avisa.
 -- `en_contrato = false` es un nombre propuesto que el contrato todavía no
--- declara (pendiente antes de construir la compuerta, semana del 9 de noviembre).
+-- declara. Desde el contrato 1.3.5 (15 de octubre de 2026) los ocho de nivel
+-- FILA están declarados en `motivos_de_fila`, con la misma `regla` que aquí, y
+-- `tests/test_compuerta.py` comprueba que los dos catálogos y el `enum` de
+-- `analitica.yaml` digan lo mismo. La columna se queda para el próximo nombre
+-- que se proponga antes de que el contrato lo tenga.
 CREATE TABLE motivo (
   codigo       text PRIMARY KEY,
   nivel        text NOT NULL CHECK (nivel IN ('FILA', 'LOTE', 'CORRIDA')),
@@ -38,9 +42,9 @@ INSERT INTO motivo (codigo, nivel, efecto, regla, en_contrato, descripcion) VALU
   ('fecha_fuera_de_ventana',     'FILA', 'CUARENTENA', 'columnas.fecha_registro.al_estar_fuera_de_rango', true, 'Fecha fuera de la ventana del alcance'),
   ('precio_fuera_de_rango',      'FILA', 'CUARENTENA', 'columnas.precio.al_exceder', true, 'Precio por encima del techo de su catálogo'),
   ('colision_precio_alta',       'FILA', 'CUARENTENA', 'clave_de_fila.colision_precio_alta', true, 'Grupo de la misma clave de fila con más de $50 de diferencia: va el grupo completo'),
-  ('valor_requerido_vacio',      'FILA', 'CUARENTENA', 'columnas.*.valor_requerido', false, 'Vacío en una de las 13 columnas con valor requerido'),
-  ('largo_excedido',             'FILA', 'CUARENTENA', 'columnas.*.largo_maximo', false, 'Texto más largo que el máximo de su columna'),
-  ('tipo_invalido',              'FILA', 'CUARENTENA', 'columnas.*.tipo', false, 'Valor que no es del tipo de su columna'),
+  ('valor_requerido_vacio',      'FILA', 'CUARENTENA', 'columnas.*.valor_requerido', true,  'Vacío en una de las 13 columnas con valor requerido'),
+  ('largo_excedido',             'FILA', 'CUARENTENA', 'columnas.*.largo_maximo', true,  'Texto más largo que el máximo de su columna'),
+  ('tipo_invalido',              'FILA', 'CUARENTENA', 'columnas.*.tipo', true,  'Valor que no es del tipo de su columna'),
   ('archivo_ilegible',           'LOTE', 'LOTE_DETENIDO', 'archivo.codificacion.al_fallar', true, 'El archivo no se puede leer con la codificación declarada'),
   ('controles_c1',               'LOTE', 'LOTE_DETENIDO', 'archivo.codificacion.compuerta_extra', true, 'Caracteres de control C1 en el archivo'),
   ('fecha_ilegible',             'LOTE', 'LOTE_DETENIDO', 'archivo.formato_de_fecha.al_no_parsear', true, 'El formato de fecha del archivo no es el declarado'),

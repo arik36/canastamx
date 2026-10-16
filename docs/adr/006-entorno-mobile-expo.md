@@ -1,8 +1,9 @@
 # ADR 006 · Entorno móvil de T014
 
 - **Fecha:** 8 de septiembre de 2026
-- **Estado:** propuesta, pendiente de revisión del equipo
-- **Participantes:** Oscar (C2), autor de T014; revisión pendiente
+- **Estado:** aceptada
+- **Ratificación:** 15 de octubre de 2026
+- **Participantes:** Oscar (C2), autor de T014
 
 ## Contexto
 
