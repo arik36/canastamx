@@ -1,4 +1,3 @@
-
 package mx.tecnm.canastamx.domain_service.domain.usuario;
 
 public enum Rol {
@@ -6,4 +5,3 @@ public enum Rol {
     ANALISTA,
     OPERADOR
 }
-

@@ -1,4 +1,3 @@
-
 package mx.tecnm.canastamx.domain_service.domain.usuario;
 
 import static org.junit.jupiter.api.Assertions.*;
