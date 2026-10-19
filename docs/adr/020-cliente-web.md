@@ -14,7 +14,7 @@ La tarjeta T047 exige estructurar el cliente web con acceso y navegación para l
 
 ## Decisión
 
-Se decide construir el cliente web utilizando **Next.js** (alineado a la restricción R-07 del protocolo), programando los componentes y la navegación a mano.
+Se decide construir el cliente web utilizando **Next.js (v16.4.2), React (v19.3) y Tailwind CSS (v4)** (alineado a la restricción R-07 del protocolo), programando los componentes y la navegación a mano.
 
 ## Alternativas descartadas
 
@@ -26,4 +26,5 @@ Se decide construir el cliente web utilizando **Next.js** (alineado a la restric
 
 - **Mayor esfuerzo inicial de maquetación:** Habrá que traducir el sistema de diseño (colores, componentes, tipografías) de Figma a código en Next.js paso a paso.
 - **Se cumple R-07:** El protocolo y el README ya nombran a Next.js como la tecnología oficial de esta capa.
-- **Control total de D-08:** Podremos programar el middleware o los *layouts* para interceptar los anchos menores a 1025 px y mostrar el aviso correctamente sin que colapse la interfaz.
+- **Control total de D-08 mediante CSS:** Aunque el middleware de Next.js protege las rutas, este corre en el servidor y no conoce el ancho de la ventana. La responsividad y el aviso se controlarán estrictamente mediante CSS.
+- **Impacto en infraestructura:** Correr el servidor de Node.js para Next consumirá recursos en la máquina definida en el ADR 008, lo que incrementa ligeramente el costo computacional frente a servir puros archivos estáticos.
