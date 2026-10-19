@@ -67,6 +67,7 @@ erDiagram
 - Después de una notificación exitosa, la alerta permanece activa para futuras revisiones.
 - Cada intento de notificación se registra con su estado (`PENDIENTE`, `ENVIADA` o `FALLIDA`) para permitir reintentos cuando falle; si falló, con su `motivo`.
 - El `rol` se asigna al crear la cuenta: la app sólo crea cuentas `CONSUMIDOR`. Las de `ANALISTA` y `OPERADOR` se crean por configuración, no desde la app (P-07).
+- El valor por defecto (`DEFAULT CONSUMIDOR`) de la columna `rol` corresponde a la base de datos, no al dominio. El constructor de `Usuario` exige recibir un rol y lanza `IllegalArgumentException` si recibe `null`; por tanto, el rol debe indicarse explícitamente al crear el usuario.
 - El usuario no guarda nombre: se identifica con su correo (P-13).
 
 ## Entidades y columnas
