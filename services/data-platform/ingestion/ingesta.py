@@ -335,10 +335,27 @@ def lector(ruta, decl):
     morir(f"no sé leer {ext}. Se esperaba .parquet o .csv")
 
 
+def fila_unica(con, sql):
+    """Primera fila del resultado de `sql`, o None si no devuelve ninguna.
+
+    En DuckDB reciente una Relation (lo que devuelve `con.sql`) ya no tiene
+    `fetchone()`: no guarda resultado entre llamadas. Se pide una sola fila
+    con `limit(1)` y se materializa con `fetchall()`, que funciona igual en
+    versiones viejas y nuevas."""
+    filas = con.sql(sql).limit(1).fetchall()
+    return filas[0] if filas else None
+
+
+def escalar(con, sql):
+    """Primer valor de la primera fila (p. ej. un `count(*)`), o None."""
+    fila = fila_unica(con, sql)
+    return fila[0] if fila else None
+
+
 def controles_c1(con, columnas_texto):
     """Cuántas filas traen un control C1 en alguna columna de texto, y ejemplos."""
     cond = " OR ".join(f"regexp_matches({c}, '{PATRON_C1}')" for c in columnas_texto)
-    n = con.sql(f"SELECT count(*) FROM entrada WHERE {cond}").fetchone()[0]
+    n = escalar(con, f"SELECT count(*) FROM entrada WHERE {cond}")
     ejemplos = []
     for c in columnas_texto if n else []:
         ejemplos += [(c, v) for (v,) in con.sql(
@@ -481,7 +498,7 @@ def main():
     if rec is None:
         print("recorte  : NINGUNO · se ingiere el archivo completo (--sin-recorte)\n")
         con.sql("CREATE VIEW dentro AS SELECT * FROM entrada")
-        filas_archivo = con.sql("SELECT count(*) FROM entrada").fetchone()[0]
+        filas_archivo = escalar(con, "SELECT count(*) FROM entrada")
         fuera = {}
     else:
         # Un `?` en `estado` o `catalogo` no es «fuera del alcance»: es «no se
@@ -496,16 +513,16 @@ def main():
                   "diccionario del contrato, o decide en el contrato qué se hace "
                   "con ellas.")
         s = rec["sql"]
-        filas_archivo = con.sql("SELECT count(*) FROM entrada").fetchone()[0]
+        filas_archivo = escalar(con, "SELECT count(*) FROM entrada")
         fuera = dict(zip(
             ("estado", "ventana", "catalogo"),
-            con.sql(f"""SELECT count(*) FILTER (WHERE NOT ({s['estado']})),
+            fila_unica(con, f"""SELECT count(*) FILTER (WHERE NOT ({s['estado']})),
                                count(*) FILTER (WHERE NOT ({s['ventana']})),
                                count(*) FILTER (WHERE NOT ({s['catalogo']}))
-                        FROM entrada""").fetchone()))
+                        FROM entrada""")))
         con.sql(f"""CREATE VIEW dentro AS SELECT * FROM entrada
                     WHERE ({s['estado']}) AND ({s['ventana']}) AND ({s['catalogo']})""")
-        dentro = con.sql("SELECT count(*) FROM dentro").fetchone()[0]
+        dentro = escalar(con, "SELECT count(*) FROM dentro")
         pct = 100 * dentro / filas_archivo if filas_archivo else 0
         print("recorte del alcance · los tres, leídos del contrato")
         print(f"   {len(rec['entidades'])} entidades · {len(rec['catalogos'])} catálogos"
@@ -530,11 +547,11 @@ def main():
                 SELECT *, {QUINCENA} AS quincena, {entidad_sql} AS entidad
                 FROM dentro""")
 
-    filas_leidas = con.sql("SELECT count(*) FROM listo").fetchone()[0]
+    filas_leidas = escalar(con, "SELECT count(*) FROM listo")
     particiones = [(e, q) for e, q in con.sql(
         "SELECT DISTINCT entidad, quincena FROM listo ORDER BY 1, 2").fetchall()]
-    literales = con.sql(
-        "SELECT count(DISTINCT estado), count(DISTINCT entidad) FROM listo").fetchone()
+    literales = fila_unica(
+        con, "SELECT count(DISTINCT estado), count(DISTINCT entidad) FROM listo")
     if literales[0] != literales[1]:
         print(f"· {literales[0]} literales de `estado` se unifican en "
               f"{literales[1]} entidades para particionar "
@@ -550,8 +567,8 @@ def main():
               f"partición de otro lote.")
     ajenas = sorted({q for _, q in particiones} - {esperada})
     if ajenas:
-        n_aj = con.sql(f"SELECT count(*) FROM listo WHERE quincena <> '{esperada}'"
-                       ).fetchone()[0]
+        n_aj = escalar(
+            con, f"SELECT count(*) FROM listo WHERE quincena <> '{esperada}'")
         morir(f"{n_aj:,} filas caen en otra quincena ({', '.join(ajenas)}) y no en "
               f"{esperada}, la quincena del lote.\n  Escribirlas borraría lo que otro "
               f"lote dejó en esa partición. Revisa las fechas de esas filas antes de "
@@ -631,15 +648,15 @@ def main():
         f"(entidad = '{str(e).replace(chr(39), chr(39) * 2)}' "
         f"AND quincena = '{str(q).replace(chr(39), chr(39) * 2)}')"
         for e, q in particiones)
-    filas_escritas = con.sql(
-        f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
-        f"hive_partitioning=1) WHERE {pares}").fetchone()[0]
+    filas_escritas = escalar(
+        con, f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
+        f"hive_partitioning=1) WHERE {pares}")
 
     # Y el acumulado del bucket, que es otra cosa y conviene no confundirla.
     obj_tot, byt_tot = inventario(s3, cfg["bucket"], PREFIJO + "/")
-    filas_tot = con.sql(
-        f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
-        "hive_partitioning=1)").fetchone()[0]
+    filas_tot = escalar(
+        con, f"SELECT count(*) FROM read_parquet('{destino}/**/*.parquet', "
+        "hive_partitioning=1)")
     duracion = round(time.time() - arranque, 2)
 
     print(f"\nfilas escritas  : {filas_escritas:,}")
