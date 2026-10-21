@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 ingesta.py — CanastaMX · T020 · primer guión de ingesta a la capa cruda
 
