@@ -374,7 +374,7 @@ def test_el_recorte_es_el_mismo_que_aplica_la_ingesta(tmp_path, contrato):
     segun_ingesta = duckdb.connect().sql(
         f"SELECT count(*) FROM {lector(ruta, lectura_declarada(contrato, ruta.name))} "
         f"WHERE ({s['estado']}) AND ({s['ventana']}) AND ({s['catalogo']})"
-    ).fetchone()[0]
+    ).fetchall()[0][0]
     assert len(leer_alcance(ruta, contrato)) == segun_ingesta == 11
 
 
