@@ -34,6 +34,27 @@ jobs:
     # Sin esto, el techo de GitHub son 360 minutos: un trabajo atorado se come
     # seis horas de la bolsa mensual de minutos del repositorio privado.
     timeout-minutes: 10
+    # Base de pruebas de esta corrida: se crea vacía y se descarta al terminar.
+    # Con trust no hace falta contraseña, así que ninguna entra al repositorio.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: canastamx_oltp
+          POSTGRES_USER: canastamx
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U canastamx -d canastamx_oltp"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      OLTP_DB: canastamx_oltp
+      OLTP_USER: canastamx
+      OLTP_PASSWORD: ""
+      OLTP_PORT: "5432"
     steps:
       - uses: actions/checkout@v4
 
@@ -60,11 +81,18 @@ jobs:
         working-directory: services/domain-service
         run: mvn -B compile
 
-      # Semana 2: descomenta cuando existan pruebas
-      # - name: Pruebas
-      #   if: steps.existe.outputs.hay == 'si'
-      #   working-directory: services/domain-service
-      #   run: mvn -B test
+      # Una clave nueva en cada corrida: no se guarda ni se muestra.
+      - name: Clave JWT de esta corrida
+        if: steps.existe.outputs.hay == 'si'
+        run: |
+          clave="$(openssl rand -base64 32)"
+          echo "::add-mask::$clave"
+          echo "JWT_SECRET=$clave" >> "$GITHUB_ENV"
+
+      - name: Pruebas
+        if: steps.existe.outputs.hay == 'si'
+        working-directory: services/domain-service
+        run: mvn -B test
 
   # ── Plataforma de datos · Python 3.12 ─────────────────────────────────────
   datos:
