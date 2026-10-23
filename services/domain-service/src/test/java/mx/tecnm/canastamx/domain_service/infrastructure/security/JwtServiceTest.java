@@ -10,6 +10,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -72,6 +76,60 @@ class JwtServiceTest {
                 IllegalArgumentException.class,
                 () -> new JwtService(SECRETO, -5));
         assertEquals("JWT_EXPIRATION_MINUTES debe ser mayor que 0", error.getMessage());
+    }
+
+    @Test
+    void unTokenPropioDevuelveElIdDeLaCuenta() {
+        JwtService servicio = new JwtService(SECRETO, 15);
+
+        String token = servicio.generarToken(USUARIO).token();
+
+        assertEquals(Optional.of("u1"), servicio.verificar(token));
+    }
+
+    @Test
+    void unTokenAjenoVencidoAlteradoOMalFormadoNoDevuelveCuenta() {
+        JwtService servicio = new JwtService(SECRETO, 15);
+        Instant ahora = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+
+        String deOtraClave = new JwtService(claveDePrueba(), 15)
+                .generarToken(USUARIO).token();
+        String vencido = firmado("u1",
+                ahora.minus(Duration.ofHours(2)), ahora.minus(Duration.ofHours(1)));
+        String sinCuenta = firmado(null, ahora, ahora.plus(Duration.ofMinutes(15)));
+        String sinFirma = Jwts.builder().subject("u1").compact();
+
+        // El cuerpo de otro, con la firma de un token auténtico.
+        String[] partes = servicio.generarToken(USUARIO).token().split("\\.");
+        String alterado = partes[0] + "."
+                + Base64.getUrlEncoder().withoutPadding().encodeToString(
+                        "{\"sub\":\"u2\",\"rol\":\"OPERADOR\"}".getBytes(StandardCharsets.UTF_8))
+                + "." + partes[2];
+
+        Map<String, String> tokens = new LinkedHashMap<>();
+        tokens.put("de otra clave", deOtraClave);
+        tokens.put("vencido", vencido);
+        tokens.put("sin cuenta", sinCuenta);
+        tokens.put("sin firma", sinFirma);
+        tokens.put("alterado", alterado);
+        tokens.put("mal formado", "no-es-un-token");
+        tokens.put("vacío", "");
+        tokens.put("en blanco", "   ");
+        tokens.put("nulo", null);
+
+        tokens.forEach((caso, token) ->
+                assertEquals(Optional.empty(), servicio.verificar(token), caso));
+    }
+
+    /** Firmado con SECRETO, con el sujeto y las fechas que se le pidan. */
+    private static String firmado(String sujeto, Instant emitidoEn, Instant expiraEn) {
+        return Jwts.builder()
+                .subject(sujeto)
+                .claim("rol", Rol.CONSUMIDOR.name())
+                .issuedAt(Date.from(emitidoEn))
+                .expiration(Date.from(expiraEn))
+                .signWith(Keys.hmacShaKeyFor(SECRETO.getBytes(StandardCharsets.UTF_8)))
+                .compact();
     }
 
     private static String claveDePrueba() {

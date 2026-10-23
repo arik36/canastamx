@@ -1,12 +1,15 @@
 openapi: 3.1.0
 info:
   title: CanastaMX · Servicio de dominio
-  version: 0.2.0
+  version: 0.2.1
   summary: Cuentas, canastas y alertas de la persona consumidora.
   description: |
     **Versión 0.2**, revisada por el equipo el 7 de octubre de 2026. Sale de CU-08 a
     CU-11, `docs/analisis/modelo-er.md` y el código de `services/domain-service`. La
     publica C1, con B.
+
+    **0.2.1** agrega `GET /api/v1/cuentas/yo`, que devuelve la `Cuenta` de quien tiene
+    la sesión (D-10, opción A).
 
     Las convenciones y las decisiones de arquitectura (P-01 a P-15) ya se votaron.
     Están en `docs/analisis/openapi/README.md`.
@@ -24,7 +27,7 @@ tags:
   - name: Salud
     description: Si el servicio está arriba. La consume T039.
   - name: Cuentas
-    description: Registro e inicio de sesión (CU-08).
+    description: Registro, inicio de sesión y la cuenta de la sesión (CU-08).
   - name: Canastas
     description: Crear y editar canastas (CU-09). El costo estimado no se guarda aquí.
   - name: Alertas
@@ -67,6 +70,22 @@ paths:
           content:
             application/problem+json:
               schema: { $ref: "#/components/schemas/Problema" }
+  /api/v1/cuentas/yo:
+    get:
+      tags: [Cuentas]
+      operationId: obtenerMiCuenta
+      summary: La cuenta de quien tiene la sesión (D-10)
+      description: |
+        Con la sesión restaurada, la app y la web leen aquí el correo y el rol: el
+        teléfono no guarda el correo (D-10, opción A). Si el token falta, no es válido,
+        ya venció o su cuenta ya no existe, responde 401.
+      responses:
+        "200":
+          description: La cuenta de la sesión
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cuenta" }
+        "401": { $ref: "#/components/responses/SinSesion" }
   /api/v1/sesiones:
     post:
       tags: [Cuentas]
