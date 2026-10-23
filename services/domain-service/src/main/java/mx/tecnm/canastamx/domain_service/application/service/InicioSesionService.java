@@ -19,9 +19,9 @@ public class InicioSesionService {
     private final JwtService jwtService;
 
     public InicioSesionService(
-            UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+        UsuarioRepository usuarioRepository,
+        PasswordEncoder passwordEncoder,
+        JwtService jwtService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -47,11 +47,10 @@ public class InicioSesionService {
             throw new CredencialesInvalidasException();
         }
 
-        Instant expiraEn = jwtService.calcularExpiracion();
-        String token = jwtService.generarToken(usuario);
+        JwtService.TokenEmitido emitido = jwtService.generarToken(usuario);
 
         return new ResultadoInicioSesion(
-                token, expiraEn, usuario.rol().name());
+            emitido.token(), emitido.expiraEn(), usuario.rol().name());
     }
 
     public record ResultadoInicioSesion(

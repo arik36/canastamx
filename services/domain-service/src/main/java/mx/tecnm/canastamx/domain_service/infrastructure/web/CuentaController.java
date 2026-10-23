@@ -22,6 +22,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+//Imports que permiten utilizar clases que ya existen en Java y Spring sin tener que escribir su nombre completo cada vez.
+import java.net.URI;
+import java.util.List;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+
 @RestController
 @RequestMapping("/api/v1/cuentas")
 public class CuentaController {
@@ -71,29 +78,49 @@ public class CuentaController {
     ) {}
 }
 
-@RestControllerAdvice
+//Dejar de responder los errores con un JSON propio que contiene mensaje y empezar a responder con ProblemDetail, siguiendo el contrato de errores de CanastaMX.
+@RestControllerAdvice(assignableTypes = CuentaController.class)
 class CuentaErrorHandler {
 
-    @ExceptionHandler(RegistroCuentaService.CuentaDuplicadaException.class)
-    public ResponseEntity<ErrorRespuesta> cuentaDuplicada(
-            RegistroCuentaService.CuentaDuplicadaException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorRespuesta(ex.getMessage()));
-    }
+    private static final URI DATOS_INVALIDOS = URI.create("/problemas/datos-invalidos");
+    private static final URI CUENTA_DUPLICADA = URI.create("/problemas/cuenta-duplicada");
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorRespuesta> datosInvalidos(
-            IllegalArgumentException ex) {
-        return ResponseEntity.badRequest()
-                .body(new ErrorRespuesta(ex.getMessage()));
+    @ExceptionHandler(RegistroCuentaService.CuentaDuplicadaException.class)
+    public ProblemDetail cuentaDuplicada() {
+        return problema(HttpStatus.CONFLICT, CUENTA_DUPLICADA,
+                "La cuenta ya existe", "Ya existe una cuenta con ese correo.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorRespuesta> solicitudInvalida(
-            MethodArgumentNotValidException ex) {
-        return ResponseEntity.badRequest()
-                .body(new ErrorRespuesta("Los datos enviados no son válidos"));
+    public ProblemDetail solicitudInvalida(MethodArgumentNotValidException ex) {
+        List<String> campos = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getField)
+                .distinct()
+                .sorted()
+                .toList();
+        return datosInvalidos("Revisa estos datos: " + String.join(", ", campos) + ".");
     }
 
-    public record ErrorRespuesta(String mensaje) {}
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail cuerpoIlegible() {
+        return datosInvalidos("El cuerpo de la solicitud no es un JSON válido.");
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail reglaNoCumplida() {
+        return datosInvalidos("Algún dato no cumple las reglas.");
+    }
+
+    private ProblemDetail datosInvalidos(String detalle) {
+        return problema(HttpStatus.BAD_REQUEST, DATOS_INVALIDOS,
+                "Datos inválidos", detalle);
+    }
+
+    private ProblemDetail problema(HttpStatus estado, URI tipo,
+                                   String titulo, String detalle) {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(estado, detalle);
+        problema.setType(tipo);
+        problema.setTitle(titulo);
+        return problema;
+    }
 }
