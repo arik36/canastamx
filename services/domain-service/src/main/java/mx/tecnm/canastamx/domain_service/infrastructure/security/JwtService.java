@@ -1,8 +1,9 @@
-
 package mx.tecnm.canastamx.domain_service.infrastructure.security;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -19,9 +20,12 @@ import org.springframework.stereotype.Service;
 public class JwtService {
 
     private final SecretKey clave;
-    private final long duracionSegundos = 3600;
+    private final Duration duracion;
 
-    public JwtService(@Value("${security.jwt.secret}") String secreto) {
+    public JwtService(
+            @Value("${security.jwt.secret}") String secreto,
+            @Value("${security.jwt.expiration-minutes}") long minutos) {
+
         byte[] bytes = secreto.getBytes(StandardCharsets.UTF_8);
 
         if (bytes.length < 32) {
@@ -29,23 +33,31 @@ public class JwtService {
                     "JWT_SECRET debe tener al menos 32 bytes");
         }
 
+        if (minutos <= 0) {
+            throw new IllegalArgumentException(
+                    "JWT_EXPIRATION_MINUTES debe ser mayor que 0");
+        }
+
         this.clave = Keys.hmacShaKeyFor(bytes);
+        this.duracion = Duration.ofMinutes(minutos);
     }
 
-    public String generarToken(Usuario usuario) {
-        Instant ahora = Instant.now();
-        Instant expiracion = ahora.plusSeconds(duracionSegundos);
+    public TokenEmitido generarToken(Usuario usuario) {
+        // Usar el mismo instante para iat, exp y expiraEn.
+        Instant emitidoEn = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        Instant expiraEn = emitidoEn.plus(duracion);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(usuario.id())
                 .claim("rol", usuario.rol().name())
-                .issuedAt(Date.from(ahora))
-                .expiration(Date.from(expiracion))
+                .issuedAt(Date.from(emitidoEn))
+                .expiration(Date.from(expiraEn))
                 .signWith(clave)
                 .compact();
+
+        return new TokenEmitido(token, expiraEn);
     }
 
-    public Instant calcularExpiracion() {
-        return Instant.now().plusSeconds(duracionSegundos);
-    }
+    /** El token firmado y el instante exacto de su claim exp. */
+    public record TokenEmitido(String token, Instant expiraEn) {}
 }

@@ -1,7 +1,6 @@
-
 package mx.tecnm.canastamx.domain_service.infrastructure.web;
 
-import java.time.Instant;
+import java.net.URI;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -10,7 +9,9 @@ import jakarta.validation.constraints.NotBlank;
 import mx.tecnm.canastamx.domain_service.application.service.InicioSesionService;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,16 +42,25 @@ public class SesionController {
             @NotBlank String contrasena) {}
 }
 
-@RestControllerAdvice
+@RestControllerAdvice(assignableTypes = SesionController.class)
 class SesionErrorHandler {
 
-    @ExceptionHandler(
-            InicioSesionService.CredencialesInvalidasException.class)
-    public ResponseEntity<ErrorRespuesta> credencialesInvalidas(
-            InicioSesionService.CredencialesInvalidasException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorRespuesta(ex.getMessage()));
-    }
+    private static final URI SIN_SESION =
+            URI.create("/problemas/sin-sesion");
 
-    public record ErrorRespuesta(String mensaje) {}
+    @ExceptionHandler({
+            InicioSesionService.CredencialesInvalidasException.class,
+            HttpMessageNotReadableException.class,
+            MethodArgumentNotValidException.class
+    })
+    public ProblemDetail sinSesion() {
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                "El correo o la contraseña no son válidos.");
+
+        problema.setType(SIN_SESION);
+        problema.setTitle("Sin sesión");
+
+        return problema;
+    }
 }
