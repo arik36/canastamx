@@ -62,3 +62,4 @@
 - El correo electrónico se representa mediante el objeto de valor `CorreoElectronico`.
 - **La cuenta no guarda nombre: se identifica con su correo electrónico** (P-13, 7 de octubre de 2026). Donde antes se mostraría un nombre, se muestra el correo: la vista 8 de la app y la barra lateral de la web.
 - **La cuenta nace con un rol** (`CONSUMIDOR`, `ANALISTA` u `OPERADOR`) y la sesión lo lleva; con él, la web decide si abre el tablero o la consola (P-07, 7 de octubre de 2026). Desde la app sólo se crean cuentas `CONSUMIDOR`: las de analista y operador se crean por configuración.
+- **El correo se lee del servidor, no del teléfono:** con la sesión restaurada, la app y la web piden `GET /api/v1/cuentas/yo` y reciben la cuenta de quien tiene la sesión (D-10, opción A). Sin una sesión válida, el sistema responde «Sin sesión».

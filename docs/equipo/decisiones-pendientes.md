@@ -12,9 +12,10 @@
 
 ## Para decidir
 
-Las tres se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las tres
-tocan contratos que se construyen esa semana. Por qué están aquí y no resueltas en
-silencio: `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
+Se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las dos tocan
+contratos que se construyen esa semana. D-10, que se votaba con ellas, ya está abajo,
+en «Decididas». Por qué están aquí y no resueltas en silencio:
+`docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
 
 ### D-09 · ¿Cómo se entregan los avisos de precio?
 
@@ -29,21 +30,6 @@ estaba en la boleta.
 | **C** | SMTP de proveedor también en desarrollo | Correos de prueba a direcciones reales, y una cuota que se agota en el experimento |
 
 **Quién:** C1 y B. **Dónde quedará:** ADR nuevo · `arquitectura/` · CU-11.
-
-### D-10 · ¿Cómo sabe el cliente el correo de la cuenta después de iniciar sesión?
-
-La abrió P-13. La vista 8 debe mostrar el correo (`inventario-vistas.md`) y la barra
-de la web, el correo y el rol (`diseno.md` §7 · 13). Hoy `dominio.yaml` sólo tiene
-`POST /cuentas` y `POST /sesiones`, y `Sesion` trae token, expiración y rol: al
-reabrir la app con la sesión guardada, el cliente **no tiene el correo**.
-
-| | Opción | Consecuencia |
-|---|---|---|
-| **A** | `GET /api/v1/cuentas/yo`, que devuelve `Cuenta` | Una ruta nueva en `dominio.yaml` 0.2.1 y C1 la implementa. El teléfono no guarda el correo y funciona con la sesión restaurada. Sirve igual a la app y a la web |
-| **B** | `Sesion` también trae el `correo` | Ninguna ruta nueva, pero la app tiene que guardar el correo en el teléfono para mostrarlo al reabrir: una copia del único dato personal fuera del servidor |
-| **C** | El token lleva el correo como atributo y el cliente lo lee del JWT | El correo viaja en cada petición y queda en cualquier registro que guarde el encabezado. Hoy el contrato dice que el token «lleva el rol» |
-
-**Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
 
 ### D-11 · ¿Con qué se registra quién cerró un incidente o resolvió una variante?
 
@@ -64,6 +50,15 @@ sistema, en una base distinta a la del dominio.
 Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
 ---
+
+## Decididas, registradas el 23 de octubre de 2026
+
+D-10 ya se votó, pero la fecha del voto no quedó en el repositorio: ésta es la fecha
+en que se anota.
+
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| D-10 | ¿Cómo sabe el cliente el correo de la cuenta después de iniciar sesión? | **A · `GET /api/v1/cuentas/yo`,** que devuelve `Cuenta`. El teléfono no guarda el correo y la ruta funciona con la sesión restaurada; sirve igual a la app y a la web | C1 publica, C2 y D consumen | `dominio.yaml` 0.2.1 · CU-08 (T045) |
 
 ## Decididas el 7 de octubre de 2026
 
