@@ -1,10 +1,11 @@
 import Link from 'next/link'
-import { cookies } from 'next/headers'
 
-export default async function Sidebar() {
-  const cookieStore = await cookies()
-  const rol = cookieStore.get('rol')?.value || ''
-  const correo = cookieStore.get('correo')?.value || ''
+import type { Cuenta } from '@/lib/sesion'
+
+// El correo y el rol vienen de GET /api/v1/cuentas/yo (D-10), que pide cada vista con
+// exigirCuenta(). Nunca un nombre: la cuenta no tiene (P-13).
+export default function Sidebar({ cuenta }: { cuenta: Cuenta }) {
+  const { correo, rol } = cuenta
 
   return (
     <aside className="flex w-[260px] shrink-0 flex-col border-r border-[#e7dfd0] bg-white h-screen">
@@ -40,6 +41,8 @@ export default async function Sidebar() {
             <div className="truncate text-[11px] text-[#5b5b5b]">{rol}</div>
           </div>
         </div>
+        {/* <a> y no <Link>: Link precarga la ruta, y precargar /api/salir cerraría la sesión */}
+        <a href="/api/salir" className="mt-1 block rounded-lg px-3 py-2 text-sm font-bold text-[#5b5b5b] hover:bg-[#f0eadf]">Salir</a>
       </div>
     </aside>
   )

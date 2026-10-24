@@ -23,20 +23,17 @@ export default function Acceso() {
         body: JSON.stringify({ correo, contrasena })
       })
 
-      if (!res.ok) throw new Error('Credenciales inválidas')
+      const data = await res.json().catch(() => ({}))
 
-      const data = await res.json()
-      
-      // Verificamos los roles en mayúsculas como pidió Liz
-      if (data.rol === 'ANALISTA') {
-        router.push('/tablero')
-      } else if (data.rol === 'OPERADOR') {
-        router.push('/consola')
-      } else {
-        setError('Rol desconocido o sin acceso')
+      // El servidor dice por qué no entró (credenciales, cuenta de la app o el dominio
+      // sin responder) y, si entró, a dónde va según el rol: tablero o consola (P-07).
+      if (!res.ok || !data.destino) {
+        setError(data.error ?? 'No se pudo iniciar sesión. Verifica tus datos.')
+        return
       }
-    } catch (err) {
-      setError('No se pudo iniciar sesión. Verifica tus datos.')
+      router.push(data.destino)
+    } catch {
+      setError('No se pudo contactar al servidor de la web.')
     } finally {
       setLoading(false)
     }

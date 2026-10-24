@@ -49,7 +49,7 @@ Cada figura tiene su fuente en Graphviz (`.dot`) en esta carpeta. Para regenerar
 | Contenedor | Tecnología | Responsabilidad | Dueño |
 |---|---|---|---|
 | App móvil | React Native · Expo | Las vistas 6 a 8: búsqueda, canasta, cuenta y alertas | C2 |
-| Cliente web | Next.js, según el README (ADR pendiente) | Las vistas 1 a 5: acceso, tablero, detalle, consola y cola. Sólo escritorio (D-08) | D |
+| Cliente web | Next.js 16 (ADR 021) | Las vistas 1 a 5: acceso, tablero, detalle, consola y cola. Sólo escritorio (D-08) | D |
 | Traefik | Traefik 3.6 | Puerta de enlace única, HTTPS y certificados automáticos | B |
 | Servicio de dominio | Java 21 · Spring Boot 4.1.1 (ADR 003) | Cuentas y sesión con rol, canastas, alertas y notificaciones | C1 |
 | Interfaz analítica | Python · FastAPI | Precios, índice, consola y cola. Lee la capa de consumo | A |
@@ -143,6 +143,5 @@ usa cada contenedor lo confirma B en el ADR 008, cuando entren Dagster y FastAPI
 | Qué | Afecta | Quién |
 |---|---|---|
 | ADR 016 a 019: Dagster, FastAPI, Pandera y dbt | El contenedor de la plataforma y la interfaz analítica | A, con la firma de B |
-| ADR del cliente web: Next.js, o el Vite que exporta Figma | El contenedor web | D |
 | D-09: el servicio de correo | El contexto, los contenedores y el despliegue | C1 y B |
 | La memoria de cada contenedor | El despliegue | B, en el ADR 008 |
