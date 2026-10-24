@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,9 +24,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
+// Cada prueba corre en una transacción que se revierte: no deja cuentas en la base.
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class AutenticacionTests {
 
     @Autowired
@@ -106,8 +109,9 @@ class AutenticacionTests {
         JsonNode respuesta = objectMapper.readTree(
                 resultado.getResponse().getContentAsString());
 
+        // La clave es JWT_SECRET decodificada (ADR 020), no su texto.
         var clave = Keys.hmacShaKeyFor(
-                secreto.getBytes(StandardCharsets.UTF_8));
+                Base64.getDecoder().decode(secreto));
 
         var claims = Jwts.parser()
                 .verifyWith(clave)

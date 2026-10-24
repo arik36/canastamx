@@ -7,6 +7,7 @@ mano: no necesitan MinIO ni los datos del corpus.
     python -m pytest services/data-platform/tests -q
 """
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -42,6 +43,20 @@ def test_un_lote_limpio_pasa(tmp_path):
     r = ingerir(archivo(tmp_path, "01-2025_01.csv", [fila(), fila(estado="Michoacán")]))
     assert r.returncode == 0, r.stderr
     assert "2025-01-Q1, la quincena del lote" in r.stdout
+
+
+def test_con_la_salida_en_cp1252_no_truena_y_deja_la_flecha_con_su_codigo(tmp_path):
+    """Como en Windows cuando la salida va a un archivo o a una tubería: Python
+    escribe en cp1252, que no tiene la flecha que imprime la ingesta. Antes tronaba
+    con UnicodeEncodeError; ahora escribe `\\u2192`. Prueba el mecanismo, no Windows."""
+    ruta = archivo(tmp_path, "01-2025_01.csv", [fila(), fila(estado="Michoacán")])
+    r = subprocess.run([sys.executable, str(INGESTION / "ingesta.py"), str(ruta), "--simular"],
+                       capture_output=True, check=False,
+                       env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+    salida = r.stdout.decode("cp1252")
+    assert r.returncode == 0, r.stderr.decode("cp1252", "backslashreplace")
+    assert "\\u2192" in salida
+    assert "2025-01-Q1, la quincena del lote" in salida
 
 
 def test_un_interrogante_en_estado_detiene_el_lote(tmp_path):

@@ -12,9 +12,10 @@
 
 ## Para decidir
 
-Se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las dos tocan
-contratos que se construyen esa semana. D-10, que se votaba con ellas, ya está abajo,
-en «Decididas». Por qué están aquí y no resueltas en silencio:
+D-09 y D-11 se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las dos
+tocan contratos que se construyen esa semana. D-10, que se votaba con ellas, ya está
+abajo, en «Decididas». D-12 se abrió el 23 de octubre y no tiene fecha de voto. Por
+qué están aquí y no resueltas en silencio:
 `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
 
 ### D-09 · ¿Cómo se entregan los avisos de precio?
@@ -46,6 +47,22 @@ sistema, en una base distinta a la del dominio.
 
 **Quién:** A, con B. **Dónde quedará:** `requerimientos.md` (RNF) ·
 `esquema-de-operacion.md`.
+
+### D-12 · ¿Qué desafío lleva el 401 de `POST /api/v1/sesiones`?
+
+Se abrió el 23 de octubre de 2026, al revisar T045. RFC 9110 §15.5.2 pide que todo
+401 lleve `WWW-Authenticate` con un desafío que sirva para ese recurso. Las rutas
+con sesión ya lo mandan (`Bearer`, `dominio.yaml` 0.2.2). `/sesiones` no: recibe el
+correo y la contraseña en el cuerpo, no por un esquema de autenticación de HTTP, y
+hoy responde 401 sin el encabezado (`CredencialesInvalidas`).
+
+| | Opción | Consecuencia |
+|---|---|---|
+| **A** | 401 con `WWW-Authenticate: Bearer` | Cumple la letra del RFC, pero el desafío nombra un esquema que esa ruta no acepta |
+| **B** | 401 sin el encabezado, como hoy, y se declara la excepción | Ningún cliente cambia; el incumplimiento queda escrito en el contrato en lugar de escondido |
+| **C** | 400 para credenciales inválidas, como el punto final de tokens de OAuth 2.0 (RFC 6749 §5.2) | Deja de ser 401 y no necesita desafío, pero cambia el contrato de `/sesiones` y lo que esperan la app y la web |
+
+**Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
 
 Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
@@ -122,6 +139,7 @@ noviembre.
 | 007 · navegación de la app | En propuesta, y con D-01 hay que reescribirlo: cuatro pestañas | C2 |
 | 006 y 011 · entorno y diseño de la app | En propuesta, aunque ya se siguen | C2 |
 | 008 · dónde vive la base | En propuesta; su título dice «ADR 006» y su peso no dice de qué población es | B |
+| 020 · el token de sesión | En propuesta: HS256, `JWT_SECRET` como Base64 de 32 bytes y los claims `sub`, `rol`, `iat` y `exp`. El dominio ya lo aplica | A, con C1 |
 
 ## Lo que dejan las decisiones
 

@@ -3,6 +3,7 @@ package mx.tecnm.canastamx.domain_service.domain.usuario;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +59,20 @@ class UsuarioTest {
                     "nombre",
                     campo.getName(),
                     "Usuario no debe volver a tener el atributo nombre");
+        }
+    }
+
+    @Test
+    void el_usuario_no_expone_metodos_nombre_ni_renombrar() {
+        for (Method metodo : Usuario.class.getDeclaredMethods()) {
+            assertNotEquals(
+                    "nombre",
+                    metodo.getName(),
+                    "Usuario no debe volver a exponer nombre()");
+            assertNotEquals(
+                    "renombrar",
+                    metodo.getName(),
+                    "Usuario no debe volver a exponer renombrar()");
         }
     }
 }

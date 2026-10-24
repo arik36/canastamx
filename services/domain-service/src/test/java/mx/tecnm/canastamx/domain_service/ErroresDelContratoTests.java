@@ -18,13 +18,16 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Errores de /cuentas y /sesiones tal como los declara dominio.yaml (P-03):
- * application/problem+json con type, title y status.
+ * application/problem+json con type, title y status. Cada prueba corre en una
+ * transacción que se revierte: no deja cuentas en la base.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class ErroresDelContratoTests {
 
     private static final String CUENTAS = "/api/v1/cuentas";
