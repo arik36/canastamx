@@ -197,6 +197,22 @@ def test_materializar_la_particion_corre_los_tres_activos(entorno, columnas):
             f"{nombre} no dejó materialización, así que no dejó linaje")
 
 
+def test_la_capa_cruda_corre_aunque_la_salida_del_sistema_sea_cp1252(
+        entorno, columnas, monkeypatch):
+    """Como en Windows: la orquestación lee la salida de la ingesta por una
+    tubería, y con cp1252 la ingesta tronaba al imprimir la flecha. Ahora le pide
+    UTF-8 al proceso hijo y lee UTF-8 (ingestion/salida_segura.py)."""
+    monkeypatch.setenv("PYTHONIOENCODING", "cp1252")
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv",
+                  [fila(columnas, producto=f"P{i}", direccion=f"C{i}")
+                   for i in range(10)], columnas)
+
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2026-07-Q2")
+    assert r.success
+
+
 def test_materializar_dos_veces_da_la_misma_huella(entorno, columnas):
     """RF-25 · reprocesar un lote es re-materializar su partición, y tiene que dar
     lo mismo. La huella son el sha256 de la entrada y las cifras que `ingesta.py`

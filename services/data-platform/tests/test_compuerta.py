@@ -317,6 +317,23 @@ def test_la_linea_de_comandos_escribe_las_dos_salidas(tmp_path, contrato):
     assert json.loads(lineas[0])["motivo"] == "precio_fuera_de_rango"
 
 
+def test_la_linea_de_comandos_con_la_salida_en_cp1252_no_truena(tmp_path):
+    """La marca del resultado (✓ ⚠ ✗) no existe en cp1252, la codificación de una
+    tubería en Windows: queda escrita con su código en lugar de tronar."""
+    csv = tmp_path / "07-2026_Q2.csv"
+    filas = [fila()] * 39 + [fila(precio="5000.00")]
+    csv.write_text(",".join(COLUMNAS) + "\n"
+                   + "\n".join(",".join(str(f[c]) for c in COLUMNAS) for f in filas) + "\n",
+                   encoding="utf-8")
+    r = subprocess.run([sys.executable, str(INGESTION / "compuerta.py"), str(csv),
+                        "--lote", "07-2026_Q2"], capture_output=True, check=False,
+                       env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+    salida = r.stdout.decode("cp1252")
+    assert r.returncode == 0, r.stderr.decode("cp1252", "backslashreplace")
+    assert "2.50%" in salida
+    assert re.search(r"\\u(2713|26a0|2717)", salida), salida
+
+
 # ── La población: el alcance del contrato, no el archivo ───────────────────
 #
 # Estas pruebas llegaron el 15 de octubre de 2026, después de que la compuerta ya

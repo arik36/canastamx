@@ -9,18 +9,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import mx.tecnm.canastamx.domain_service.application.service.CuentaDeLaSesionService;
 import mx.tecnm.canastamx.domain_service.application.service.RegistroCuentaService;
 import mx.tecnm.canastamx.domain_service.domain.usuario.Usuario;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -38,13 +35,9 @@ import org.springframework.validation.FieldError;
 public class CuentaController {
 
     private final RegistroCuentaService registroCuentaService;
-    private final CuentaDeLaSesionService cuentaDeLaSesionService;
 
-    public CuentaController(
-            RegistroCuentaService registroCuentaService,
-            CuentaDeLaSesionService cuentaDeLaSesionService) {
+    public CuentaController(RegistroCuentaService registroCuentaService) {
         this.registroCuentaService = registroCuentaService;
-        this.cuentaDeLaSesionService = cuentaDeLaSesionService;
     }
 
     @PostMapping
@@ -60,23 +53,13 @@ public class CuentaController {
                 .body(CuentaRespuesta.de(usuario));
     }
 
-    /** D-10, opción A: la cuenta de quien manda {@code Authorization: Bearer <token>}. */
+    /**
+     * D-10, opción A: la cuenta de quien tiene la sesión. Sin sesión válida no se
+     * llega aquí: responde el 401 de {@link SinSesionHandler}.
+     */
     @GetMapping("/yo")
-    public CuentaRespuesta yo(
-            @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false)
-            String autorizacion) {
-        return CuentaRespuesta.de(
-                cuentaDeLaSesionService.obtener(tokenBearer(autorizacion)));
-    }
-
-    /** El token de {@code Bearer <token>}; null si falta o es de otro esquema. */
-    private static String tokenBearer(String autorizacion) {
-        String esquema = "Bearer ";
-        if (autorizacion == null
-                || !autorizacion.regionMatches(true, 0, esquema, 0, esquema.length())) {
-            return null;
-        }
-        return autorizacion.substring(esquema.length()).trim();
+    public CuentaRespuesta yo(@CuentaDeLaSesion Usuario cuenta) {
+        return CuentaRespuesta.de(cuenta);
     }
 
     public record RegistroSolicitud(
@@ -115,18 +98,11 @@ class CuentaErrorHandler {
 
     private static final URI DATOS_INVALIDOS = URI.create("/problemas/datos-invalidos");
     private static final URI CUENTA_DUPLICADA = URI.create("/problemas/cuenta-duplicada");
-    private static final URI SIN_SESION = URI.create("/problemas/sin-sesion");
 
     @ExceptionHandler(RegistroCuentaService.CuentaDuplicadaException.class)
     public ProblemDetail cuentaDuplicada() {
         return problema(HttpStatus.CONFLICT, CUENTA_DUPLICADA,
                 "La cuenta ya existe", "Ya existe una cuenta con ese correo.");
-    }
-
-    @ExceptionHandler(CuentaDeLaSesionService.SinSesionException.class)
-    public ProblemDetail sinSesion() {
-        return problema(HttpStatus.UNAUTHORIZED, SIN_SESION,
-                "Sin sesión", "Falta la sesión, no es válida o ya venció.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

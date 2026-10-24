@@ -25,6 +25,8 @@ import os
 import pathlib
 import sys
 
+from salida_segura import preparar_salida
+
 AQUI = pathlib.Path(__file__).resolve().parent
 RAIZ = AQUI.parents[2]
 # Por omisión, la misma carpeta que escriben ingesta.py y la compuerta, con la
@@ -35,6 +37,7 @@ CONTRATO = RAIZ / "contracts" / "qqp-v1.yaml"
 
 
 def main():
+    preparar_salida()
     ap = argparse.ArgumentParser(description="Consolida las corridas de la ingesta")
     ap.add_argument("--corridas", type=pathlib.Path, default=CORRIDAS)
     ap.add_argument("--salida", type=pathlib.Path, default=SALIDA)

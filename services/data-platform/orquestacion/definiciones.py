@@ -90,6 +90,7 @@ sys.path.insert(0, str(INGESTA))
 import compuerta
 import lote as reglas_de_lote
 from ingesta import CORRIDAS, leer_contrato, sha256_de
+from salida_segura import CODIFICACION_DE_LOS_HIJOS, entorno_utf8
 
 # La misma carpeta que escribe ingesta.py, y no una copia de la ruta: el activo
 # de capa cruda LEE ahí el registro de la ingesta, así que si fueran dos rutas que
@@ -227,8 +228,11 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
     context.log.info("corriendo la ingesta: %s", " ".join(orden))
     # check=False a propósito: el código de salida se revisa abajo, para poder
     # dejar la salida completa de la ingesta en el registro antes de fallar.
+    # La ingesta escribe → ✓ ⚠ ✗: en UTF-8 de los dos lados, para que en Windows no
+    # truene ni se pierda un carácter de la evidencia (ver ingestion/salida_segura.py).
     hecho = subprocess.run(orden, capture_output=True, text=True,
-                           cwd=str(INGESTA), check=False)
+                           encoding=CODIFICACION_DE_LOS_HIJOS, errors="backslashreplace",
+                           env=entorno_utf8(), cwd=str(INGESTA), check=False)
     if hecho.returncode != 0:
         # La salida de la ingesta entra al registro de la corrida tal cual: es la
         # evidencia que RF-13 pide para levantar el incidente.

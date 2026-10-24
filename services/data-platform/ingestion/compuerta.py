@@ -94,6 +94,7 @@ from ingesta import (
     morir,
     recorte_del_contrato,
 )
+from salida_segura import preparar_salida
 
 NOMBRE_COMPUERTA = "contrato_por_fila"
 SALIDAS = CORRIDAS          # la carpeta de la evidencia: ver ingesta.CORRIDAS
@@ -394,6 +395,7 @@ def leer_alcance(ruta, contrato, sin_recorte=False):
 
 
 def main():
+    preparar_salida()
     p = argparse.ArgumentParser(description="Compuerta de calidad contra el contrato.")
     p.add_argument("archivo", nargs="?", help="CSV o Parquet del lote")
     p.add_argument("--lote", help="nombre del lote, p. ej. 07-2026_Q2")

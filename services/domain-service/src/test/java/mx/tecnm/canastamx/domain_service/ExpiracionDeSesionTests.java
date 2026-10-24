@@ -5,9 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,14 +24,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * La sesión dura lo que dice security.jwt.expiration-minutes y expiraEn es el
  * claim exp del token. Usa 15 minutos, no los 60 por omisión, para demostrar
- * que la propiedad se lee.
+ * que la propiedad se lee. Corre en una transacción que se revierte.
  */
 @SpringBootTest(properties = "security.jwt.expiration-minutes=15")
 @AutoConfigureMockMvc
+@Transactional
 class ExpiracionDeSesionTests {
 
     @Autowired
@@ -63,7 +65,7 @@ class ExpiracionDeSesionTests {
 
         JsonNode sesion = objectMapper.readTree(cuerpo);
         Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secreto.getBytes(StandardCharsets.UTF_8)))
+                .verifyWith(Keys.hmacShaKeyFor(Base64.getDecoder().decode(secreto)))
                 .build()
                 .parseSignedClaims(sesion.get("token").asText())
                 .getPayload();

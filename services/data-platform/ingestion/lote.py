@@ -70,6 +70,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ingesta import CONTRATO, leer_contrato
+from salida_segura import preparar_salida
 
 NOMBRE_COMPUERTA = "lote_contra_el_contrato"
 
@@ -447,6 +448,7 @@ def revisar_frescura(df, contrato=None, fecha_referencia=None, corpus_congelado=
 
 
 def main():
+    preparar_salida()
     import argparse
 
     from compuerta import leer_alcance
