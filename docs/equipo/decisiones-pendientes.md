@@ -14,7 +14,9 @@
 
 D-09 y D-11 se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las dos
 tocan contratos que se construyen esa semana. D-10, que se votaba con ellas, ya está
-abajo, en «Decididas». D-12 se abrió el 23 de octubre y no tiene fecha de voto. Por
+abajo, en «Decididas». D-12 se abrió el 23 de octubre y **se vota antes del jueves 29
+de octubre**: si gana A o C, C1 tiene del 30 de octubre al 3 de noviembre para el
+cambio, antes de que D pruebe el manejo de sesión en T062 (4 de noviembre). Por
 qué están aquí y no resueltas en silencio:
 `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
 
@@ -63,6 +65,13 @@ hoy responde 401 sin el encabezado (`CredencialesInvalidas`).
 | **C** | 400 para credenciales inválidas, como el punto final de tokens de OAuth 2.0 (RFC 6749 §5.2) | Deja de ser 401 y no necesita desafío, pero cambia el contrato de `/sesiones` y lo que esperan la app y la web |
 
 **Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
+
+**Votan:** C1, con C2 y D, como en D-10. **Qué sigue:** con B no cambia el código: C1
+declara la excepción en `dominio.yaml` y CU-08. Con A o C, al registrar el voto se
+abre una tarea de C1 con el cambio en el dominio, en `dominio.yaml` y en CU-08; con
+C, además, la web y la app dejan de esperar 401 en credenciales malas. Mientras no se
+vote no hay tarea. No detiene T045 ni sus solicitudes; conviene resolverla antes de
+liberar.
 
 Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
@@ -139,7 +148,7 @@ noviembre.
 | 007 · navegación de la app | En propuesta, y con D-01 hay que reescribirlo: cuatro pestañas | C2 |
 | 006 y 011 · entorno y diseño de la app | En propuesta, aunque ya se siguen | C2 |
 | 008 · dónde vive la base | En propuesta; su título dice «ADR 006» y su peso no dice de qué población es | B |
-| 020 · el token de sesión | En propuesta: HS256, `JWT_SECRET` como Base64 de 32 bytes y los claims `sub`, `rol`, `iat` y `exp`. El dominio ya lo aplica | A, con C1 |
+| 020 · el token de sesión | En propuesta: HS256, `JWT_SECRET` como Base64 de 32 bytes y los claims `sub`, `rol`, `iat` y `exp`. El dominio ya lo aplica. Ratificarlo no cierra la verificación cruzada con la analítica: ésa es criterio de T058 (4 de noviembre) | A, con C1 |
 
 ## Lo que dejan las decisiones
 

@@ -76,11 +76,53 @@ estaba registrado en `docs/equipo/semanas/semana-04.json`, en su campo `fuente`.
 | 28 de septiembre al 4 de octubre | Semana 5 | Semana 4 |
 | 5 al 11 de octubre · **entrega del 9** | Semana 6 | Semana 5 |
 | 12 al 18 de octubre · arranca la construcción | Semana 7 | Semana 6 |
-| 19 al 25 de octubre | Semana 8 | Semana 7 |
+| 19 al 25 de octubre · **la semana 7 se recorrió** | Semana 8 | — · lo pendiente de la semana 6 |
+| 26 de octubre al 1 de noviembre | Semana 9 | Semana 7 |
+| 2 al 8 de noviembre · **entrega del 4** | Semana 10 | Semanas 8 (vence el 8) y 9 (vence el 4) |
+
+Desde el 26 de octubre la diferencia es de dos: la semana 7 del tablero no arrancó el
+19 de octubre sino el 26 (ver «Replaneación del 25 de octubre»).
 
 **La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
 fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos
 lecturas; «la semana 7» sí.
+
+---
+
+## Replaneación del 25 de octubre
+
+Por causa de fuerza mayor, la semana 7 del tablero, que empezaba el 19 de octubre, se
+retrasó una semana; del 19 al 25 se avanzó lo pendiente de la semana 6 (#177 a #185).
+La semana 7 (T048 a T052) pasa al **26 de octubre – 1 de noviembre**, y la 8 (T053 a
+T057) vence el **domingo 8 de noviembre** en lugar del 1. Se recorre una sola vez.
+
+**No se mueven** las fechas de la tabla «Fechas que no se mueven»: la entrega del
+**4 de noviembre** (T058 a T063 siguen venciendo ese día), la del 18 de noviembre y
+las presentaciones. Por eso tampoco se recorren las tareas del 9 de noviembre en
+adelante: alimentan la entrega del 18, y después del 18 hay congelamiento. **T078 se
+queda en el 29 de noviembre**: alimenta el README final y el traspaso (T083, 1 de
+diciembre) y las presentaciones del 2, y recorrerla la pondría después de lo que la usa.
+
+Lo que cambia de alcance, y por qué:
+
+| Tarea | Antes | Ahora | Por qué |
+|---|---|---|---|
+| T050 · C1 | Alertas y notificaciones | **Las rutas de canasta contra `dominio.yaml`**, con la dependencia directa de SnakeYAML y la redacción pendiente del README y el Javadoc del dominio (seguimiento en T078) | Las alertas esperan el voto de D-09, que no tiene fecha. Las rutas de canasta tienen contrato, sólo estaban en T045 «si queda semana» y son endpoints que se enseñan el 4 |
+| T051 · C2 | Búsqueda con datos reales | Búsqueda contra el simulador de `analitica.yaml`; los datos reales llegan con T058 | La interfaz analítica real es T058, el 4 de noviembre |
+| T052 · D | Tablero con datos simulados | Igual, contra el simulador, con el token de la sesión en cada llamada y la población de cada cifra | Sin cambio de fondo: queda explícito cómo se conecta |
+| T058 · A | Cuatro endpoints y H3 | Cuatro endpoints y **la prueba cruzada del token del ADR 020** (dominio emite, analítica verifica, `x-rol` por rol), con trabajo preparatorio del 26 de octubre al 1 de noviembre | Sin esa prueba, las rutas con `x-rol` no se liberan |
+
+**Lo que no va a estar el 4 de noviembre**, y se dice así en la entrega
+(`entregas/2026-11-04-construccion.md`, «El error clásico de esta entrega»):
+
+- El esquema estrella cargado (T053, vence el 8) y, con él, la medición de H3 sobre
+  los 200 pares, que se hace contra la reconciliación de T053. Hasta que se mida, la
+  cola dice «se mide en T058».
+- El sistema desplegado en la nube por HTTPS (T054, vence el 8).
+- La cobertura medida de las pruebas del dominio (T055, vence el 8).
+- Datos reales en la búsqueda de la app y en el tablero web, si T058 no está arriba
+  el 4: entonces vienen del simulador, y se dice.
+- Las alertas, hasta que se vote D-09.
 
 ---
 
@@ -233,17 +275,35 @@ Recibe las dos tareas que salieron de la semana 2. A pasa de una tarea a tres y 
 | C2 | Pantalla de acceso conectada a la autenticación real de C1. | `clients/mobile/` |
 | D | Estructura de la aplicación web con acceso y navegación. | `clients/web/` |
 
-### Semana 8 · 19 al 25 de octubre
+### Semana 8 · 19 al 25 de octubre — **la semana 7 del tablero se recorrió**
+
+Por causa de fuerza mayor, lo que tocaba aquí pasó a la semana siguiente; estos días
+se avanzó lo pendiente de la semana 6 del tablero (#177 a #185). Ver «Replaneación del
+25 de octubre».
+
+### Semana 9 · 26 de octubre al 1 de noviembre — la semana 7 del tablero
 
 | Quién | Actividad | Queda en |
 |---|---|---|
-| A | Transformaciones de capa cruda a intermedia con los SQL de T031 dentro de activos de Dagster: tipado, deduplicación y normalización. **dbt se pospone y se revisa el 2 de noviembre (ADR 019).** | `services/data-platform/` |
-| B | Monta el entorno de pruebas aislado que usará el experimento. | `infra/envs/test/` |
-| C1 | Alertas y notificaciones. Pruebas unitarias con JUnit. | `services/domain-service/` |
-| C2 | Pantalla de búsqueda con datos reales. | `clients/mobile/` |
-| D | Tablero analítico consumiendo la interfaz analítica con datos simulados. | `clients/web/` |
+| A | Transformaciones de capa cruda a intermedia con los SQL de T031 dentro de activos de Dagster: tipado, deduplicación y normalización. **dbt se pospone y se revisa el 2 de noviembre (ADR 019).** Además, lo preparatorio de T058: el token del dominio verificado en la analítica (ADR 020) y su prueba cruzada. | `services/data-platform/`, `services/analytics-api/` |
+| B | Primero, lo que falta de T044: la evidencia del conteo de pruebas en la CI real, el ADR 008 y la semilla. Después, monta el entorno de pruebas aislado que usará el experimento. | `.github/`, `infra/scripts/`, `docs/adr/`, `infra/envs/test/` |
+| C1 | Las rutas de canasta contra `dominio.yaml`, con pruebas JUnit de sus reglas, SnakeYAML como dependencia directa de prueba y la redacción pendiente del README y el Javadoc del dominio. **Las alertas y notificaciones esperan el voto de D-09.** | `services/domain-service/` |
+| C2 | Pantalla de búsqueda contra el simulador de `analitica.yaml`; los datos reales llegan con T058. | `clients/mobile/` |
+| D | Tablero analítico consumiendo la interfaz analítica con datos simulados, con el token de la sesión en cada llamada. | `clients/web/` |
 
-### Semana 9 · 26 de octubre al 1 de noviembre
+### Semana 10 · 2 al 8 de noviembre — **entrega del 4**
+
+Vence el miércoles 4 y no se mueve:
+
+| Quién | Actividad | Queda en |
+|---|---|---|
+| A | Interfaz analítica con cuatro endpoints, **con el token del dominio verificado (ADR 020) y la prueba cruzada de `x-rol` en verde**. La medición de cobertura y precisión de la reconciliación sobre la muestra de 200 pares se hace contra la reconciliación de T053: el 4 se reporta como pendiente, con su fecha. | `services/analytics-api/`, `docs/datos/` |
+| B | Configura Playwright. Primeras pruebas automatizadas de interfaz. | `clients/web/tests/` |
+| C1 | Cierra cobertura de pruebas unitarias del dominio. La cobertura medida es de T055, que vence el 8: el 4 se enseña la suite en verde con su conteo. | `services/domain-service/` |
+| C2 | Pruebas de integración de la app móvil. | `clients/mobile/` |
+| D | Pruebas de manejo de sesión y navegabilidad. | `docs/entregas/2026-11-04/` |
+
+Vence el domingo 8, recorrido una semana desde el 1 de noviembre:
 
 | Quién | Actividad | Queda en |
 |---|---|---|
@@ -252,16 +312,6 @@ Recibe las dos tareas que salieron de la semana 2. A pasa de una tarea a tres y 
 | C1 | Cobertura de pruebas de la lógica de dominio. | `services/domain-service/` |
 | C2 | Móvil: pantalla de canasta operando. | `clients/mobile/` |
 | D | Vista de detalle de producto. Comportamiento responsivo en los tres puntos de quiebre. | `clients/web/` |
-
-### Semana 10 · 2 al 8 de noviembre — **entrega del 4**
-
-| Quién | Actividad | Queda en |
-|---|---|---|
-| A | Interfaz analítica con cuatro endpoints. Mide cobertura y precisión de la reconciliación sobre muestra de 200 pares. | `services/analytics-api/`, `docs/datos/` |
-| B | Configura Playwright. Primeras pruebas automatizadas de interfaz. | `clients/web/tests/` |
-| C1 | Cierra cobertura de pruebas unitarias del dominio. | `services/domain-service/` |
-| C2 | Pruebas de integración de la app móvil. | `clients/mobile/` |
-| D | Pruebas de manejo de sesión y navegabilidad. | `docs/entregas/2026-11-04/` |
 
 ---
 
@@ -298,7 +348,7 @@ Recibe las dos tareas que salieron de la semana 2. A pasa de una tarea a tres y 
 |---|---|---|
 | A | Especifica las cinco tipologías de falla y el procedimiento de cada corrida. Analiza resultados: tasa de detección, tasa de contención, latencia media. Contrasta las cuatro hipótesis. Redacta el reporte de hallazgos económicos. | `docs/experimento/` |
 | B | **Ejecuta las treinta corridas** sobre el entorno aislado, más las corridas de control con las validaciones desactivadas. Registra las tres variables por corrida. | `docs/experimento/bitacora.csv` |
-| C1 | Documentación técnica del dominio y manual de operación. | `docs/` |
+| C1 | Documentación técnica del dominio y manual de operación. Incluye comprobar que la redacción del README y el Javadoc del dominio que dejó #185 quedó corregida en la solicitud de T050 (T078). | `docs/` |
 | C2 | Documentación de la app móvil y capturas para la presentación. | `docs/` |
 | D | Documentación de la interfaz web. Capturas para la presentación. | `docs/` |
 
