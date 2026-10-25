@@ -10,6 +10,14 @@ A diferencia de sembrar-tablero.sh, SE PUEDE VOLVER A CORRER: si ya existe un
 issue con el mismo título exacto, no crea otro; sólo se asegura de que esté en
 el proyecto y con los campos bien.
 
+Dos claves opcionales del archivo, para sembrar una semana antes de que empiece:
+  · «columna», arriba: la columna de las tarjetas nuevas (por ejemplo «Backlog»).
+    Con ella, a una tarjeta que ya existe no se le toca el Status: volver a correr
+    el guion no regresa una tarjeta que ya avanzó.
+  · «inicio», en una tarea: su fecha de inicio, que se escribe en el cuerpo antes
+    de la fecha límite.
+Sin ellas, el guion hace lo mismo que antes.
+
 USO, desde la raíz del repositorio:
     python3 infra/scripts/sembrar-semana.py docs/equipo/semanas/semana-04.json --simular
     python3 infra/scripts/sembrar-semana.py docs/equipo/semanas/semana-04.json
@@ -37,7 +45,8 @@ CAMPO_SEMANA, CAMPO_FRENTE, CAMPO_FECHA, CAMPO_STATUS = (
     "Semana", "Frente", "Fecha límite", "Status")
 COLUMNA = "Esta Semana"   # EXACTO como está en el tablero, con su mayúscula:
                           # Backlog · Esta Semana · En curso · En revision ·
-                          # Hecho · Retrasadas
+                          # Hecho · Retrasadas. Es la de omisión: un archivo de
+                          # semana la cambia con «columna».
 FRENTES = {"Datos", "Infra", "Dominio", "Móvil", "Web", "Equipo"}
 MESES = ["ene", "feb", "mar", "abr", "may", "jun",
          "jul", "ago", "sep", "oct", "nov", "dic"]
@@ -71,6 +80,9 @@ def validar(sem):
         if t["clave"] not in USUARIOS:
             malos.append(f"{t['id']}: clave «{t['clave']}» desconocida")
         date.fromisoformat(t["fecha"])
+        if "inicio" in t and date.fromisoformat(t["inicio"]) > date.fromisoformat(t["fecha"]):
+            malos.append(f"{t['id']}: empieza el {t['inicio']}, después de su fecha "
+                         f"límite ({t['fecha']})")
         for d in t.get("depende", []):
             if d not in [x["id"] for x in sem["tareas"]] and not re.fullmatch(r"#\d+", d):
                 malos.append(f"{t['id']}: depende de «{d}», que no está en el archivo")
@@ -97,12 +109,13 @@ def cuerpo(t, semana, numeros):
     if t.get("nota_dependencia"):
         depende += "\n\n" + t["nota_dependencia"]
     donde = t["donde"] if " " in t["donde"] else f"`{t['donde']}`"
+    inicio = f"Inicio: {fecha_larga(t['inicio'])} · " if t.get("inicio") else ""
     return (f"## Qué hay que hacer\n\n{t['que']}\n\n"
             f"## Cómo saber que quedó\n\n{t['criterio']}\n\n"
             f"## Dónde queda\n\n{donde}\n\n"
             f"## Depende de\n\n{depende}\n\n---\n\n"
             f"Semana {semana} · Frente: {t['frente']} · Responsable: {t['clave']} · "
-            f"Fecha límite: {fecha_larga(t['fecha'])} · Tarea: {t['id']}\n\n"
+            f"{inicio}Fecha límite: {fecha_larga(t['fecha'])} · Tarea: {t['id']}\n\n"
             f"<sub>Sembrado con `infra/scripts/sembrar-semana.py`. Si el criterio de cierre "
             f"no es verificable, corrígelo aquí antes de empezar.</sub>\n")
 
@@ -125,8 +138,9 @@ def main():
         sem = json.load(f)
     validar(sem)
     semana, hito = sem["semana"], sem["hito"]
+    columna = sem.get("columna", COLUMNA)
     print(f"Semana {semana} · del {sem['del']} al {sem['al']} · hito «{hito}» · "
-          f"{len(sem['tareas'])} tareas")
+          f"{len(sem['tareas'])} tareas · tarjetas nuevas en «{columna}»")
     print(f"Modo: {'SIMULACIÓN · no se escribe nada' if SIMULAR else 'ESCRITURA'}\n")
 
     hay_gh = shutil.which("gh") is not None
@@ -191,11 +205,16 @@ def main():
             (CAMPO_SEMANA, ["--number", str(semana)]),
             (CAMPO_FRENTE, ["--single-select-option-id", opcion(CAMPO_FRENTE, t["frente"])]),
             (CAMPO_FECHA, ["--date", t["fecha"]]),
-            (CAMPO_STATUS, ["--single-select-option-id", opcion(CAMPO_STATUS, COLUMNA)]),
         ]
+        # Con «columna» en el archivo, el Status se pone sólo al crear la tarjeta.
+        toca_status = not (existe and "columna" in sem)
+        if toca_status:
+            valores.append((CAMPO_STATUS,
+                            ["--single-select-option-id", opcion(CAMPO_STATUS, columna)]))
         if SIMULAR:
             print(f"   pondría: Semana {semana} · Frente {t['frente']} · Fecha límite "
-                  f"{t['fecha']} · Status «{COLUMNA}»")
+                  f"{t['fecha']} · "
+                  + (f"Status «{columna}»" if toca_status else "Status sin tocar"))
             continue
         item = gh("project", "item-add", str(NUMERO), "--owner", DUENO, "--url", url,
                   "--format", "json", como_json=True)
