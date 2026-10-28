@@ -55,18 +55,23 @@ export async function leerCuenta(token, { dominioUrl, fetch }) {
     respuesta = await fetch(`${dominioUrl}/api/v1/cuentas/yo`, {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     })
-  } catch {
+  } catch (e) {
+    console.error('[leerCuenta] fetch falló:', e?.cause ?? e)
     return { estado: 'error' }
   }
+
   if (respuesta.status === 401) {
     return { estado: 'sin-sesion' }
   }
+
   if (!respuesta.ok) {
+    console.error('[leerCuenta] el dominio respondió', respuesta.status)
     return { estado: 'error' }
   }
+
   const cuenta = await respuesta.json().catch(() => null)
+  
   if (typeof cuenta?.correo !== 'string' || !ROLES_WEB.includes(cuenta?.rol)) {
+    console.error('[leerCuenta] forma inesperada. campos:', Object.keys(cuenta ?? {}), 'rol:', cuenta?.rol, 'ROLES_WEB:', ROLES_WEB)
     return cuenta?.rol === 'CONSUMIDOR' ? { estado: 'sin-sesion' } : { estado: 'error' }
   }
-  return { estado: 'ok', cuenta: { correo: cuenta.correo, rol: cuenta.rol } }
-}

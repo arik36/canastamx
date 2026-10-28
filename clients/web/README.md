@@ -50,3 +50,5 @@ A mano, con el dominio corriendo:
 4. El acceso se ve completo a 360, 768 y 1280 px (`puntos-de-quiebre.md`).
 5. Ninguna cifra en pantalla sin su población y su fecha (RNF-16). Hoy las vistas no
    muestran cifras; las del tablero llegan con T052 y, sin dato, dicen «se mide en T058».
+6. «Salir», al pie de la barra lateral, te regresa al acceso sin cookies `token` ni `rol`;
+   después, `/tablero` escrito a mano tampoco abre.
