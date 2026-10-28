@@ -65,7 +65,12 @@ Recorrido manual de navegación en Android con Expo Go:
    debe ocultarse; regresa con la flecha a la pestaña desde la que entraste.
 5. Cambia a Descubrir y Canasta; comprueba también la campana desde ellas.
 6. En **Cuenta**, pulsa **Mis alertas**, regresa y verifica que sigues en Cuenta.
-7. Comprueba que Inicio conserva la consulta y el refresco de T039.
+7. Comprueba que Inicio conserva la consulta y el refresco de T039. «Estado: UP»
+   usa verde oscuro `#007A44` sobre crema, conforme a `diseno.md`.
+8. La campana y «Mis alertas» deben tener fondo turquesa, relleno y un área
+   táctil mínima de 48 × 48. Ábrelos y regresa a la misma pestaña.
+9. Cada pestaña muestra su título una sola vez, en el encabezado. Detalle y
+   Mis alertas conservan el título central porque no tienen título de encabezado.
 
 Graba el recorrido o adjunta capturas a la solicitud. Indica si la prueba se
 realizó en teléfono físico o en BlueStacks; el empaquetado y TypeScript no
@@ -106,7 +111,8 @@ Fuente: [especificación del equipo](../../docs/entregas/diseno.md).
 La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-mobile.md).
 
 - `theme/design-system.ts`: valores compartidos de color, fuente, tamaño, radio y espaciado.
-- `components/PantallaVacia.tsx`: presentación común de las cuatro pantallas.
+- `components/PantallaVacia.tsx`: presentación común; `showTitle={false}` evita
+  duplicar el título que ya muestra el encabezado de cada pestaña.
 - Fondo crema `#F0EADF`, texto tinta `#2F2F2F` y turquesa `#23BBB7` en el botón y la pestaña activa.
 - Inter Regular y SemiBold incluidas como archivos estáticos por `@expo-google-fonts/inter`, cargadas con `expo-font` antes de mostrar las pantallas; funcionan en Expo Go.
 - Títulos de 24, etiquetas de navegación y botón de 14, botón con radio de 12 y espaciados en múltiplos de cuatro. Se conserva el escalado de texto del sistema.
@@ -115,8 +121,8 @@ La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-m
 Al revisar en el teléfono, comprueba los cuatro títulos con Inter, el fondo crema,
 la pestaña activa turquesa y el botón redondeado. Verifica que la barra de pestañas
 no se superponga con la navegación de Android y que el texto siga legible al
-ampliar el tamaño de fuente del sistema. Recorre búsqueda, detalle, regreso,
-canasta y alertas antes de grabar la evidencia. Estas verificaciones visuales
+ampliar el tamaño de fuente del sistema. Recorre Inicio → detalle → regreso →
+Descubrir → Canasta → Cuenta → Mis alertas → regreso antes de grabar la evidencia. Estas verificaciones visuales
 requieren ejecución en el dispositivo; compilar no las sustituye.
 
 ## Primera llamada real al dominio (T039)
@@ -137,7 +143,10 @@ cd services/domain-service
 ```
 
 En PowerShell, el equivalente es `./mvnw.cmd spring-boot:run`.
-No necesita base de datos para `/health`. Mantén esa terminal abierta.
+La versión actual del dominio necesita PostgreSQL y las variables locales de
+base de datos y JWT, incluso para arrancar y consultar `/health`. Sigue
+[services/domain-service/README.md](../../services/domain-service/README.md) y
+mantén esa terminal abierta.
 El puerto **8081** es del dominio; si Traefik lo usaba, cambia únicamente su
 variable local `TRAEFIK_WEB_PORT` a **8880** y aplica
 `docker compose up -d traefik` desde la raíz del repositorio.

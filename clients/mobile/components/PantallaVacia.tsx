@@ -7,15 +7,16 @@ type Props = {
   title: string;
   children?: ReactNode;
   withHeader?: boolean;
+  showTitle?: boolean;
 };
 
-export function PantallaVacia({ title, children, withHeader = false }: Props) {
+export function PantallaVacia({ title, children, withHeader = false, showTitle = true }: Props) {
   return (
     <SafeAreaView
       style={styles.container}
       edges={withHeader ? ["bottom", "left", "right"] : ["top", "left", "right"]}
     >
-      <Text accessibilityRole="header" style={styles.title}>{title}</Text>
+      {showTitle && <Text accessibilityRole="header" style={styles.title}>{title}</Text>}
       {children}
     </SafeAreaView>
   );
