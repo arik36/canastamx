@@ -1,22 +1,23 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { colors, fonts, fontSizes, radii, spacing } from "../theme/design-system";
 
 export function AccesoAlertas({ campana = false }: { campana?: boolean }) {
+  const router = useRouter();
+
   return (
-    <Link href="/alertas" asChild>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Mis alertas"
-        style={({ pressed }) => [
-          styles.button,
-          campana && styles.campana,
-          pressed && styles.pressed,
-        ]}
-      >
-        <Text style={styles.label}>{campana ? "🔔" : "Mis alertas"}</Text>
-      </Pressable>
-    </Link>
+    <Pressable
+      onPress={() => router.push("/alertas")}
+      accessibilityRole="button"
+      accessibilityLabel="Mis alertas"
+      style={({ pressed }) => [
+        styles.button,
+        campana && styles.campana,
+        pressed && styles.pressed,
+      ]}
+    >
+      <Text style={styles.label}>{campana ? "🔔" : "Mis alertas"}</Text>
+    </Pressable>
   );
 }
 
