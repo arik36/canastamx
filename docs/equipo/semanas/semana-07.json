@@ -1,0 +1,89 @@
+{
+  "semana": 7,
+  "del": "2026-10-26",
+  "al": "2026-11-01",
+  "hito": "E3 — Construcción",
+  "columna": "Backlog",
+  "fuente": "Replaneación del 25 de octubre (docs/equipo/cronograma.md, «Replaneación del 25 de octubre»): la semana 7 del tablero se recorrió del 19-25 de octubre al 26 de octubre-1 de noviembre por causa de fuerza mayor, y la entrega del 4 de noviembre no se mueve. Las tareas son T048 a T052 del Panel, con la fecha recorrida una semana y el alcance ajustado a lo que hay en main en f4e7cd4. cronograma.md llama «Semana 9» a estas fechas.",
+  "nota": "Con «columna»: «Backlog», sembrar-semana.py crea las tarjetas en Backlog y, si ya existen, no les toca el Status. En la reunión del lunes 26 se pasan a «Esta Semana», como siempre.",
+  "tareas": [
+    {
+      "id": "T048",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-01",
+      "titulo": "[S7][Datos] La capa intermedia desde los activos: tipado, deduplicación y normalización",
+      "que": "Portar a la plataforma los SQL de T031 que van antes de las dimensiones (`limpio`, `clasif` y `plana` de `docs/datos/probar-modelo-dimensional.py`) en un módulo fuera de `orquestacion/` que no importe Dagster, y cargar la capa intermedia a `postgres-analytics` desde un activo nuevo que depende de `lote_promovido` (ADR 016 y 019). **Normalizar:** reparar el `?` en las once columnas de `reparar_interrogantes.aplica_a`, con el diccionario y con la regla por frecuencia contada sobre el corpus (D-03), y apartar a cuarentena lo que no se repara, con `codificacion_irrecuperable` o `revision_humana`, antes de decidir el 5% de D-07. **Tipar:** el precio a `DECIMAL(12,2)`. **Deduplicar** la captura doble con `desempate: min_precio` y un desempate que dependa del contenido de la fila, no de su posición. Ninguna expresión ni frontera escrita en el código: todas se leen del contrato 1.3.5. Con Ari Adair, una corrida contra MinIO con el sensor encendido.",
+      "criterio": "`python -m pytest services/data-platform/tests/` pasa con las pruebas nuevas y `ruff check services/` con ruff 0.17.0, y el trabajo «Datos (Python)» de la solicitud lo muestra. Materializar `2026-07-Q2` deja sus filas en `postgres-analytics`, cada una con su `lote` y su `ingerido_en`, sin un solo `?` en las once columnas de `aplica_a`, y con exactamente las filas que `lote_promovido` dejó salir menos las `sobrantes` de captura doble de su linaje. Materializarla dos veces deja las mismas filas (RF-25), y un lote detenido no deja ninguna. CU-03 trae la cifra exacta de filas con `?` en cuarentena sobre el alcance (2,658,906 filas). La salida completa de la corrida contra MinIO queda pegada en esta tarjeta.",
+      "donde": "Rama `feat/alm-capa-intermedia` · `services/data-platform/`, `contracts/` y `docs/`",
+      "depende": [
+        "#156"
+      ],
+      "nota_dependencia": "T043 (#156) está hecha, y #185 dejó en `main` la salida segura para las consolas CP1252 de Windows y DuckDB anclado en 1.5.6: la rama sale de ese `main`. La fecha de salida del ADR 016 (25 de octubre) y la revisión de dbt del ADR 019 (2 de noviembre) son fechas de los ADR: si A las recorre con la semana 7, lo anota en cada ADR; esta tarjeta no las mueve. Esta semana A también prepara T058, que tiene su propia tarjeta. Esta tarea destraba T053 (8 de noviembre) y los datos de T058."
+    },
+    {
+      "id": "T049",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-01",
+      "titulo": "[S7][Infra] El entorno de pruebas aislado que usará el experimento",
+      "que": "Dejar listo para el experimento el entorno de `infra/envs/test/` que entró con #129. Entre contenedores ya no se repite nada con desarrollo (proyecto `canastamx_test`, puertos 5442, 5443, 9010 y 9011, volúmenes y red con su prefijo); lo que falta está fuera de Docker. La plataforma de datos corre en la máquina y escribe donde digan sus variables, y cinco de ellas no están en ningún `.env.example`: `CANASTAMX_LOTES`, `CANASTAMX_CORRIDAS`, `CANASTAMX_SIMULAR`, `CANASTAMX_FECHA_REFERENCIA` y `DAGSTER_HOME`, que también guarda estado (las corridas, el sensor y las filas de cada lote). Agregarlas al `.env.example` de pruebas, con carpetas propias fuera del repositorio; explicar en el `README.md` cómo apuntar la plataforma a pruebas, cómo comprobar a dónde apunta y cómo bajar sólo pruebas; y escribir en `infra/envs/test/` la comprobación de aislamiento que T070 y T076 van a correr antes de cada corrida. Con A, una corrida de la plataforma contra pruebas con el sensor encendido.",
+      "criterio": "Con los dos entornos arriba a la vez no se repite ningún nombre, puerto, volumen ni red; una tabla creada en la base analítica de pruebas no aparece en la de desarrollo; la corrida con A deja objetos en `canastamx-bronze-test` y ninguno nuevo en `canastamx-bronze`, con su evidencia y su `DAGSTER_HOME` fuera de las carpetas de desarrollo. `down -v` de pruebas borra sus volúmenes y deja los de desarrollo. El `.env.example` de pruebas declara las variables de la plataforma sin ningún valor secreto y pasa `python3 infra/scripts/revisar-env.py`, y la comprobación de aislamiento se detiene diciendo qué falla si la terminal apunta a desarrollo.",
+      "donde": "Rama `feat/aas-entorno-de-pruebas` · `infra/envs/test/`",
+      "depende": [],
+      "nota_dependencia": "**La deuda de T044 (#158) va primero**, con fecha límite del viernes 30: la evidencia del conteo de pruebas en la CI real, el ADR 008 con su población y aceptado, y la semilla idempotente con las cuentas ANALISTA y OPERADOR, que necesitan T058 para su prueba cruzada y D para probar la web. La corrida con A es la misma que T048 hace contra MinIO: se hace una vez. T049 destraba el arnés de inyección de fallas (T070, 13 de noviembre) y las 30 corridas (T076)."
+    },
+    {
+      "id": "T050",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-01",
+      "titulo": "[S7][Dominio] Las rutas de canasta contra dominio.yaml",
+      "que": "Primero, las reglas que el contrato promete y `Canasta` no cumple hoy: `fijar` para `PUT …/lineas` (CU-09, paso 7), que reemplaza la cantidad y no agrega la línea si no existe; `quitar` que avisa cuando el artículo no está (alterno 8a), en lugar del `removeIf` callado de hoy; `ReferenciaDeArticulo` que normaliza antes de validar, para que un producto hecho sólo de puntos no quede vacío; y la cantidad nula rechazada haya o no línea previa. Una prueba JUnit por regla en `CanastaTest`; en `modelo-er.md`, `LINEA_CANASTA` con su llave primaria (`canasta_id`, `producto`, `presentacion`) y `cantidad NOT NULL`, y `fijar` en `modelo-dominio.md`. Después, las ocho operaciones de canasta de `dominio.yaml`, con el dueño tomado de la sesión (`@CuentaDeLaSesion`), 404 para la canasta ajena y todo error como `application/problem+json` (P-03); y en el contrato, el 400 que les falta a `GET /api/v1/canastas` y a `DELETE …/lineas`. En la misma solicitud: `org.yaml:snakeyaml` como dependencia directa de prueba en `pom.xml` (hoy llega de forma transitiva y la usan `ContratoOpenApiEsquemasTest`, `SeguridadDelContrato` y `SeguridadDelContratoTest`), y la redacción pendiente del README y el Javadoc del dominio que dejó #185, con seguimiento en T078.",
+      "criterio": "`CanastaTest` suma al menos una prueba por cada una de las cuatro reglas (hoy tiene 4), y el registro del trabajo «Dominio (Java)» de la solicitud muestra «Tests run» con el total: «0 tests» en verde es un falso positivo. Las ocho operaciones contestan con los códigos del contrato, y todo error, incluido el 401 sin sesión, sale como `application/problem+json` con `type`, `title` y `status`. `RutasProtegidasTests` pasa con las ocho rutas, que en `dominio.yaml` piden sesión. Una `Canasta` trae `id`, `nombre` y `lineas`, y nada más. `PUT …/lineas` deja la cantidad que se mandó; fijar o quitar un artículo que no está es 404 y la canasta no cambia; la canasta de otra cuenta es 404. `pom.xml` declara `org.yaml:snakeyaml` con `<scope>test</scope>` y sin versión (la fija Spring Boot), y `mvn -B test` pasa. La descripción de la solicitud lista cada corrección de README y Javadoc, archivo por archivo. `redocly lint` da 0 errores y los mismos 5 avisos.",
+      "donde": "Rama `feat/lyl-rutas-de-canasta` · `services/domain-service/`, `docs/analisis/openapi/` (`dominio.yaml` y su `README.md`), `docs/analisis/modelo-er.md` y `docs/analisis/modelo-dominio.md`",
+      "depende": [
+        "#157"
+      ],
+      "nota_dependencia": "T045 (#157) está en `main`: la sesión, el rol y `@CuentaDeLaSesion` sirven tal cual. **Lo que el Panel ponía aquí, alertas y notificaciones, va después:** D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11 y otros documentos todavía dicen «por correo» (la lista está en `docs/equipo/decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica. Las rutas de canasta tienen contrato, no esperan nada y son las que se enseñan el 4 de noviembre. Si D-12 gana A o C (se vota antes del jueves 29), su cambio es una tarea aparte de C1 y no entra aquí. Esta tarea destraba T056 (C2, 8 de noviembre)."
+    },
+    {
+      "id": "T051",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-01",
+      "titulo": "[S7][Móvil] La búsqueda de Inicio contra el simulador de la analítica",
+      "que": "La búsqueda de artículos en la pestaña Inicio (D-01, ADR 007) contra `GET /api/v1/articulos` de `analitica.yaml` 0.2.1, servida por el simulador: `npx @stoplight/prism-cli@5.14.2 mock -h 0.0.0.0 -p 4011 docs/analisis/openapi/analitica.yaml`. La dirección de la analítica va en una variable propia, `EXPO_PUBLIC_ANALITICA_URL`, aparte de la del dominio: con una sola, la búsqueda iría al dominio, que no tiene esa ruta. Pinta los pasos 1 y 2 de CU-12 y sus alternos 2a (sin coincidencias) y 2b (entidad sin cobertura: 200 con `cobertura: false`), cada precio con su quincena y su población, y cada error como lo trae `application/problem+json`. Mientras sea el simulador, la pantalla lo dice.",
+      "criterio": "Con el simulador arriba, la búsqueda devuelve la lista del contrato con la quincena y la población de cada precio; una consulta sin coincidencias muestra el estado vacío de 2a; una entidad fuera del alcance muestra el aviso de 2b, no un error; sin red o con el simulador abajo, un mensaje y no una pantalla en blanco. Cambiar `EXPO_PUBLIC_ANALITICA_URL` es lo único que hace falta para apuntar a la analítica real de T058. En la solicitud, capturas de los cuatro estados en un teléfono, con la palabra «simulador» visible.",
+      "donde": "Rama `feat/orf-busqueda-analitica` · `clients/mobile/`",
+      "depende": [
+        "#159"
+      ],
+      "nota_dependencia": "La rama sale de `main` después de T046 (#159, solicitud #175): la búsqueda vive en la pestaña Inicio de las cuatro pestañas, y si ramifica antes arrastra las tres viejas. Los datos reales llegan con T058 (4 de noviembre): hasta entonces, en la entrega se dice que vienen del simulador."
+    },
+    {
+      "id": "T052",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-01",
+      "titulo": "[S7][Web] El tablero analítico contra el simulador de la analítica",
+      "que": "El tablero del analista (`/tablero`, cuenta ANALISTA) pinta el índice y las anomalías con lo que contestan `GET /api/v1/indice` y `GET /api/v1/anomalias` de `analitica.yaml` 0.2.1 (`x-rol: ANALISTA`, vista 2 del inventario), servidos por el simulador (`npx @stoplight/prism-cli@5.14.2 mock -p 4011 docs/analisis/openapi/analitica.yaml`) mientras llega T058. Las llamadas salen del servidor de Next, como las del dominio en T047, con el token de la sesión en `Authorization: Bearer`, para que el día que la analítica lo verifique (ADR 020) no cambie nada; la dirección va en una variable, `ANALITICA_URL`. Toda cifra lleva la población y el periodo que trae la respuesta (RNF-16), y mientras sea el simulador la vista lo dice.",
+      "criterio": "Con el simulador arriba y una cuenta ANALISTA, `/tablero` pinta el índice y las anomalías desde la API, no desde datos escritos en el código; cada cifra muestra su población y su periodo; sin la analítica, un aviso y no una pantalla rota; el aviso de ancho mínimo de D-08 sigue en 1025 px. El registro del simulador muestra `Authorization: Bearer` en cada llamada. `npm test`, `npm run lint` y `npm run build` pasan. Apuntar a la analítica real es cambiar `ANALITICA_URL`.",
+      "donde": "Rama `feat/kah-tablero-analitico` · `clients/web/`",
+      "depende": [
+        "#160"
+      ],
+      "nota_dependencia": "La rama sale de `main` después de T047 (#160, solicitud #176). Los datos reales llegan con T058 (4 de noviembre) y el índice calculado con T069 (13 de noviembre): hasta entonces, en la entrega se dice que vienen del simulador. La vista de detalle (T057) se recorrió al 8 de noviembre."
+    }
+  ]
+}

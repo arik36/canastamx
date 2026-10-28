@@ -96,6 +96,9 @@ retrasó una semana; del 19 al 25 se avanzó lo pendiente de la semana 6 (#177 a
 La semana 7 (T048 a T052) pasa al **26 de octubre – 1 de noviembre**, y la 8 (T053 a
 T057) vence el **domingo 8 de noviembre** en lugar del 1. Se recorre una sola vez.
 
+Lo que quedó abierto de la semana 6 conserva su tarjeta: **T044 (#158) vence el
+viernes 30 de octubre**, y T046 y T047 siguen en sus solicitudes, #175 y #176.
+
 **No se mueven** las fechas de la tabla «Fechas que no se mueven»: la entrega del
 **4 de noviembre** (T058 a T063 siguen venciendo ese día), la del 18 de noviembre y
 las presentaciones. Por eso tampoco se recorren las tareas del 9 de noviembre en
@@ -107,7 +110,7 @@ Lo que cambia de alcance, y por qué:
 
 | Tarea | Antes | Ahora | Por qué |
 |---|---|---|---|
-| T050 · C1 | Alertas y notificaciones | **Las rutas de canasta contra `dominio.yaml`**, con la dependencia directa de SnakeYAML y la redacción pendiente del README y el Javadoc del dominio (seguimiento en T078) | Las alertas esperan el voto de D-09, que no tiene fecha. Las rutas de canasta tienen contrato, sólo estaban en T045 «si queda semana» y son endpoints que se enseñan el 4 |
+| T050 · C1 | Alertas y notificaciones | **Las rutas de canasta contra `dominio.yaml`**, con la dependencia directa de SnakeYAML y la redacción pendiente del README y el Javadoc del dominio (seguimiento en T078) | Las alertas necesitan dos rutas de la analítica (`rangoHistorico` y `preciosVigentes`, CU-10 y CU-11) y que RF-21, CU-11 y los demás documentos que dicen «por correo» se alineen con D-09 (B). Las rutas de canasta tienen contrato, sólo estaban en T045 «si queda semana» y son endpoints que se enseñan el 4 |
 | T051 · C2 | Búsqueda con datos reales | Búsqueda contra el simulador de `analitica.yaml`; los datos reales llegan con T058 | La interfaz analítica real es T058, el 4 de noviembre |
 | T052 · D | Tablero con datos simulados | Igual, contra el simulador, con el token de la sesión en cada llamada y la población de cada cifra | Sin cambio de fondo: queda explícito cómo se conecta |
 | T058 · A | Cuatro endpoints y H3 | Cuatro endpoints y **la prueba cruzada del token del ADR 020** (dominio emite, analítica verifica, `x-rol` por rol), con trabajo preparatorio del 26 de octubre al 1 de noviembre | Sin esa prueba, las rutas con `x-rol` no se liberan |
@@ -122,7 +125,9 @@ Lo que cambia de alcance, y por qué:
 - La cobertura medida de las pruebas del dominio (T055, vence el 8).
 - Datos reales en la búsqueda de la app y en el tablero web, si T058 no está arriba
   el 4: entonces vienen del simulador, y se dice.
-- Las alertas, hasta que se vote D-09.
+- Las alertas: D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11
+  y otros documentos todavía dicen «por correo» (la lista está en
+  `decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica.
 
 ---
 
@@ -287,7 +292,7 @@ se avanzó lo pendiente de la semana 6 del tablero (#177 a #185). Ver «Replanea
 |---|---|---|
 | A | Transformaciones de capa cruda a intermedia con los SQL de T031 dentro de activos de Dagster: tipado, deduplicación y normalización. **dbt se pospone y se revisa el 2 de noviembre (ADR 019).** Además, lo preparatorio de T058: el token del dominio verificado en la analítica (ADR 020) y su prueba cruzada. | `services/data-platform/`, `services/analytics-api/` |
 | B | Primero, lo que falta de T044: la evidencia del conteo de pruebas en la CI real, el ADR 008 y la semilla. Después, monta el entorno de pruebas aislado que usará el experimento. | `.github/`, `infra/scripts/`, `docs/adr/`, `infra/envs/test/` |
-| C1 | Las rutas de canasta contra `dominio.yaml`, con pruebas JUnit de sus reglas, SnakeYAML como dependencia directa de prueba y la redacción pendiente del README y el Javadoc del dominio. **Las alertas y notificaciones esperan el voto de D-09.** | `services/domain-service/` |
+| C1 | Las rutas de canasta contra `dominio.yaml`, con pruebas JUnit de sus reglas, SnakeYAML como dependencia directa de prueba y la redacción pendiente del README y el Javadoc del dominio. **Las alertas van después: necesitan la analítica y que los documentos que dicen «por correo» se alineen con D-09 (B).** | `services/domain-service/` |
 | C2 | Pantalla de búsqueda contra el simulador de `analitica.yaml`; los datos reales llegan con T058. | `clients/mobile/` |
 | D | Tablero analítico consumiendo la interfaz analítica con datos simulados, con el token de la sesión en cada llamada. | `clients/web/` |
 
@@ -323,7 +328,7 @@ Vence el domingo 8, recorrido una semana desde el 1 de noviembre:
 |---|---|---|
 | A | **Compuertas de calidad y tabla de cuarentena operando:** un registro defectuoso ya no llega a la capa de consumo. Integración de la fuente de inflación de INEGI. | `services/data-platform/` |
 | B | Despliegue continuo automatizado. Traefik con certificados. Datos de prueba cargados en ambas bases. | `infra/`, `.github/` |
-| C1 | Notificaciones por correo. | `services/domain-service/` |
+| C1 | Las alertas, con el aviso dentro de la app de D-09 (B): Inicio y «Precios que bajaron». Ya no por correo. | `services/domain-service/` |
 | C2 | Móvil: pantalla de alertas. Genera el primer build instalable. | `clients/mobile/` |
 | D | Consola de observabilidad conectada a los seis indicadores reales. | `clients/web/` |
 

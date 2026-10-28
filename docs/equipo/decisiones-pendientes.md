@@ -12,43 +12,11 @@
 
 ## Para decidir
 
-D-09 y D-11 se votan **antes del 11 de octubre**: la fase 3 arranca el 12 y las dos
-tocan contratos que se construyen esa semana. D-10, que se votaba con ellas, ya está
-abajo, en «Decididas». D-12 se abrió el 23 de octubre y **se vota antes del jueves 29
-de octubre**: si gana A o C, C1 tiene del 30 de octubre al 3 de noviembre para el
-cambio, antes de que D pruebe el manejo de sesión en T062 (4 de noviembre). Por
-qué están aquí y no resueltas en silencio:
-`docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
-
-### D-09 · ¿Cómo se entregan los avisos de precio?
-
-Viene de CU-11 y RF-21. Ya aparece como «por decidir» en el diseño arquitectónico
-(`docs/arquitectura/README.md`, contexto, contenedores y despliegue), y hasta hoy no
-estaba en la boleta.
-
-| | Opción | Consecuencia |
-|---|---|---|
-| **A** | Un contenedor que atrapa los correos en desarrollo y un SMTP de proveedor en producción | Dos configuraciones y un secreto más en el `.env`. El experimento no depende de un proveedor externo: los avisos se pueden contar sin enviar nada a nadie |
-| **B** | Sólo el aviso dentro de la app (Inicio y «Precios que bajaron») | Hay que cambiar RF-21, CU-11 y las tres vistas de arquitectura, que hoy dicen «por correo». La alerta deja de servir con la app cerrada |
-| **C** | SMTP de proveedor también en desarrollo | Correos de prueba a direcciones reales, y una cuota que se agota en el experimento |
-
-**Quién:** C1 y B. **Dónde quedará:** ADR nuevo · `arquitectura/` · CU-11.
-
-### D-11 · ¿Con qué se registra quién cerró un incidente o resolvió una variante?
-
-La abrió P-08 junto con P-13. Hoy se guarda el **correo del operador** en el esquema
-de operación (`analitica.yaml` §`Incidente` y §`Variante`, `cerradoPor` y
-`resueltaPor`; `esquema-de-operacion.md` §3): una copia del único dato personal del
-sistema, en una base distinta a la del dominio.
-
-| | Opción | Consecuencia |
-|---|---|---|
-| **A** | El correo, como hoy, sin decir nada más | Queda un dato personal en una capa de la que el proyecto dice que no tiene datos personales, y nadie lo declaró |
-| **B** | El `id` de la cuenta | La consola no puede mostrar quién cerró sin preguntarle al dominio, y P-09 sólo permite que el dominio consulte a la analítica, no al revés |
-| **C** | El correo, y se declara: un RNF que diga que el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona | La consola sigue sirviendo y el documento lo dice en voz alta, que es lo que el asesor va a preguntar |
-
-**Quién:** A, con B. **Dónde quedará:** `requerimientos.md` (RNF) ·
-`esquema-de-operacion.md`.
+D-09, D-10 y D-11 ya se votaron y están abajo, en «Decididas». Queda D-12, que se
+abrió el 23 de octubre y **se vota antes del jueves 29 de octubre**: si gana A o C,
+C1 tiene del 30 de octubre al 3 de noviembre para el cambio, antes de que D pruebe el
+manejo de sesión en T062 (4 de noviembre). Por qué estaban aquí y no resueltas en
+silencio: `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
 
 ### D-12 · ¿Qué desafío lleva el 401 de `POST /api/v1/sesiones`?
 
@@ -66,7 +34,7 @@ hoy responde 401 sin el encabezado (`CredencialesInvalidas`).
 
 **Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
 
-**Votan:** C1, con C2 y D, como en D-10. **Qué sigue:** con B no cambia el código: C1
+**Votan:** C1, C2 y D, los tres que nombra «Quién». **Qué sigue:** con B no cambia el código: C1
 declara la excepción en `dominio.yaml` y CU-08. Con A o C, al registrar el voto se
 abre una tarea de C1 con el cambio en el dominio, en `dominio.yaml` y en CU-08; con
 C, además, la web y la app dejan de esperar 401 en credenciales malas. Mientras no se
@@ -76,6 +44,17 @@ liberar.
 Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
 ---
+
+## Decididas, registradas el 27 de octubre de 2026
+
+D-09 y D-11 ya se votaron, cada una por quienes la boleta nombraba; la fecha del voto
+no quedó en el repositorio: ésta es la fecha en que se anotan. Lo que cada una obliga
+a cambiar está en «Lo que dejan las decisiones».
+
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| D-09 | ¿Cómo se entregan los avisos de precio? | **B · sólo el aviso dentro de la app** (Inicio y «Precios que bajaron»). La alerta deja de servir con la app cerrada | C1 y B; los dos votaron B | Falta: el ADR nuevo, y quitar el correo de los documentos que todavía lo prometen (ver «Lo que dejan las decisiones») |
+| D-11 | ¿Con qué se registra quién cerró un incidente o resolvió una variante? | **C · el correo, y se declara:** un RNF dice que el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona | A, con B; los dos votaron C | Falta: el RNF en `requerimientos.md` y su cita en `esquema-de-operacion.md` |
 
 ## Decididas, registradas el 23 de octubre de 2026
 
@@ -145,15 +124,20 @@ noviembre.
 
 | ADR | Estado | Quién |
 |---|---|---|
-| 007 · navegación de la app | En propuesta, y con D-01 hay que reescribirlo: cuatro pestañas | C2 |
-| 006 y 011 · entorno y diseño de la app | En propuesta, aunque ya se siguen | C2 |
-| 008 · dónde vive la base | En propuesta; su título dice «ADR 006» y su peso no dice de qué población es | B |
+| 008 · dónde vive la base | En propuesta: su peso no dice de qué población es, y le falta el presupuesto de memoria de los 12 GB que le dejó el ADR 010 (§3). Va en T044 (#158) | B |
 | 020 · el token de sesión | En propuesta: HS256, `JWT_SECRET` como Base64 de 32 bytes y los claims `sub`, `rol`, `iat` y `exp`. El dominio ya lo aplica. Ratificarlo no cierra la verificación cruzada con la analítica: ésa es criterio de T058 (4 de noviembre) | A, con C1 |
+
+Los ADR 006, 007 y 011 ya se ratificaron en #173.
 
 ## Lo que dejan las decisiones
 
 | Qué | Quién | Antes de |
 |---|---|---|
-| Explicar en el documento de la entrega 2 los dos cambios frente a la propuesta E1: las consolas son de escritorio (D-08), y el dominio sí consulta a la analítica (P-09) | A | 9 de octubre |
-| Modelo ER, modelo de dominio, CU-09 a CU-11 y el BPMN de alertas, con P-07, P-13, P-14 y D-05 | C1 | 9 de octubre |
-| Cuenta con el correo en lugar del nombre; la barra del analista con correo y rol; las métricas de la cola con su población (`diseno.md` §7, puntos 12 a 14) | D y C2 | 9 de octubre |
+| D-09: el ADR nuevo del aviso dentro de la app, que diga también qué queda de los estados de envío (`PENDIENTE`, `ENVIADA` y `FALLIDA`) de `Notificacion` en `dominio.yaml` y en el modelo ER. Y quitar el correo de donde todavía se promete: RF-21, CU-11 (paso 6, alterno 6a y la poscondición), `navegacion.md` §3.2 y §3.3, `inventario-vistas.md` §8, el BPMN de alertas (`alertas.bpmn` y `alertas.svg`), las vistas `01-contexto`, `02-contenedores` y `04-componentes-dominio` de `arquitectura/` con sus `.png` y su `README.md`, y la fila de C1 en `entregas/2026-11-18-version-desplegada.md` | C1 y B | Antes de T066, la tarea de las alertas (C1, vence el 15 de noviembre) |
+| D-11: el RNF nuevo en `requerimientos.md`: el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona. Se cita desde `docs/datos/esquema-de-operacion.md` (el diagrama de §1 y la tabla de §2) | A, con B | Antes de T069 y T073 (A y D, vencen el 13 de noviembre), que cierran la consola y la cola |
+
+Las tres que vencían el 9 de octubre ya están hechas: la explicación de D-08 y P-09 en
+la entrega 2 (`docs/entregas/2026-10-09/README.md`); el modelo ER, el modelo de
+dominio, CU-09 a CU-11 y el BPMN de alertas con P-07, P-13, P-14 y D-05 (el BPMN, en
+#149); y los puntos 12 a 14 de `diseno.md` §7, resueltos en Figma el 11 de octubre.
+Las capturas corregidas del prototipo entran en la entrega del 4 de noviembre.
