@@ -1,8 +1,13 @@
 # CanastaMX · Cliente móvil
 
-Prototipo de T028 con el sistema de diseño de D sobre la navegación de T023: **Inicio**,
-**Detalle de artículo**, **Mi canasta** y **Alertas**. Se usa el vocabulario del
-[ADR 002](../../docs/adr/002-identidad-del-articulo.md).
+La navegación sigue D-01 y el ADR 007 ratificado: **Inicio, Descubrir, Canasta
+y Cuenta** son las cuatro pestañas. **Detalle de artículo** y **Mis alertas**
+se abren en la pila raíz. Se conserva la consulta real a `/health` de T039 y
+el sistema de diseño de D. Se utiliza «artículo», conforme al ADR 002.
+
+Este cambio cubre la estructura de navegación de #159. El formulario de acceso,
+la sesión y la consulta del correo de Cuenta corresponden a la segunda parte,
+en `feat/orf-acceso-conectado`. No se muestran datos ficticios de una cuenta.
 
 ## Requisitos
 
@@ -50,47 +55,52 @@ npx.cmd expo install --check
 Si acabas de cambiar las rutas, arranca Expo para que regenere los tipos de
 `.expo/types/` antes de comprobar TypeScript.
 
-Recorrido manual requerido en un **teléfono real**:
+Recorrido manual de navegación en Android con Expo Go:
 
-1. Al abrir, se muestra **Inicio** y tres pestañas.
-2. Pulsa **Probar detalle de artículo**: se muestra **Detalle de artículo**.
-3. Usa la flecha superior: vuelve a Inicio.
-4. Entra otra vez al detalle y comprueba también Atrás de Android.
-5. Pulsa la pestaña **Mi canasta** y después **Alertas**.
-6. Vuelve a la pestaña **Inicio** y comprueba que puedes abrir el detalle de nuevo.
-7. Graba unos quince segundos del recorrido Inicio → detalle → regresar →
-   Mi canasta → Alertas, mostrando la paleta y tipografía, y adjunta el video al
-   issue de T028 (sistema de diseño móvil).
+1. Al abrir, comprueba las cuatro pestañas, en este orden: **Inicio**, **Descubrir**,
+   **Canasta** y **Cuenta**. Alertas no debe aparecer en la barra inferior.
+2. Desde Inicio, pulsa **Probar detalle de artículo** y regresa con la flecha.
+3. Abre el detalle otra vez y regresa con Atrás de Android.
+4. Desde la campana del encabezado abre **Mis alertas**. La barra de pestañas
+   debe ocultarse; regresa con la flecha a la pestaña desde la que entraste.
+5. Cambia a Descubrir y Canasta; comprueba también la campana desde ellas.
+6. En **Cuenta**, pulsa **Mis alertas**, regresa y verifica que sigues en Cuenta.
+7. Comprueba que Inicio conserva la consulta y el refresco de T039. «Estado: UP»
+   usa verde oscuro `#007A44` sobre crema, conforme a `diseno.md`.
+8. La campana y «Mis alertas» deben tener fondo turquesa, relleno y un área
+   táctil mínima de 48 × 48. Ábrelos y regresa a la misma pestaña.
+9. Cada pestaña muestra su título una sola vez, en el encabezado. Detalle y
+   Mis alertas conservan el título central porque no tienen título de encabezado.
 
-BlueStacks sirve como comprobación adicional. El criterio de esta tarea pide
-evidencia en teléfono real. El video se adjunta al issue, no al repositorio.
-La prueba debe mostrar las cuatro pantallas con el sistema de diseño aplicado.
-
-La comprobación de TypeScript y el empaquetado no sustituyen la prueba en el
-teléfono. El cierre requiere evidencia, revisión e incorporación a `main`.
+Graba el recorrido o adjunta capturas a la solicitud. Indica si la prueba se
+realizó en teléfono físico o en BlueStacks; el empaquetado y TypeScript no
+sustituyen la verificación de la navegación en Android.
 
 ## Estructura
 
 ```text
 app/
 ├── _layout.tsx
+├── alertas.tsx           # MisAlertas, ruta /alertas
 ├── (tabs)/
 │   ├── _layout.tsx
-│   ├── index.tsx          # Inicio
-│   ├── canasta.tsx        # MiCanasta
-│   └── alertas.tsx        # Alertas
+│   ├── index.tsx         # Inicio
+│   ├── descubrir.tsx     # Descubrir
+│   ├── canasta.tsx       # MiCanasta
+│   └── cuenta.tsx        # Cuenta
 └── articulo/
-    └── [id].tsx           # DetalleDeArticulo
+    └── [id].tsx          # DetalleDeArticulo
 ```
 
-Las pestañas conservan las rutas `/` y `/canasta`, y añaden `/alertas`.
-El detalle usa `/articulo/[id]` en la pila raíz. El botón temporal navega a
-`/articulo/prueba`: ese identificador no representa un artículo real ni fija
-el contrato de datos futuro. El detalle contiene únicamente su título.
+Las rutas `/`, `/canasta` y `/alertas` conservan su URL; el grupo `(tabs)` no
+forma parte de la dirección. Se incorporan `/descubrir` y `/cuenta`.
+`/alertas` está en la pila y es accesible desde la campana y desde Cuenta.
+El botón temporal de Inicio abre `/articulo/prueba`; ese identificador no
+representa un artículo real ni fija el contrato de datos futuro.
 
-La organización se documenta en el
-[ADR 007](../../docs/adr/007-navegacion-mobile.md).
-No hay datos de ejemplo, consultas de precios, filtros ni persistencia. T039 añade la consulta real a `/health` en Inicio.
+La organización se documenta en el [ADR 007](../../docs/adr/007-navegacion-mobile.md).
+Esta corrección no añade catálogos, precios, canastas ni alertas de ejemplo.
+La consulta real a `/health` permanece en Inicio.
 
 `node_modules/`, `.expo/`, archivos de entorno y salidas de compilación están
 ignorados. Se versionan el código, la configuración y `package-lock.json`.
@@ -101,7 +111,8 @@ Fuente: [especificación del equipo](../../docs/entregas/diseno.md).
 La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-mobile.md).
 
 - `theme/design-system.ts`: valores compartidos de color, fuente, tamaño, radio y espaciado.
-- `components/PantallaVacia.tsx`: presentación común de las cuatro pantallas.
+- `components/PantallaVacia.tsx`: presentación común; `showTitle={false}` evita
+  duplicar el título que ya muestra el encabezado de cada pestaña.
 - Fondo crema `#F0EADF`, texto tinta `#2F2F2F` y turquesa `#23BBB7` en el botón y la pestaña activa.
 - Inter Regular y SemiBold incluidas como archivos estáticos por `@expo-google-fonts/inter`, cargadas con `expo-font` antes de mostrar las pantallas; funcionan en Expo Go.
 - Títulos de 24, etiquetas de navegación y botón de 14, botón con radio de 12 y espaciados en múltiplos de cuatro. Se conserva el escalado de texto del sistema.
@@ -110,8 +121,8 @@ La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-m
 Al revisar en el teléfono, comprueba los cuatro títulos con Inter, el fondo crema,
 la pestaña activa turquesa y el botón redondeado. Verifica que la barra de pestañas
 no se superponga con la navegación de Android y que el texto siga legible al
-ampliar el tamaño de fuente del sistema. Recorre búsqueda, detalle, regreso,
-canasta y alertas antes de grabar la evidencia. Estas verificaciones visuales
+ampliar el tamaño de fuente del sistema. Recorre Inicio → detalle → regreso →
+Descubrir → Canasta → Cuenta → Mis alertas → regreso antes de grabar la evidencia. Estas verificaciones visuales
 requieren ejecución en el dispositivo; compilar no las sustituye.
 
 ## Primera llamada real al dominio (T039)
@@ -132,7 +143,10 @@ cd services/domain-service
 ```
 
 En PowerShell, el equivalente es `./mvnw.cmd spring-boot:run`.
-No necesita base de datos para `/health`. Mantén esa terminal abierta.
+La versión actual del dominio necesita PostgreSQL y las variables locales de
+base de datos y JWT, incluso para arrancar y consultar `/health`. Sigue
+[services/domain-service/README.md](../../services/domain-service/README.md) y
+mantén esa terminal abierta.
 El puerto **8081** es del dominio; si Traefik lo usaba, cambia únicamente su
 variable local `TRAEFIK_WEB_PORT` a **8880** y aplica
 `docker compose up -d traefik` desde la raíz del repositorio.
