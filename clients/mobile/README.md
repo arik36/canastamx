@@ -5,9 +5,8 @@ y Cuenta** son las cuatro pestañas. **Detalle de artículo** y **Mis alertas**
 se abren en la pila raíz. Se conserva la consulta real a `/health` de T039 y
 el sistema de diseño de D. Se utiliza «artículo», conforme al ADR 002.
 
-Este cambio cubre la estructura de navegación de #159. El formulario de acceso,
-la sesión y la consulta del correo de Cuenta corresponden a la segunda parte,
-en `feat/orf-acceso-conectado`. No se muestran datos ficticios de una cuenta.
+El acceso de #159 se abre desde Cuenta. Usa el dominio real para iniciar sesión y
+obtener el correo mediante D-10; no se muestran datos ficticios de una cuenta.
 
 ## Requisitos
 
@@ -81,6 +80,7 @@ sustituyen la verificación de la navegación en Android.
 ```text
 app/
 ├── _layout.tsx
+├── acceso.tsx            # Iniciar sesión, ruta /acceso
 ├── alertas.tsx           # MisAlertas, ruta /alertas
 ├── (tabs)/
 │   ├── _layout.tsx
@@ -190,3 +190,56 @@ TypeScript y el empaquetado no acreditan estas pruebas de Android: deben
 realizarse con el servicio real y las capturas correspondientes.
 
 Evidencia de la prueba realizada en BlueStacks con Android 11: [respuesta, refresco, error y recuperación](docs/evidencia/t039/README.md).
+
+## Acceso conectado al dominio (T046 · #159)
+
+Desde **Cuenta → Iniciar sesión**, escribe el correo y la contraseña de una
+cuenta de prueba creada en tu dominio local. La app llama a
+`POST /api/v1/sesiones` y después a `GET /api/v1/cuentas/yo` con Bearer.
+Muestra el correo y un avatar con su inicial, nunca un nombre. Incluye
+«Explorar sin cuenta» y el aviso «No somos PROFECO».
+
+- El rol `CONSUMIDOR` abre Cuenta. `ANALISTA` y `OPERADOR` reciben una indicación
+  de usar la plataforma web; no se persiste su token en el móvil.
+- Sólo el token se guarda con `expo-secure-store`; correo y contraseña no se
+  persisten. La contraseña se limpia del formulario al enviarse. No se guardan
+  credenciales en `.env`, en el código ni en capturas.
+- Al abrir la app o volver al primer plano se consulta `/cuentas/yo`. Un 401
+  elimina la sesión; un fallo de red ofrece reintentar o continuar sin cuenta.
+- Cerrar sesión borra el token y el perfil en memoria. Cada solicitud tiene un
+  límite de ocho segundos; un error deja un mensaje y termina la carga.
+- El cliente no contiene `JWT_SECRET` ni verifica firmas: el dominio valida el
+  token. Las variables `EXPO_PUBLIC_` son públicas.
+- Esta tarea no implementa registro, datos de canasta ni sincronización. La
+  navegación como invitado no envía una canasta al servidor.
+
+La persistencia se explica en el [ADR 021](../../docs/adr/021-persistencia-sesion-mobile.md).
+La API y el gestor de sesión se separan del almacenamiento nativo para probar
+rechazos, restauración, cierre y respuestas tardías:
+
+```bash
+npm test
+npm run typecheck
+```
+
+### Prueba manual en Android
+
+1. Arranca PostgreSQL y el dominio con su configuración local. En el teléfono o
+   BlueStacks comprueba la URL del dominio en `/health` y ajusta la dirección de
+   `clients/mobile/.env`; reinicia Expo si cambió la IP.
+2. En Cuenta, abre Iniciar sesión. Envía un correo válido con una contraseña
+   incorrecta: debe aparecer el aviso y desaparecer el indicador de carga.
+3. Usa credenciales válidas de tu base de pruebas: Cuenta muestra el correo y su
+   inicial. Captura el resultado sin incluir contraseña ni token.
+4. Recarga la app desde Expo: debe recuperar Cuenta consultando `/cuentas/yo`.
+5. Cierra sesión, recarga y verifica que continúa como invitado. Desde Acceso,
+   «Explorar sin cuenta» debe regresar a Inicio.
+6. Con el dominio detenido intenta entrar: debe terminar con un error, como
+   máximo al vencer el límite de ocho segundos. Arranca el dominio y reintenta.
+7. Recorre las cuatro pestañas, el detalle y ambos accesos a Mis alertas.
+
+El acceso Android se valida en Expo Go, no en Expo web. Usa datos sintéticos en
+una base local aislada; no publiques contraseñas ni tokens como evidencia. Las
+pruebas automatizadas del gestor y de la API no sustituyen este recorrido.
+
+Registro de comprobaciones de acceso: [T046](docs/evidencia/t046/README.md).
