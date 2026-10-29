@@ -2,6 +2,7 @@ import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import { SesionProvider } from "../session/SesionProvider";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { colors, fonts, fontSizes } from "../theme/design-system";
@@ -26,7 +27,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <SesionProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -44,6 +45,7 @@ export default function RootLayout() {
           },
         }}
       >
+        <Stack.Screen name="acceso" options={{ title: "Acceso" }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="alertas"
@@ -54,7 +56,7 @@ export default function RootLayout() {
           options={{ title: "", headerBackTitle: "Inicio" }}
         />
       </Stack>
-    </>
+    </SesionProvider>
   );
 }
 

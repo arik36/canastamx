@@ -6,7 +6,8 @@
   "scripts": {
     "start": "expo start --go",
     "android": "expo start --go --android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/sesion.test.cjs"
   },
   "engines": {
     "node": ">=20.19.4 <21"
@@ -18,6 +19,7 @@
     "expo-font": "~55.0.8",
     "expo-linking": "~55.0.17",
     "expo-router": "~55.0.18",
+    "expo-secure-store": "~55.0.18",
     "expo-status-bar": "~55.0.6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
