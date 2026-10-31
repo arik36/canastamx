@@ -1,8 +1,24 @@
 contrato: qqp
-version: 1.3.5
+version: 1.3.6
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-10-15
+fecha: 2026-10-30
 autor: alm
+
+# ── Qué cambió en 1.3.6 ─────────────────────────────────────────────────────
+#
+# Un campo nuevo, y ninguna regla cambia de valor. Ninguna de las 15 columnas
+# cambia.
+#
+#   · `reparar_interrogantes.ambiguo.candidatos`: la tabla con los gemelos de
+#     cada valor ambiguo y sus filas en el corpus. La 1.3.4 (D-03) dijo QUÉ se
+#     cuenta y DÓNDE, pero no de dónde sale la cuenta, y el corpus no entra a la
+#     plataforma: la capa cruda guarda sólo el alcance. Sin la tabla, la regla por
+#     frecuencia no se podía aplicar al ingerir un lote. La genera
+#     `docs/datos/perfilado/mojibake-ambiguos.py` desde el corpus, que antes de
+#     escribirla comprueba que reproduce el diccionario entrada por entrada. Trae
+#     CONTEOS, no decisiones: el umbral se aplica al leerla, así que cambiar
+#     `umbral` cambia la decisión sin regenerar nada. Va versionada como el
+#     diccionario, con su propia excepción en `.gitignore`.
 
 # ── Qué cambió en 1.3.5 ─────────────────────────────────────────────────────
 #
@@ -351,9 +367,16 @@ normalizacion:
       umbral: 10          # un gemelo que domina 10:1 en los datos limpios gana
       empate: revision_humana
       poblacion: corpus   # 1.3.4 · D-03: la misma población del diccionario, con más datos
+      candidatos: contracts/mojibake-ambiguos.csv   # 1.3.6 · CORPUS
+      # Columnas: columna, valor_roto, candidato, filas. Un renglón por gemelo
+      # posible, con las filas que ese gemelo tiene en el corpus; cada valor roto,
+      # con dos gemelos o más. Gana el de más filas si tiene al menos `umbral`
+      # veces las del segundo; si no, `empate`.
     sin_gemelo:
       accion: cuarentena
       motivo: codificacion_irrecuperable
+      # 1.3.6 · un valor roto que no está en el diccionario ni en `candidatos` no
+      # tiene gemelo conocido en el corpus, y cae aquí.
     medido_en_el_corpus:  # perfilado.md §1 — NO son las cifras del alcance
       # 1.3.1: decía «§2». La tabla del `?` por columna y los tres porcentajes de
       # abajo están en la sección 1 (Estructura). Las citas a «§2 regla N» que

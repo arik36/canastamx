@@ -83,16 +83,27 @@ def entorno(tmp_path, monkeypatch):
     return d, llegada
 
 
-# ── «tres activos, uno particionado por quincena» ──────────────────────────
+# ── «tres activos, uno particionado por quincena» · y el cuarto de T048 ─────
 
-def test_hay_tres_activos_y_los_tres_estan_particionados(entorno):
+ACTIVOS = ["capa_cruda", "filas_revisadas", "lote_promovido", "capa_intermedia"]
+
+
+def test_hay_cuatro_activos_y_los_cuatro_estan_particionados(entorno):
+    """T043 pidió tres; T048 agrega la capa intermedia, que depende de
+    `lote_promovido`. Los cuatro, particionados por la misma quincena."""
     d, _ = entorno
     repo = d.defs.get_repository_def()
     activos = repo.assets_defs_by_key
-    assert len(activos) == 3, f"hay {len(activos)} activos, el criterio pide tres"
+    assert sorted(k.to_user_string() for k in activos) == sorted(ACTIVOS)
     for clave, definicion in activos.items():
         assert definicion.partitions_def is not None, (
             f"{clave.to_user_string()} no está particionado")
+
+
+def test_la_capa_intermedia_depende_de_lote_promovido(entorno):
+    d, _ = entorno
+    entradas = d.capa_intermedia.asset_deps[d.capa_intermedia.key]
+    assert {k.to_user_string() for k in entradas} == {"lote_promovido"}
 
 
 def test_las_particiones_son_las_quincenas_y_salen_del_contrato(entorno, contrato):
@@ -117,6 +128,15 @@ def test_el_sensor_y_el_trabajo_existen(entorno):
     repo = d.defs.get_repository_def()
     assert [s.name for s in repo.sensor_defs] == ["archivo_nuevo"]
     assert "corrida_del_lote" in [j.name for j in repo.get_all_jobs()]
+
+
+def test_la_corrida_que_dispara_el_sensor_llega_a_la_capa_intermedia(entorno):
+    """La corrida contra MinIO de T048 es con el sensor encendido: si el trabajo
+    del sensor no incluyera la capa intermedia, esa corrida no la cargaría."""
+    d, _ = entorno
+    trabajo = d.defs.get_repository_def().get_job("corrida_del_lote")
+    claves = {k.to_user_string() for k in trabajo.asset_layer.executable_asset_keys}
+    assert claves == set(ACTIVOS)
 
 
 def test_la_quincena_se_traduce_a_LAS_DOS_formas_que_usa_la_fuente(entorno):
@@ -450,8 +470,9 @@ def test_la_orquestacion_no_tiene_ninguna_regla_del_contrato():
 
 def test_las_compuertas_no_importan_dagster():
     """La prueba de que la fecha de salida del ADR 016 es ejecutable: si Dagster se
-    va, estos dos archivos siguen corriendo."""
-    for nombre in ("compuerta.py", "lote.py"):
+    va, estos archivos siguen corriendo. `reparacion.py` e `intermedia.py` son de
+    T048: el `?` y la capa intermedia tampoco pueden depender de la orquestación."""
+    for nombre in ("compuerta.py", "lote.py", "reparacion.py", "intermedia.py"):
         texto = codigo_sin_comentarios(PLATAFORMA / "ingestion" / nombre)
         assert "dagster" not in texto.lower(), (
             f"{nombre} menciona dagster; entonces irse de Dagster costaría "
@@ -593,6 +614,8 @@ def test_ninguna_lectura_de_lotes_pasa_por_pandas():
     archivo entero con pandas después del #170, porque esta guardia no la miraba."""
     for ruta in (PLATAFORMA / "ingestion" / "compuerta.py",
                  PLATAFORMA / "ingestion" / "lote.py",
+                 PLATAFORMA / "ingestion" / "reparacion.py",
+                 PLATAFORMA / "ingestion" / "intermedia.py",
                  PLATAFORMA / "orquestacion" / "definiciones.py"):
         codigo = codigo_sin_comentarios(ruta)
         assert "read_parquet" not in codigo and "read_csv" not in codigo, (
@@ -637,3 +660,180 @@ def test_hay_una_sola_carpeta_de_evidencia_y_en_las_pruebas_no_es_la_real():
     assert compuerta.SALIDAS == ingesta.CORRIDAS == d.SALIDAS
     assert str(ingesta.CORRIDAS) == os.environ["CANASTAMX_CORRIDAS"]
     assert ingesta.CORRIDAS != PLATAFORMA / "ingestion" / "corridas"
+
+
+# ── T048 · la capa intermedia, desde los activos ───────────────────────────
+#
+# Contra el criterio de #186: «Materializar `2026-07-Q2` deja sus filas, cada una
+# con su `lote` y su `ingerido_en`, sin un solo `?` en las once columnas de
+# `aplica_a`, y con exactamente las filas que `lote_promovido` dejó salir menos las
+# `sobrantes` de captura doble de su linaje. Materializarla dos veces deja las
+# mismas filas (RF-25), y un lote detenido no deja ninguna.»
+#
+# Con `CANASTAMX_SIMULAR` la capa va al DuckDB de la carpeta de corridas, que en
+# las pruebas es temporal (conftest.py). Se lee la base, no los metadatos: los
+# metadatos los escribe el mismo activo que se está probando.
+
+def _lote_de_t048(columnas):
+    """31 filas: 24 únicas, una captura doble con el `?` que repara el diccionario
+    (`Camar?n` junto a `Camarón`), otra captura doble de tres y un par de
+    observaciones múltiples."""
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(24)]
+    filas += [fila(columnas, producto="Camarón", precio="100.00"),
+              fila(columnas, producto="Camar?n", precio="100.40")]
+    filas += [fila(columnas, producto="Frijol", precio="30.00"),
+              fila(columnas, producto="Frijol", precio="30.50"),
+              fila(columnas, producto="Frijol", precio="30.90")]
+    filas += [fila(columnas, producto="Arroz", precio="20.00")]
+    filas += [fila(columnas, producto="Arroz", precio="37.00")]
+    return filas
+
+
+def _capa(d, lote_nombre):
+    import duckdb
+
+    ruta = d.SALIDAS / "capa-intermedia.duckdb"
+    con = duckdb.connect(str(ruta), read_only=True)
+    try:
+        return con.execute("SELECT * FROM intermedia.observacion WHERE lote = ? "
+                           "ORDER BY huella_fila, ocurrencia", [lote_nombre]).df()
+    finally:
+        con.close()
+
+
+def _materializar(d, quincena="2026-07-Q2"):
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido,
+                             d.capa_intermedia], partition_key=quincena)
+    assert r.success
+    return r
+
+
+def test_la_capa_intermedia_queda_sin_interrogantes_y_con_su_linaje(entorno, columnas,
+                                                                    contrato):
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    r = _materializar(d)
+
+    t = _capa(d, "07-2026_Q2")
+    promovido = r.asset_materializations_for_node("lote_promovido")[0].metadata
+    sobrantes = promovido["cubos_de_la_clave"].value["captura_doble"]["sobrantes"]
+    assert sobrantes == 3
+    assert len(t) == promovido["filas_salida"].value - sobrantes == 28
+    aplica = contrato["normalizacion"]["reparar_interrogantes"]["aplica_a"]
+    assert not any(t[c].astype(str).str.contains("?", regex=False).any() for c in aplica)
+    assert "Camarón" in set(t["producto"])
+    assert t["lote"].eq("07-2026_Q2").all() and t["ingerido_en"].notna().all()
+
+    md = r.asset_materializations_for_node("capa_intermedia")[0].metadata
+    assert md["filas_cargadas"].value == md["filas_esperadas"].value == 28
+    ingerido = r.asset_materializations_for_node("capa_cruda")[0].metadata["ingerido_en"].value
+    assert md["ingerido_en"].value == ingerido, "la hora no viajó por el linaje"
+
+
+def test_materializar_dos_veces_deja_las_mismas_filas_en_la_capa(entorno, columnas):
+    """RF-25. `ingerido_en` sí cambia —reprocesar es volver a ingerir— y por eso
+    queda fuera de la comparación, como la duración en la huella de la cruda."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    r1 = _materializar(d)
+    primera = _capa(d, "07-2026_Q2").drop(columns="ingerido_en")
+    r2 = _materializar(d)
+    segunda = _capa(d, "07-2026_Q2").drop(columns="ingerido_en")
+    assert primera.equals(segunda)
+    h1, h2 = (r.asset_materializations_for_node("capa_intermedia")[0].metadata["huella"].value
+              for r in (r1, r2))
+    assert h1 == h2
+
+
+def test_el_orden_del_archivo_no_cambia_la_capa(entorno, columnas):
+    """El mismo lote con sus filas en otro orden deja la misma capa: el desempate
+    de la captura doble es por contenido, no por posición."""
+    d, llegada = entorno
+    filas = _lote_de_t048(columnas)
+    filas[25:27] = [fila(columnas, producto="Frijol", precio="30.00", cadena_comercial="Uno"),
+                    fila(columnas, producto="Frijol", precio="30.00", cadena_comercial="Dos")]
+    huellas = []
+    for orden in (filas, filas[::-1]):
+        escribir_lote(llegada, "07-2026_Q2.csv", orden, columnas)
+        r = _materializar(d)
+        huellas.append(r.asset_materializations_for_node(
+            "capa_intermedia")[0].metadata["huella"].value)
+    assert huellas[0] == huellas[1]
+
+
+def test_el_interrogante_irreparable_cuenta_para_el_5_por_ciento(entorno, columnas):
+    """**La prueba que justifica dónde se aparta el `?`.** 100 filas, 6 con un `?`
+    que ninguna tabla repara. Para Pandera las 100 están bien; para CU-03 seis van a
+    cuarentena, el 6%, y el lote se detiene. Si el `?` se apartara después de
+    decidir la promoción, este lote se promovería."""
+    d, llegada = entorno
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(94)]
+    filas += [fila(columnas, producto=f"Nada?Igual{i}") for i in range(6)]
+    escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+    r = _materializar(d)
+    assert r.asset_materializations_for_node(
+        "filas_revisadas")[0].metadata["filas_en_cuarentena"].value == 0
+    md = r.asset_materializations_for_node("lote_promovido")[0].metadata
+    assert md["reparacion"].value["por_motivo"] == {"codificacion_irrecuperable": 6}
+    assert md["proporcion_en_cuarentena"].value == pytest.approx(0.06)
+    assert md["resultado"].value == "DETENIDO"
+
+
+def test_un_lote_detenido_no_deja_ninguna_fila_en_la_capa(entorno, columnas):
+    """Primero un lote que pasa y carga sus filas; después, en la misma quincena,
+    uno que se detiene: su partición queda vacía, no con las filas de antes."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    _materializar(d)
+    assert len(_capa(d, "07-2026_Q2")) == 28
+
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(90)]
+    filas += [fila(columnas, producto=f"Nada?Igual{i}") for i in range(10)]
+    escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+    r = _materializar(d)
+    assert r.asset_materializations_for_node(
+        "lote_promovido")[0].metadata["resultado"].value == "DETENIDO"
+    assert _capa(d, "07-2026_Q2").empty
+    md = r.asset_materializations_for_node("capa_intermedia")[0].metadata
+    assert md["filas_cargadas"].value == 0 and md["resultado_del_lote"].value == "DETENIDO"
+
+
+def test_si_la_corrida_falla_la_capa_queda_como_estaba(entorno, columnas):
+    """CU-02 · «De fallo: la capa intermedia no cambió». Un archivo al que le falta
+    una columna lo rechaza la ingesta (CU-02 · 2b), la corrida termina en error y
+    la partición conserva lo de la última corrida que sí juzgó el lote, igual que
+    su registro: `intermedia.py --verificar` sigue cuadrando contra ésa."""
+    import json
+
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    _materializar(d)
+    sin_giro = [c for c in columnas if c != "giro"]
+    escribir_lote(llegada, "07-2026_Q2.csv",
+                  [{c: v for c, v in fila(columnas, producto=f"P{i}").items() if c != "giro"}
+                   for i in range(5)], sin_giro)
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido,
+                             d.capa_intermedia], partition_key="2026-07-Q2",
+                            raise_on_error=False)
+    assert not r.success, "la ingesta no ingiere un archivo sin una de sus columnas"
+    assert len(_capa(d, "07-2026_Q2")) == 28
+    registro = json.loads((d.SALIDAS / "lote-07-2026_Q2.json").read_text(encoding="utf-8"))
+    assert registro["resumen"]["filas_salida"] - registro["resumen"]["por_grupo"][
+        "sobrantes_captura_doble"] == 28
+
+
+def test_lote_promovido_dice_que_se_reparo_y_que_se_aparto(entorno, columnas):
+    """CU-03 · paso 4: cuántos valores se repararon en cada columna."""
+    d, llegada = entorno
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(40)]
+    filas += [fila(columnas, producto="Camar?n", giro="Panader?as"),
+              fila(columnas, producto="Nada?Igual")]
+    escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+    r = _materializar(d)
+    rep = r.asset_materializations_for_node("lote_promovido")[0].metadata["reparacion"].value
+    assert rep["por_columna"]["producto"] == {"ocurrencias": 2, "reparables": 1,
+                                              "a_cuarentena": 1}
+    assert rep["por_columna"]["giro"] == {"ocurrencias": 1, "reparables": 1, "a_cuarentena": 0}
+    assert rep["valores_reparados"] == {"por_diccionario": 2, "por_frecuencia": 0}
+    cuarentena = d.SALIDAS / "cuarentena-reparacion-07-2026_Q2.jsonl"
+    assert len(cuarentena.read_text(encoding="utf-8").splitlines()) == 1

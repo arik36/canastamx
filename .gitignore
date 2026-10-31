@@ -29,6 +29,10 @@ raw/
 # decisiones del equipo sobre que hacer con cada texto roto, y el contrato
 # la referencia por ruta (contracts/qqp-v1.yaml 1.3.0).
 !contracts/mojibake-diccionario.csv
+# Excepcion: los gemelos de cada `?` ambiguo y sus filas en el corpus (contrato
+# 1.3.6, `ambiguo.candidatos`). Tampoco es dato crudo: son conteos de los que
+# sale la regla por frecuencia.
+!contracts/mojibake-ambiguos.csv
 
 # ---- Volumenes de contenedor ----
 .volumes/
