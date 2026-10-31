@@ -15,6 +15,7 @@ import mx.tecnm.canastamx.domain_service.domain.usuario.Usuario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,14 +49,17 @@ public class CuentaController {
                 solicitud.contrasena()
         );
 
-        CuentaRespuesta respuesta = new CuentaRespuesta(
-                usuario.id(),
-                usuario.correo().valor(),
-                usuario.rol().name(),
-                usuario.fechaDeRegistro()
-        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(CuentaRespuesta.de(usuario));
+    }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    /**
+     * D-10, opción A: la cuenta de quien tiene la sesión. Sin sesión válida no se
+     * llega aquí: responde el 401 de {@link SinSesionHandler}.
+     */
+    @GetMapping("/yo")
+    public CuentaRespuesta yo(@CuentaDeLaSesion Usuario cuenta) {
+        return CuentaRespuesta.de(cuenta);
     }
 
     public record RegistroSolicitud(
@@ -70,12 +74,22 @@ public class CuentaController {
             String contrasena
     ) {}
 
+    /** Cuenta en dominio.yaml: estos cuatro campos y nada más. */
     public record CuentaRespuesta(
             String id,
             String correo,
             String rol,
             Instant fechaDeRegistro
-    ) {}
+    ) {
+        static CuentaRespuesta de(Usuario usuario) {
+            return new CuentaRespuesta(
+                    usuario.id(),
+                    usuario.correo().valor(),
+                    usuario.rol().name(),
+                    usuario.fechaDeRegistro()
+            );
+        }
+    }
 }
 
 //Dejar de responder los errores con un JSON propio que contiene mensaje y empezar a responder con ProblemDetail, siguiendo el contrato de errores de CanastaMX.

@@ -1,12 +1,19 @@
 openapi: 3.1.0
 info:
   title: CanastaMX · Servicio de dominio
-  version: 0.2.0
+  version: 0.2.2
   summary: Cuentas, canastas y alertas de la persona consumidora.
   description: |
     **Versión 0.2**, revisada por el equipo el 7 de octubre de 2026. Sale de CU-08 a
     CU-11, `docs/analisis/modelo-er.md` y el código de `services/domain-service`. La
     publica C1, con B.
+
+    **0.2.1** agrega `GET /api/v1/cuentas/yo`, que devuelve la `Cuenta` de quien tiene
+    la sesión (D-10, opción A).
+
+    **0.2.2** fija el token —HS256, la clave y sus claims (ADR 020, en propuesta)— y
+    declara el desafío `WWW-Authenticate` de los 401 de las rutas con sesión. El 401
+    de `POST /api/v1/sesiones` sigue sin desafío: es la decisión D-12, abierta.
 
     Las convenciones y las decisiones de arquitectura (P-01 a P-15) ya se votaron.
     Están en `docs/analisis/openapi/README.md`.
@@ -24,7 +31,7 @@ tags:
   - name: Salud
     description: Si el servicio está arriba. La consume T039.
   - name: Cuentas
-    description: Registro e inicio de sesión (CU-08).
+    description: Registro, inicio de sesión y la cuenta de la sesión (CU-08).
   - name: Canastas
     description: Crear y editar canastas (CU-09). El costo estimado no se guarda aquí.
   - name: Alertas
@@ -67,6 +74,22 @@ paths:
           content:
             application/problem+json:
               schema: { $ref: "#/components/schemas/Problema" }
+  /api/v1/cuentas/yo:
+    get:
+      tags: [Cuentas]
+      operationId: obtenerMiCuenta
+      summary: La cuenta de quien tiene la sesión (D-10)
+      description: |
+        Con la sesión restaurada, la app y la web leen aquí el correo y el rol: el
+        teléfono no guarda el correo (D-10, opción A). Si el token falta, no es válido,
+        ya venció o su cuenta ya no existe, responde 401.
+      responses:
+        "200":
+          description: La cuenta de la sesión
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cuenta" }
+        "401": { $ref: "#/components/responses/SinSesion" }
   /api/v1/sesiones:
     post:
       tags: [Cuentas]
@@ -84,7 +107,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Sesion" }
-        "401": { $ref: "#/components/responses/SinSesion" }
+        "401": { $ref: "#/components/responses/CredencialesInvalidas" }
   /api/v1/canastas:
     get:
       tags: [Canastas]
@@ -313,7 +336,17 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Token de `POST /api/v1/sesiones`, firmado con `JWT_SECRET` (`.env.example`). Lleva el rol de la cuenta (P-07).
+      description: |
+        Token de `POST /api/v1/sesiones` (ADR 020, en propuesta: falta ratificarlo con la
+        analítica, que lo verifica para `x-rol`).
+
+        - **Algoritmo:** HS256. Un token con cualquier otro `alg` se rechaza.
+        - **Clave:** los 32 bytes que resultan de decodificar `JWT_SECRET`, Base64 estándar
+          (`openssl rand -base64 32`). El texto Base64 no es la clave.
+        - **Claims obligatorios:** `sub` (el `id` de la cuenta), `rol` (P-07), `iat` y
+          `exp`. Si falta uno, el token se rechaza.
+
+        Un token rechazado, vencido o de una cuenta que ya no existe responde `SinSesion`.
   parameters:
     canastaId:
       name: canastaId
@@ -354,7 +387,25 @@ components:
         application/problem+json:
           schema: { $ref: "#/components/schemas/Problema" }
     SinSesion:
-      description: Falta la sesión, venció o las credenciales no coinciden
+      description: |
+        Falta la sesión, no es válida o ya venció. El cuerpo es el mismo para cualquier
+        causa: no dice si el token venció, lo firmó otra clave o su cuenta ya no existe.
+      headers:
+        WWW-Authenticate:
+          required: true
+          description: |
+            El desafío que exige RFC 9110 §15.5.2. `Bearer` si no llegó un token Bearer;
+            `Bearer error="invalid_token"` si llegó uno que no sirve (RFC 6750 §3).
+          schema: { type: string, examples: ["Bearer", "Bearer error=\"invalid_token\""] }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problema" }
+    CredencialesInvalidas:
+      description: |
+        El correo o la contraseña no son válidos, o el cuerpo no se puede leer. Mismo
+        `type` que `SinSesion`, pero sin `WWW-Authenticate`: la ruta recibe las
+        credenciales en el cuerpo, no con Bearer. Qué hacer con ese encabezado es la
+        decisión D-12 (`docs/equipo/decisiones-pendientes.md`).
       content:
         application/problem+json:
           schema: { $ref: "#/components/schemas/Problema" }

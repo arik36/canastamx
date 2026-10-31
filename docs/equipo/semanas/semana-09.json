@@ -1,0 +1,28 @@
+{
+  "semana": 9,
+  "del": "2026-11-02",
+  "al": "2026-11-08",
+  "hito": "E3 — Construcción",
+  "columna": "Backlog",
+  "fuente": "Sólo T058 por ahora. Es la tarea de la entrega del 4 de noviembre que se siembra antes: la replaneación del 25 de octubre (docs/equipo/cronograma.md) le agrega la prueba cruzada del token del ADR 020 y pone su trabajo preparatorio del 26 de octubre al 1 de noviembre. T059 a T063, que también vencen el 4, se agregan a este archivo en la reunión del lunes 2.",
+  "nota": "Volver a correrlo con las tarjetas nuevas no duplica T058 y, con «columna», no le toca el Status.",
+  "tareas": [
+    {
+      "id": "T058",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-04",
+      "titulo": "[S9][Datos] La interfaz analítica: cuatro endpoints y el token del dominio verificado",
+      "que": "**Del 26 de octubre al 1 de noviembre, lo preparatorio:** el esqueleto de `services/analytics-api/` (FastAPI, ADR 017) con la verificación del token del ADR 020 —sólo HS256 al verificar, la clave son los 32 bytes que decodifica `JWT_SECRET`, y los claims `sub`, `rol`, `iat` y `exp` obligatorios y sin tolerancia de reloj—, el rol de `x-rol` exigido en cada ruta que lo declara (P-07), y la prueba cruzada contra el dominio. **Del 2 al 4 de noviembre:** cuatro endpoints de sólo lectura de `analitica.yaml` 0.2.1, nombrados en esta tarjeta antes de empezarlos, contra lo que haya ese día en `postgres-analytics` (la capa intermedia de T048; la estrella de T053 vence el 8). La medición de H3 sobre los 200 pares (ADR 004) se hace contra la reconciliación de T053, así que no cabe antes del 4: el 4 se reporta como pendiente, con su fecha, y no se estima.",
+      "criterio": "Prueba cruzada en verde: un token que emite `POST /api/v1/sesiones` del dominio para las cuentas de la semilla de T044 se acepta; uno alterado, vencido, firmado con otra clave o con otro algoritmo, o al que le falte un claim, recibe 401 `SinSesion`; una ruta con `x-rol: ANALISTA` responde 200 con el token de una cuenta ANALISTA y 401 `SinSesion` con el de una OPERADOR o sin token, como dice `analitica.yaml` 0.2.1. Esas pruebas corren con `pytest` en el trabajo «Datos (Python)» de la CI —hoy sólo corre `services/data-platform/tests/`—, con un token firmado con la misma clave y los mismos claims que `JwtService`, y una vez de punta a punta contra el dominio real, con su salida pegada en esta tarjeta. Los cuatro endpoints responden con los esquemas del contrato y toda cifra agregada trae su `poblacion`. El ADR 020 se ratifica aparte (A, con C1, en la boleta): ratificarlo no cierra esta tarjeta.",
+      "donde": "Rama `feat/alm-interfaz-analitica` · `services/analytics-api/` y `.github/workflows/ci.yml`",
+      "depende": [
+        "#157",
+        "#158"
+      ],
+      "nota_dependencia": "Necesita las cuentas ANALISTA y OPERADOR de la semilla de T044 (#158) y, para los datos, la capa intermedia de T048 (semana 7). **Mientras esta prueba cruzada no pase, las rutas con `x-rol` no se liberan**, aunque el ADR 020 esté ratificado y el dominio ya lo aplique en `main`. H3 queda como pendiente identificado, porque depende de T053 (8 de noviembre); hasta que se mida, la cola dice «se mide en T058»."
+    }
+  ]
+}

@@ -1,9 +1,14 @@
 // Fuente: docs/entregas/diseno.md (sistema de diseño de D).
 export const colors = {
   primary: "#23BBB7",
+  button: "#137A77",
+  surface: "#FFFFFF",
+  border: "#E7DFD0",
+  muted: "#5B5B5B",
   background: "#F0EADF",
   text: "#2F2F2F",
   success: "#00A859",
+  successText: "#007A44",
 } as const;
 
 // Rojo se reserva para fallos; naranja, para anomalías de mercado.

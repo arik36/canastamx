@@ -12,7 +12,7 @@
 #
 # `.github/workflows/ci.yml` ya lo referenciaba en su paso de pruebas comentado.
 
-duckdb>=1.0        # lee Parquet y CSV, y escribe particionado a S3 (ingesta.py)
+duckdb==1.5.6      # ANCLADA · lee Parquet y CSV, y escribe particionado a S3 (ingesta.py)
 boto3>=1.34        # borra las particiones antes de escribir · httpfs no borra
 PyYAML>=6.0        # lee contracts/qqp-v1.yaml · las 15 columnas y los 3 recortes
 pandera==0.34.1    # ANCLADA · la compuerta de calidad (compuerta.py, ADR 018)
@@ -59,3 +59,15 @@ pytest>=8.0        # 70 pruebas · la ingesta, la compuerta de fila, las reglas
 # Una compuerta de calidad que un tercero puede poner en rojo no mide el
 # proyecto, mide el calendario de ese tercero. Se ancla aquí y en ci.yml, y
 # subirla de versión es un cambio con su propia solicitud.
+#
+# EXCEPCIÓN · duckdb, desde el 23 de octubre de 2026. Con `>=1.0` la CI ya
+# instalaba la 2.0.0, que quitó `fetchone()` de las relaciones (lo que devuelve
+# `con.sql(...)`): llamarlo lanza AttributeError. `services/` ya no lo usa
+# (`fila_unica` en ingesta.py), pero los guiones de perfilado de `docs/datos/`
+# tienen 37 llamadas así, en 13 archivos, y esos guiones no se pueden correr sin
+# los datos crudos, que no están en el repositorio. Subir a 2.0 es un cambio con
+# su propia solicitud: cambiar esas 37 llamadas —por ejemplo, a
+# `con.execute(...).fetchone()`, que existe en las dos versiones— y correr los
+# guiones con sus datos. tests/test_dependencias.py falla si el ancla se afloja,
+# si lo instalado no es lo anclado, o si `services/` vuelve a llamar
+# `fetchone()` sobre una relación.

@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   container: { alignSelf: "stretch", alignItems: "center", gap: spacing.sm },
   heading: { fontFamily: fonts.semibold, fontSize: fontSizes.subtitle, color: colors.text, textAlign: "center" },
   text: { fontFamily: fonts.regular, fontSize: fontSizes.body, color: colors.text, textAlign: "center" },
-  status: { fontFamily: fonts.semibold, fontSize: fontSizes.subtitle, color: colors.success, textAlign: "center" },
+  status: { fontFamily: fonts.semibold, fontSize: fontSizes.subtitle, color: colors.successText, textAlign: "center" },
   button: {
     backgroundColor: colors.primary,
     borderRadius: radii.button,

@@ -58,6 +58,21 @@ public class UsuarioRepository {
         ).stream().findFirst();
     }
 
+    public Optional<Usuario> buscarPorId(String id) {
+        String sql = """
+                SELECT id, correo_electronico, contrasena_hash,
+                       rol, fecha_de_registro
+                FROM usuario
+                WHERE id = ?
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> mapearUsuario(rs),
+                id
+        ).stream().findFirst();
+    }
+
     private Usuario mapearUsuario(ResultSet rs) throws SQLException {
         Timestamp fecha = rs.getTimestamp("fecha_de_registro");
         Instant fechaRegistro = fecha.toInstant();

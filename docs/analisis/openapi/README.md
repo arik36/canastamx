@@ -2,7 +2,7 @@
 
 | Archivo | Servicio | Versión | Lo publica | Lo consumen |
 |---|---|---|---|---|
-| `dominio.yaml` | `services/domain-service` | 0.2.0 | C1, con B | C2 (app) y D (acceso web) |
+| `dominio.yaml` | `services/domain-service` | 0.2.2 | C1, con B | C2 (app) y D (acceso web) |
 | `analitica.yaml` | `services/analytics-api` | 0.2.1 | A, con B | C2 (app), D (web) y C1 (alertas) |
 
 **La versión 0.2 es la revisada por el equipo el 7 de octubre de 2026.** Cada ruta dice

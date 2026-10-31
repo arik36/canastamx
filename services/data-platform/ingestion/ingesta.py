@@ -110,6 +110,8 @@ import time
 from pathlib import Path
 from urllib.parse import urlparse
 
+from salida_segura import preparar_salida
+
 RAIZ = Path(__file__).resolve().parents[3]
 CONTRATO = RAIZ / "contracts" / "qqp-v1.yaml"
 # La carpeta donde quedan los registros de corrida: la evidencia. Se define AQUÍ y
@@ -404,6 +406,7 @@ def inventario(s3, bucket, prefijo):
 
 
 def main():
+    preparar_salida()
     ap = argparse.ArgumentParser(description="Ingesta a la capa cruda")
     ap.add_argument("archivo", help="archivo del corpus congelado (.parquet o .csv)")
     ap.add_argument("--lote", help="nombre del lote para el registro de la corrida")
