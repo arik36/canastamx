@@ -43,3 +43,11 @@ test('la barra lateral toma el correo y el rol de la cuenta, no de cookies ni de
   assert.match(barra, /\{correo\}/)
   assert.match(barra, /\{rol\}/)
 })
+
+test('«Salir» manda al acceso con una dirección relativa, no armada con request.url', () => {
+  // request.url dice localhost en esa ruta: abierta la web por otra dirección, «Salir»
+  // llevaría a otro sitio. La prueba de verdad es el navegador (README, paso 6).
+  const salir = leer('app/api/salir/route.ts')
+  assert.doesNotMatch(salir, /new URL\(/)
+  assert.match(salir, /Location: '\/acceso'/)
+})

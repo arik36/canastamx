@@ -2,7 +2,7 @@
 
 Las cinco vistas web (`docs/analisis/inventario-vistas.md`): acceso, tablero y detalle
 para el analista; consola y cola para el operador. Next.js 16, React 19 y Tailwind 4
-(ADR 021). Hace falta Node.js 20.9 o superior.
+(ADR 022). Hace falta Node.js 20.9 o superior.
 
 ## Cómo se corre
 
@@ -19,7 +19,11 @@ recursos de desarrollo desde otro origen y la página queda sin JavaScript.
 El acceso necesita el servicio de dominio corriendo (`services/domain-service`, desde
 `main`) y una cuenta **ANALISTA** u **OPERADOR**. El registro sólo crea cuentas
 `CONSUMIDOR`, que no entran a la web; las otras dos se crean por configuración (T045), y
-todavía no hay un guion que lo haga.
+el guion de semilla de T044 todavía no llega a `main`.
+
+Si el acceso funciona pero cada vista truena con «GET …/api/v1/cuentas/yo respondió
+404», el dominio que corre es anterior a #184: córrelo desde `main`. El simulador del
+contrato no sirve para entrar (`.env.example`).
 
 ## Cómo funciona la sesión
 

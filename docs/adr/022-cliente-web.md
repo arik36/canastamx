@@ -1,10 +1,11 @@
-# ADR 021 · El framework del cliente web: Next.js
+# ADR 022 · El framework del cliente web: Next.js
 
 - **Fecha:** 15 de octubre de 2026
 - **Estado:** aceptada el 15 de octubre de 2026
 - **Participantes:** D, dueña del cliente web
 - **Número:** se escribió como 020 el 15 de octubre, en el PR #176. Pasó a 021 porque el
-  ADR 020, el del token de sesión, entró antes a `main` (#185).
+  ADR 020, el del token de sesión, entró antes a `main` (#185), y a 022 porque el ADR 021,
+  el de la persistencia de la sesión en el cliente móvil, también entró antes (#195).
 
 ## Contexto
 

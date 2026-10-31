@@ -86,9 +86,16 @@ test('un token que el dominio rechaza, o de una cuenta de la app, es «sin sesi�
   { estado: 'sin-sesion' })
 })
 
-test('si el dominio no responde bien, no se inventa una cuenta', async () => {
-  for (const fetch of [fetchFalso(503, { status: 503 }).fetch, fetchFalso(200, { id: 'u' }).fetch, fetchCaido]) {
-    assert.deepEqual(await leerCuenta('t', { dominioUrl: DOMINIO, fetch }), { estado: 'error' })
+test('si el dominio no responde bien, no se inventa una cuenta, y se dice qué pasó', async () => {
+  // El 404 es el dominio de una rama anterior a #184: contesta, pero no tiene /cuentas/yo.
+  const casos = [
+    [fetchFalso(404, { status: 404 }).fetch, 'respondió 404'],
+    [fetchFalso(503, { status: 503 }).fetch, 'respondió 503'],
+    [fetchFalso(200, { id: 'u' }).fetch, 'respondió 200 sin una cuenta de la web'],
+    [fetchCaido, 'no contestó'],
+  ]
+  for (const [fetch, motivo] of casos) {
+    assert.deepEqual(await leerCuenta('t', { dominioUrl: DOMINIO, fetch }), { estado: 'error', motivo })
   }
 })
 

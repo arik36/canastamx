@@ -19,12 +19,15 @@ export async function exigirCuenta(rol: Rol): Promise<Cuenta> {
   if (!token) {
     redirect('/api/salir')
   }
-  const leida = await leerCuenta(token, { dominioUrl: urlDelDominio(), fetch })
+  const dominioUrl = urlDelDominio()
+  const leida = await leerCuenta(token, { dominioUrl, fetch })
   if (leida.estado === 'sin-sesion') {
     redirect('/api/salir')
   }
   if (leida.estado !== 'ok') {
-    throw new Error('No se pudo leer la cuenta de la sesión: el servicio de dominio no respondió.')
+    // Sin el token: sólo la ruta y lo que pasó. Un 404 es un dominio que todavía no
+    // tiene /cuentas/yo, anterior a #184 (README, «Cómo se corre»).
+    throw new Error(`No se pudo leer la cuenta de la sesión: GET ${dominioUrl}/api/v1/cuentas/yo ${leida.motivo}.`)
   }
   if (leida.cuenta.rol !== rol) {
     redirect('/api/salir')

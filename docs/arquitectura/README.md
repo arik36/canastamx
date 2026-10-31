@@ -49,7 +49,7 @@ Cada figura tiene su fuente en Graphviz (`.dot`) en esta carpeta. Para regenerar
 | Contenedor | Tecnología | Responsabilidad | Dueño |
 |---|---|---|---|
 | App móvil | React Native · Expo | Las vistas 6 a 8: búsqueda, canasta, cuenta y alertas | C2 |
-| Cliente web | Next.js 16 (ADR 021) | Las vistas 1 a 5: acceso, tablero, detalle, consola y cola. Sólo escritorio (D-08) | D |
+| Cliente web | Next.js 16 (ADR 022) | Las vistas 1 a 5: acceso, tablero, detalle, consola y cola. Sólo escritorio (D-08) | D |
 | Traefik | Traefik 3.6 | Puerta de enlace única, HTTPS y certificados automáticos | B |
 | Servicio de dominio | Java 21 · Spring Boot 4.1.1 (ADR 003) | Cuentas y sesión con rol, canastas, alertas y notificaciones | C1 |
 | Interfaz analítica | Python · FastAPI | Precios, índice, consola y cola. Lee la capa de consumo | A |
