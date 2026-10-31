@@ -23,8 +23,8 @@ dagster-webserver==1.11.14 # ANCLADA · es lo que hace `dagster dev`; va a la pa
 # Herramientas de desarrollo. El CI instala ruff por su cuenta; se listan aquí
 # para que quien clone tenga lo mismo.
 ruff==0.17.0       # ANCLADA, y también en ci.yml. Ver la nota de abajo.
-pytest>=8.0        # 70 pruebas · la ingesta, la compuerta de fila, las reglas
-                   # de lote y los activos de Dagster
+pytest>=8.0        # la ingesta, la compuerta de fila, las reglas de lote, el
+                   # `?`, la capa intermedia y los activos de Dagster
 
 # NOTA · las versiones son mínimos, no anclas. Cuando el frente de datos cierre
 # la semana 7 conviene fijarlas con `pip freeze` para que el experimento de la
@@ -71,3 +71,9 @@ pytest>=8.0        # 70 pruebas · la ingesta, la compuerta de fila, las reglas
 # guiones con sus datos. tests/test_dependencias.py falla si el ancla se afloja,
 # si lo instalado no es lo anclado, o si `services/` vuelve a llamar
 # `fetchone()` sobre una relación.
+#
+# SIN PAQUETE · la capa intermedia (T048) escribe a postgres-analytics con la
+# extensión `postgres` de DuckDB, no con un cliente de pip. DuckDB la descarga de
+# extensions.duckdb.org la primera vez, igual que `httpfs` para la ingesta, y va
+# atada a la versión anclada de arriba. Si esa primera vez no hay red, la capa
+# intermedia falla y lo dice; con CANASTAMX_SIMULAR no la necesita.
