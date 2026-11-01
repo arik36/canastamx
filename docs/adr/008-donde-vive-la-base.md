@@ -1,7 +1,7 @@
 # ADR 008 · Dónde vive la base desplegada
 
 - **Fecha:** 17 de septiembre de 2026
-- **Estado:** propuesta
+- **Estado:** aceptada 31 de Octubre de 2026
 - **Participantes:** Ari Adair (B), Ariadne (A)
 
 ## Contexto
@@ -34,7 +34,7 @@ PostgreSQL vivirá en la VM a través de un contenedor de docker, tal que sea po
 
 | Alternativa | Por qué no |
 |---|---|
-| Supabase, plan gratuito | 500 MB disponibles contra ~1,476 MB que pesa el recorte. Y no está en el protocolo |
+| Supabase, plan gratuito | 500 MB disponibles contra ~1,476 MB que pesa el recorte según el alcance del contrato (2,658,906). Y no está en el protocolo |
 | Oracle Autonomous Database | Caben los 20 GB, pero no es PostgreSQL: habría que cambiar el adaptador de dbt y el protocolo lo especifica |
 | Microinstancia AMD + PostgreSQL | Está más restringida en cuánto a configuración de la VM, se le permite menos potencia a comparación de la Ampere A1 | 
 
