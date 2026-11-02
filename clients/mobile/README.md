@@ -243,3 +243,7 @@ una base local aislada; no publiques contraseñas ni tokens como evidencia. Las
 pruebas automatizadas del gestor y de la API no sustituyen este recorrido.
 
 Registro de comprobaciones de acceso: [T046](docs/evidencia/t046/README.md).
+
+## Búsqueda de Inicio (T051 · #189)
+
+Consulta el arranque, los escenarios de Prism y la evidencia en [la guía de búsqueda](docs/t051-busqueda-analitica.md). La analítica usa EXPO_PUBLIC_ANALITICA_URL, independiente del dominio.
