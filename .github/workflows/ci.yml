@@ -134,6 +134,14 @@ jobs:
           pip install -r services/data-platform/requirements.txt
           python -m pytest services/data-platform/tests/ -v
 
+      # T058 · la prueba cruzada del token (ADR 020) y las cuatro rutas contra
+      # analitica.yaml. Sin base y sin dominio: lo de punta a punta corre a mano.
+      - name: Pruebas de la interfaz analítica
+        if: steps.existe.outputs.hay == 'si'
+        run: |
+          pip install -r services/analytics-api/requirements.txt
+          python -m pytest services/analytics-api/tests/ -v
+
   # ── Higiene del repositorio · corre siempre, desde el día uno ─────────────
   # Este es el único que verifica de verdad desde el principio, y es el que
   # más sirve: atrapa el error que cuesta más caro deshacer.
