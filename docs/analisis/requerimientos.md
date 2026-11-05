@@ -173,7 +173,6 @@ El objetivo 1 es este documento.
 | Qué falta | Afecta | Quién · cuándo |
 |---|---|---|
 | Los ADR del orquestador (Dagster), la interfaz analítica (FastAPI) y la validación (Pandera) | R-07 | A |
-| El ADR del cliente web (Next.js) | R-07 | D |
 | Medir el rechazo de cada uno de los 38 lotes, para confirmar el 5% | RF-24 | A · antes del 1 de noviembre |
 | Contar cuántos artículos cumplen la canasta del ADR 015 | RF-11 · SLA-D-08 | A · antes de T069 |
 | Calibrar el 20% de los anómalos y su mínimo de observaciones | RF-15 | A y D · antes de construir el tablero |

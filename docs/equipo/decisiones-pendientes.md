@@ -111,9 +111,8 @@ en que se anota.
 
 Son decisiones que ya se tomaron, pero sin ADR.
 
-| ADR que falta | Dónde aparece la decisión | Quién |
-|---|---|---|
-| Cliente web en Next.js | README | D |
+Ninguna por ahora. La última, el cliente web en Next.js, quedó escrita como **ADR 022**
+(D, 15 de octubre).
 
 Las tres de A quedaron escritas el 11 de octubre: **ADR 016** (Dagster y no Airflow,
 con fecha de salida el 25 de octubre), **ADR 017** (FastAPI) y **ADR 018** (Pandera
