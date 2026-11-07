@@ -1,0 +1,27 @@
+{
+  "semana": 10,
+  "del": "2026-11-16",
+  "al": "2026-11-22",
+  "hito": "E3 — Construcción",
+  "columna": "Backlog",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 16 al 22 de noviembre, la semana de la entrega del 18: versión final desplegada y congelamiento de funcionalidad (el lunes 16 es festivo). Por ahora, la segunda tarjeta de T053 (#206), la reconciliación versión uno y la medición de H3, que el ajuste del 6 de noviembre separó de la estrella y puso al 22. T074, la entrega, se agrega cuando se siembre esta semana.",
+  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre.",
+  "tareas": [
+    {
+      "id": "T053",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-09",
+      "fecha": "2026-11-22",
+      "titulo": "[S10][Datos] La reconciliación de productos versión uno y la medición de H3",
+      "que": "La segunda parte de T053: la reconciliación de productos versión uno, que reescribe `articulo_canonico_key` en `dim_articulo` y, con él, recalcula los agregados. Su receta es la del ADR 004 con lo que le agregó el ADR 014: reglas para las cinco formas ortográficas (plural, conector, abreviatura, unidad y orden de palabras); la lista de palabras que no identifican al artículo, como colores de empaque y nombres de línea comercial, por producto o por categoría, versionada y revisable; y la comparación difusa al final, calibrada para unir los «sí» de la muestra sin unir los «no». Con esa reconciliación se mide H3 sobre los 200 pares.",
+      "criterio": "`articulo_canonico_key` sale de la reconciliación y los agregados se recalculan sobre él sin tocar los hechos. La lista de palabras que no identifican está en el repositorio, por producto o por categoría, y `congelado` contra `descongelado`, el caso que dejó el ADR 004 para detectar un umbral flojo, no se une. H3 queda medida sobre los 200 pares como dicen los ADR 004 y 014: cobertura y precisión con su población, y aparte los pares que sólo difieren en `marca`. Si la meta no se alcanza, se reporta la cifra que salió.",
+      "donde": "Rama `feat/alm-reconciliacion` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#200"
+      ],
+      "nota_dependencia": "Va después de la estrella (#200), la primera tarjeta de T053, de la que se separó el 6 de noviembre para que la estrella no esperara a la reconciliación. H3 se contrasta en T077, el 29 de noviembre. T058 cerró en #199 con H3 pendiente de esta reconciliación."
+    }
+  ]
+}
