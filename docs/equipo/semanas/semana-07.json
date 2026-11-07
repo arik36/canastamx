@@ -5,7 +5,7 @@
   "hito": "E3 — Construcción",
   "columna": "Backlog",
   "fuente": "Replaneación del 25 de octubre (docs/equipo/cronograma.md, «Replaneación del 25 de octubre»): la semana 7 del tablero se recorrió del 19-25 de octubre al 26 de octubre-1 de noviembre por causa de fuerza mayor, y la entrega del 4 de noviembre no se mueve. Las tareas son T048 a T052 del Panel, con la fecha recorrida una semana y el alcance ajustado a lo que hay en main en f4e7cd4. cronograma.md llama «Semana 9» a estas fechas.",
-  "nota": "Con «columna»: «Backlog», sembrar-semana.py crea las tarjetas en Backlog y, si ya existen, no les toca el Status. En la reunión del lunes 26 se pasan a «Esta Semana», como siempre.",
+  "nota": "Con «columna»: «Backlog», sembrar-semana.py crea las tarjetas en Backlog y, si ya existen, no les toca el Status. En la reunión del lunes 26 se pasan a «Esta Semana», como siempre. El 7 de noviembre se actualizaron las notas de T049, T050 y T052, que seguían abiertas: T044 ya entró, D-12 ya se votó y cambiaron las fechas de T056 y T057.",
   "tareas": [
     {
       "id": "T048",
@@ -35,7 +35,7 @@
       "criterio": "Con los dos entornos arriba a la vez no se repite ningún nombre, puerto, volumen ni red; una tabla creada en la base analítica de pruebas no aparece en la de desarrollo; la corrida con A deja objetos en `canastamx-bronze-test` y ninguno nuevo en `canastamx-bronze`, con su evidencia y su `DAGSTER_HOME` fuera de las carpetas de desarrollo. `down -v` de pruebas borra sus volúmenes y deja los de desarrollo. El `.env.example` de pruebas declara las variables de la plataforma sin ningún valor secreto y pasa `python3 infra/scripts/revisar-env.py`, y la comprobación de aislamiento se detiene diciendo qué falla si la terminal apunta a desarrollo.",
       "donde": "Rama `feat/aas-entorno-de-pruebas` · `infra/envs/test/`",
       "depende": [],
-      "nota_dependencia": "**La deuda de T044 (#158) va primero**, con fecha límite del viernes 30: la evidencia del conteo de pruebas en la CI real, el ADR 008 con su población y aceptado, y la semilla idempotente con las cuentas ANALISTA y OPERADOR, que necesitan T058 para su prueba cruzada y D para probar la web. La corrida con A es la misma que T048 hace contra MinIO: se hace una vez. T049 destraba el arnés de inyección de fallas (T070, 13 de noviembre) y las 30 corridas (T076)."
+      "nota_dependencia": "T044 (#158) ya está hecha: entró con #197 el 2 de noviembre, con el ADR 008 aceptado y el script de cuentas. **Esta tarjeta va antes que T054 (#201)**, el primer despliegue, que vence el 13 de noviembre. La corrida con A es la misma que pide T048 contra MinIO, y su salida tampoco está en #186: se hace una vez y se pega en las dos tarjetas. T049 destraba el arnés de inyección de fallas (T070) y las 30 corridas (T076, 27 de noviembre)."
     },
     {
       "id": "T050",
@@ -51,7 +51,7 @@
       "depende": [
         "#157"
       ],
-      "nota_dependencia": "T045 (#157) está en `main`: la sesión, el rol y `@CuentaDeLaSesion` sirven tal cual. **Lo que el Panel ponía aquí, alertas y notificaciones, va después:** D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11 y otros documentos todavía dicen «por correo» (la lista está en `docs/equipo/decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica. Las rutas de canasta tienen contrato, no esperan nada y son las que se enseñan el 4 de noviembre. Si D-12 gana A o C (se vota antes del jueves 29), su cambio es una tarea aparte de C1 y no entra aquí. Esta tarea destraba T056 (C2, 8 de noviembre)."
+      "nota_dependencia": "T045 (#157) está en `main`: la sesión, el rol y `@CuentaDeLaSesion` sirven tal cual. **Lo que el Panel ponía aquí, alertas y notificaciones, va después:** D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11 y otros documentos todavía dicen «por correo» (la lista está en `docs/equipo/decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica. Las rutas de canasta tienen contrato y no esperan nada. D-12 se votó el 2 de noviembre y ganó B, que no cambia código: lo que le deja a C1, declarar la excepción en `dominio.yaml` y en CU-08, está en «Lo que dejan las decisiones» de `decisiones-pendientes.md` y no entra aquí. **Esta tarea destraba T056 (#203, C2), que vence el 15 de noviembre**, y va antes que la cobertura de T055 (#202)."
     },
     {
       "id": "T051",
@@ -83,7 +83,7 @@
       "depende": [
         "#160"
       ],
-      "nota_dependencia": "La rama sale de `main` después de T047 (#160, solicitud #176). Los datos reales llegan con T058 (4 de noviembre) y el índice calculado con T069 (13 de noviembre): hasta entonces, en la entrega se dice que vienen del simulador. La vista de detalle (T057) se recorrió al 8 de noviembre."
+      "nota_dependencia": "La rama sale de `main` después de T047 (#160, solicitud #176), que todavía no se integra. T058 (#199) trajo cuatro rutas de la analítica y ni `indiceContraInpc` ni `articulosAnomalos` están entre ellas: el tablero sigue contra el simulador, y se dice. El índice calculado es de T069; la propuesta de recorte del 5 de noviembre lo saca como pantalla, y si el equipo la aprueba, este tablero se queda con las anomalías. La vista de detalle que se abre desde aquí (T057, #204) vence el 25 de noviembre."
     }
   ]
 }
