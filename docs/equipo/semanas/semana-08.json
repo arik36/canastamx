@@ -3,10 +3,27 @@
   "del": "2026-11-02",
   "al": "2026-11-08",
   "hito": "E3 — Construcción",
-  "columna": "Backlog",
-  "fuente": "T053 a T057 del Panel, con la fecha de la replaneación del 25 de octubre (docs/equipo/cronograma.md): vencen el domingo 8 de noviembre en lugar del 1. cronograma.md llama «Semana 10» a estas fechas, las mismas de T058 a T063, que vencen el 4. El alcance es el del Panel con lo que lo cambió después: el ADR 014 (la lista de palabras que no identifican al artículo entra en T053), el ADR 008 (la máquina virtual de T054), D-08 y RNF-15 (la web, salvo el acceso, es de escritorio: T057), y lo que hay en main en 24400d3. **Ajuste del 6 de noviembre, para terminar el 2 de diciembre:** T053 se parte en dos tarjetas (la estrella sigue al 8; la reconciliación y H3 pasan al 22); T054 va después de T049 y pasa al 13; T055 va después de T050; T056 pasa al 15, y T057 al 25 y sin la exportación a CSV.",
-  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las cinco tarjetas que ya existen (#200 a #204), y la única nueva, la segunda parte de T053, entra en Backlog porque empieza el 9. Al correrlo se actualizan las fechas límite; los cuerpos de las que ya existen no, y por eso se reescriben aparte con `gh issue edit`. Lo pendiente de la semana 7 conserva su tarjeta: T049 (#187), T050 (#188) y T052 (#190) no tienen solicitud al 4 de noviembre, y T047 (#160) sigue en #176.",
+  "columna": "Esta Semana",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 2 al 8 de noviembre: T058 (#191), la tarea de la entrega del 4, que hasta el 7 estaba en la semana 9 (la replaneación del 25 de octubre le agregó la prueba cruzada del token del ADR 020 y puso su trabajo preparatorio del 26 de octubre al 1 de noviembre); y la estrella de T053 (#200) y la cobertura de T055 (#202), que vencen el 8. El resto de T053 a T057, que el ajuste del 6 de noviembre recorrió, está en semana-09.json, semana-10.json y semana-11.json. T059 a T063, que vencían el 4, no tienen tarjeta.",
+  "nota": "Con «columna», volver a correrlo no les toca el Status a las tarjetas que ya existen. T058 (#191) está cerrada con #199.",
   "tareas": [
+    {
+      "id": "T058",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-04",
+      "titulo": "[S8][Datos] La interfaz analítica: cuatro endpoints y el token del dominio verificado",
+      "que": "**Del 26 de octubre al 1 de noviembre, lo preparatorio:** el esqueleto de `services/analytics-api/` (FastAPI, ADR 017) con la verificación del token del ADR 020 —sólo HS256 al verificar, la clave son los 32 bytes que decodifica `JWT_SECRET`, y los claims `sub`, `rol`, `iat` y `exp` obligatorios y sin tolerancia de reloj—, el rol de `x-rol` exigido en cada ruta que lo declara (P-07), y la prueba cruzada contra el dominio. **Del 2 al 4 de noviembre:** cuatro endpoints de sólo lectura de `analitica.yaml` 0.2.1, nombrados en esta tarjeta antes de empezarlos, contra lo que haya ese día en `postgres-analytics` (la capa intermedia de T048; la estrella de T053 vence el 8). La medición de H3 sobre los 200 pares (ADR 004) se hace contra la reconciliación de T053, así que no cabe antes del 4: el 4 se reporta como pendiente, con su fecha, y no se estima.",
+      "criterio": "Prueba cruzada en verde: un token que emite `POST /api/v1/sesiones` del dominio para las cuentas de la semilla de T044 se acepta; uno alterado, vencido, firmado con otra clave o con otro algoritmo, o al que le falte un claim, recibe 401 `SinSesion`; una ruta con `x-rol: ANALISTA` responde 200 con el token de una cuenta ANALISTA y 401 `SinSesion` con el de una OPERADOR o sin token, como dice `analitica.yaml` 0.2.1. Esas pruebas corren con `pytest` en el trabajo «Datos (Python)» de la CI —hoy sólo corre `services/data-platform/tests/`—, con un token firmado con la misma clave y los mismos claims que `JwtService`, y una vez de punta a punta contra el dominio real, con su salida pegada en esta tarjeta. Los cuatro endpoints responden con los esquemas del contrato y toda cifra agregada trae su `poblacion`. El ADR 020 se ratifica aparte (A, con C1, en la boleta): ratificarlo no cierra esta tarjeta.",
+      "donde": "Rama `feat/alm-interfaz-analitica` · `services/analytics-api/` y `.github/workflows/ci.yml`",
+      "depende": [
+        "#157",
+        "#158"
+      ],
+      "nota_dependencia": "Necesita las cuentas ANALISTA y OPERADOR de la semilla de T044 (#158) y, para los datos, la capa intermedia de T048 (semana 7). **Mientras esta prueba cruzada no pase, las rutas con `x-rol` no se liberan**, aunque el ADR 020 esté ratificado y el dominio ya lo aplique en `main`. H3 queda como pendiente identificado, porque depende de T053 (8 de noviembre); hasta que se mida, la cola dice «se mide en T058»."
+    },
     {
       "id": "T053",
       "clave": "A",
@@ -24,36 +41,6 @@
       "nota_dependencia": "T048 (#186) está en `main` desde #196: su capa intermedia es el origen. **La estrella va primero porque la leen las compuertas de T064, las operaciones de la analítica que faltan y la consola.** La reconciliación y la medición de H3, que el Panel ponía aquí, son la otra tarjeta de T053, con fecha del 22. **La revisión de dbt que el ADR 019 fechó el 2 de noviembre, «con el esquema estrella ya cargado», no tiene rastro en `main`**: hay que fecharla de nuevo o decidirla, y si dbt no entra, escribir el ADR que lo retira de R-07 y del README, como pide el ADR 019."
     },
     {
-      "id": "T053",
-      "clave": "A",
-      "frente": "Datos",
-      "etiqueta": "datos",
-      "inicio": "2026-11-09",
-      "fecha": "2026-11-22",
-      "titulo": "[S8][Datos] La reconciliación de productos versión uno y la medición de H3",
-      "que": "La segunda parte de T053: la reconciliación de productos versión uno, que reescribe `articulo_canonico_key` en `dim_articulo` y, con él, recalcula los agregados. Su receta es la del ADR 004 con lo que le agregó el ADR 014: reglas para las cinco formas ortográficas (plural, conector, abreviatura, unidad y orden de palabras); la lista de palabras que no identifican al artículo, como colores de empaque y nombres de línea comercial, por producto o por categoría, versionada y revisable; y la comparación difusa al final, calibrada para unir los «sí» de la muestra sin unir los «no». Con esa reconciliación se mide H3 sobre los 200 pares.",
-      "criterio": "`articulo_canonico_key` sale de la reconciliación y los agregados se recalculan sobre él sin tocar los hechos. La lista de palabras que no identifican está en el repositorio, por producto o por categoría, y `congelado` contra `descongelado`, el caso que dejó el ADR 004 para detectar un umbral flojo, no se une. H3 queda medida sobre los 200 pares como dicen los ADR 004 y 014: cobertura y precisión con su población, y aparte los pares que sólo difieren en `marca`. Si la meta no se alcanza, se reporta la cifra que salió.",
-      "donde": "Rama `feat/alm-reconciliacion` · `services/data-platform/` y `docs/datos/`",
-      "depende": [
-        "#200"
-      ],
-      "nota_dependencia": "Va después de la estrella (#200), la primera tarjeta de T053, de la que se separó el 6 de noviembre para que la estrella no esperara a la reconciliación. H3 se contrasta en T077, el 29 de noviembre. T058 cerró en #199 con H3 pendiente de esta reconciliación."
-    },
-    {
-      "id": "T054",
-      "clave": "B",
-      "frente": "Infra",
-      "etiqueta": "infra",
-      "inicio": "2026-11-02",
-      "fecha": "2026-11-13",
-      "titulo": "[S8][Infra] La máquina virtual en la nube y el primer despliegue",
-      "que": "Preparar la máquina virtual del ADR 008 —Oracle Cloud en su plan gratuito, una instancia Ampere A1 con PostgreSQL en contenedor— y hacer en ella el primer despliegue del sistema. Ampere A1 es Arm: cada imagen tiene que existir para `arm64`. Hoy `main` no tiene el Dockerfile de ningún servicio, e `infra/traefik/` sólo trae `.gitkeep`. Lo que se despliega, con qué comandos y qué variables pide, sin sus valores, queda escrito en `infra/`: de ahí parte el despliegue continuo de T065.",
-      "criterio": "Desde fuera de la red del equipo, el dominio y la interfaz analítica contestan en la dirección pública, y esa dirección queda en esta tarjeta. Las bases sólo se alcanzan por la red interna de Docker Compose, como en `docs/arquitectura/05-despliegue.dot`. Ningún secreto entra al repositorio: los `.env` viven en la máquina virtual, y en `infra/` va su ejemplo sin valores, que pasa `python3 infra/scripts/revisar-env.py`.",
-      "donde": "Rama `feat/aas-primer-despliegue` · `infra/`",
-      "depende": [],
-      "nota_dependencia": "**Va después de T049 (#187)**, el entorno de pruebas, que vencía el 1 de noviembre y no tiene solicitud: el arnés de T070 y las 30 corridas de T076 corren sobre él. Por eso esta tarjeta pasa del 8 al 13, con margen para la entrega del 18, que es la versión desplegada. El ADR 008 se aceptó el 31 de octubre. B tiene además T059, que vencía el 4. **La replaneación del 25 de octubre dice «desplegado en la nube por HTTPS»**, y el certificado era de T065, que el ajuste del 6 de noviembre propone recortar: si la entrega del 18 va por HTTPS, el certificado entra en esta tarjeta."
-    },
-    {
       "id": "T055",
       "clave": "C1",
       "frente": "Dominio",
@@ -66,39 +53,6 @@
       "donde": "Rama `feat/lyl-cobertura-del-dominio` · `services/domain-service/`",
       "depende": [],
       "nota_dependencia": "**C1 hace primero T050 (#188)**, que vencía el 1 de noviembre, no tiene solicitud y T056 espera. Esta tarjeta va después y conserva el 8, la fecha que prometió la entrega del 4. T060 (4 de noviembre) deja las suites de JUnit en verde en la CI con su conteo, y la cobertura medida es de esta tarjeta. La cifra vale para el commit en el que se midió: T050 agrega reglas y pruebas a `Canasta`."
-    },
-    {
-      "id": "T056",
-      "clave": "C2",
-      "frente": "Móvil",
-      "etiqueta": "movil",
-      "inicio": "2026-11-02",
-      "fecha": "2026-11-15",
-      "titulo": "[S8][Móvil] La pantalla de canasta: se arma una canasta y se ve su costo estimado",
-      "que": "Que la pestaña Canasta, hoy una `PantallaVacia` en `clients/mobile/app/(tabs)/canasta.tsx`, opere: crear una canasta, agregarle artículos, cambiar su cantidad y quitarlos, con las rutas de canasta de `dominio.yaml` y la sesión que la app ya restaura desde #195; y ver su costo estimado con `costearCanasta` de `analitica.yaml`. La interfaz analítica real todavía no sirve `costearCanasta` (T058 trajo cuatro rutas) y el simulador de la app sólo cubre la búsqueda, así que el costo sale del simulador, ampliado a esa ruta, y se dice, como en la búsqueda de T051.",
-      "criterio": "Con una cuenta de la semilla, en el teléfono, se crea una canasta, se le agregan artículos, se cambia una cantidad y se quita uno, y al cerrar y volver a abrir la app la canasta sigue igual, porque vive en el dominio. Se ve su costo estimado con su población y su fecha, y se dice si viene del simulador.",
-      "donde": "Rama `feat/orf-canasta` · `clients/mobile/`",
-      "depende": [
-        "#188"
-      ],
-      "nota_dependencia": "**Necesita T050 (#188)**, las rutas de canasta del dominio, que no tiene solicitud al 4 de noviembre; su tarjeta dice que destraba esta. Por eso pasa del 8 al 15: al 8, la pantalla contra un simulador de `dominio.yaml`, como T051 con la analítica; al 15, contra el dominio. **Ninguna tarea del Panel después de T058 dice quién sirve `costearCanasta` en la interfaz analítica real**: hasta que se decida, el costo es del simulador."
-    },
-    {
-      "id": "T057",
-      "clave": "D",
-      "frente": "Web",
-      "etiqueta": "web",
-      "inicio": "2026-11-02",
-      "fecha": "2026-11-25",
-      "titulo": "[S8][Web] La vista de detalle de artículo y su comportamiento en los tres puntos de quiebre",
-      "que": "La vista 3 de `docs/analisis/inventario-vistas.md`, a la que se llega desde un artículo de la tabla de anómalos del tablero (`docs/analisis/navegacion.md`): el ícono del catálogo y la llave canónica del artículo; los cuatro indicadores —precio típico en el estado, variación contra la quincena anterior, mínimo y máximo—, cada uno con su población; la serie histórica por entidad; y el precio por establecimiento. Pide `serieDeArticulo` y `desgloseDeArticulo` de `analitica.yaml`, con el token de la sesión en cada llamada. La interfaz real sólo sirve `desgloseDeArticulo` (T058, con `x-rol: ANALISTA`); `serieDeArticulo` va contra el simulador, y se dice. En los puntos de quiebre manda D-08 con RNF-15: en la web sólo el acceso se adapta a los tres anchos, y lo demás, este detalle incluido, es de escritorio y debajo de 1025 px muestra el aviso de ancho mínimo y deja desplazarse.",
-      "criterio": "Con la cuenta ANALISTA de la semilla, la vista se abre desde el tablero y trae lo que pide la vista 3, con la población de cada cifra. Desde 1025 px no hay desplazamiento horizontal, y a 1024 y a 768 px aparece el aviso de ancho mínimo de D-08, con una captura en cada punto de quiebre. **El Panel decía «no produce desplazamiento horizontal en el punto más estrecho»; D-08 (7 de octubre) y RNF-15 lo cambiaron para todo lo que no es el acceso.**",
-      "donde": "Rama `feat/kah-detalle-de-articulo` · `clients/web/`",
-      "depende": [
-        "#160",
-        "#190"
-      ],
-      "nota_dependencia": "**La aplicación web todavía no está en `main`**: entra con T047 (#160), que sigue en #176, y el tablero desde el que se abre la vista es T052 (#190), sin solicitud al 4 de noviembre. Por eso pasa del 8 al 25. **La exportación a CSV (`exportarArticulo`), que pide la vista 3, sale de esta tarjeta en el ajuste del 6 de noviembre**: si sobra tiempo antes del 30, es lo primero que se recupera. D tiene además T062, que vencía el 4."
     }
   ]
 }

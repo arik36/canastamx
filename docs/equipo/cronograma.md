@@ -78,10 +78,24 @@ estaba registrado en `docs/equipo/semanas/semana-04.json`, en su campo `fuente`.
 | 12 al 18 de octubre · arranca la construcción | Semana 7 | Semana 6 |
 | 19 al 25 de octubre · **la semana 7 se recorrió** | Semana 8 | — · lo pendiente de la semana 6 |
 | 26 de octubre al 1 de noviembre | Semana 9 | Semana 7 |
-| 2 al 8 de noviembre · **entrega del 4** | Semana 10 | Semanas 8 (vence el 8) y 9 (vence el 4) |
+| 2 al 8 de noviembre · **entrega del 4** | Semana 10 | Semana 8 |
+| 9 al 15 de noviembre | Semana 11 | Semana 9 |
+| 16 al 22 de noviembre · **entrega del 18** | Semana 12 | Semana 10 |
+| 23 al 29 de noviembre · el experimento | Semana 13 | Semana 11 |
+| 30 de noviembre al 6 de diciembre · **presentación del 2** | Semana 14 | Semana 12 |
+| 7 al 9 de diciembre · **presentaciones del 7 y del 9** | — | Semana 13 |
 
 Desde el 26 de octubre la diferencia es de dos: la semana 7 del tablero no arrancó el
 19 de octubre sino el 26 (ver «Replaneación del 25 de octubre»).
+
+**Desde el 7 de noviembre, cada semana del tablero es una semana del calendario, y
+cada tarjeta va en la semana de su fecha límite.** Si una replaneación le mueve la
+fecha a otra semana, la tarjeta cambia de semana, de archivo en `docs/equipo/semanas/`
+y de prefijo en el título; si se vence, se queda en su semana, en «Retrasadas», hasta
+que tenga fecha nueva. Hasta el 7, las semanas 8 y 9 del tablero compartían las fechas
+del 2 al 8 de noviembre. El Panel conserva su numeración: su semana 9 es la 8 del
+tablero, y sus semanas 10 a 14 son la 9 a la 13. El pie de cada tarjeta dice su tarea
+del Panel.
 
 **La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
 fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos

@@ -1,0 +1,28 @@
+{
+  "semana": 11,
+  "del": "2026-11-23",
+  "al": "2026-11-29",
+  "hito": "E3 — Construcción",
+  "columna": "Backlog",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 23 al 29 de noviembre, la semana del experimento. Por ahora, T057 (#204), la vista de detalle de artículo, que el ajuste del 6 de noviembre recorrió al 25 y dejó sin la exportación a CSV. T075 a T080, que el Panel pone en su semana 12, se agregan cuando se siembre esta semana.",
+  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre.",
+  "tareas": [
+    {
+      "id": "T057",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-25",
+      "titulo": "[S11][Web] La vista de detalle de artículo y su comportamiento en los tres puntos de quiebre",
+      "que": "La vista 3 de `docs/analisis/inventario-vistas.md`, a la que se llega desde un artículo de la tabla de anómalos del tablero (`docs/analisis/navegacion.md`): el ícono del catálogo y la llave canónica del artículo; los cuatro indicadores —precio típico en el estado, variación contra la quincena anterior, mínimo y máximo—, cada uno con su población; la serie histórica por entidad; y el precio por establecimiento. Pide `serieDeArticulo` y `desgloseDeArticulo` de `analitica.yaml`, con el token de la sesión en cada llamada. La interfaz real sólo sirve `desgloseDeArticulo` (T058, con `x-rol: ANALISTA`); `serieDeArticulo` va contra el simulador, y se dice. En los puntos de quiebre manda D-08 con RNF-15: en la web sólo el acceso se adapta a los tres anchos, y lo demás, este detalle incluido, es de escritorio y debajo de 1025 px muestra el aviso de ancho mínimo y deja desplazarse.",
+      "criterio": "Con la cuenta ANALISTA de la semilla, la vista se abre desde el tablero y trae lo que pide la vista 3, con la población de cada cifra. Desde 1025 px no hay desplazamiento horizontal, y a 1024 y a 768 px aparece el aviso de ancho mínimo de D-08, con una captura en cada punto de quiebre. **El Panel decía «no produce desplazamiento horizontal en el punto más estrecho»; D-08 (7 de octubre) y RNF-15 lo cambiaron para todo lo que no es el acceso.**",
+      "donde": "Rama `feat/kah-detalle-de-articulo` · `clients/web/`",
+      "depende": [
+        "#160",
+        "#190"
+      ],
+      "nota_dependencia": "**La aplicación web todavía no está en `main`**: entra con T047 (#160), que sigue en #176, y el tablero desde el que se abre la vista es T052 (#190), sin solicitud al 4 de noviembre. Por eso pasa del 8 al 25. **La exportación a CSV (`exportarArticulo`), que pide la vista 3, sale de esta tarjeta en el ajuste del 6 de noviembre**: si sobra tiempo antes del 30, es lo primero que se recupera. D tiene además T062, que vencía el 4."
+    }
+  ]
+}
