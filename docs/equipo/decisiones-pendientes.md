@@ -12,38 +12,23 @@
 
 ## Para decidir
 
-D-09, D-10 y D-11 ya se votaron y están abajo, en «Decididas». Queda D-12, que se
-abrió el 23 de octubre y **se vota antes del jueves 29 de octubre**: si gana A o C,
-C1 tiene del 30 de octubre al 3 de noviembre para el cambio, antes de que D pruebe el
-manejo de sesión en T062 (4 de noviembre). Por qué estaban aquí y no resueltas en
-silencio: `docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
-
-### D-12 · ¿Qué desafío lleva el 401 de `POST /api/v1/sesiones`?
-
-Se abrió el 23 de octubre de 2026, al revisar T045. RFC 9110 §15.5.2 pide que todo
-401 lleve `WWW-Authenticate` con un desafío que sirva para ese recurso. Las rutas
-con sesión ya lo mandan (`Bearer`, `dominio.yaml` 0.2.2). `/sesiones` no: recibe el
-correo y la contraseña en el cuerpo, no por un esquema de autenticación de HTTP, y
-hoy responde 401 sin el encabezado (`CredencialesInvalidas`).
-
-| | Opción | Consecuencia |
-|---|---|---|
-| **A** | 401 con `WWW-Authenticate: Bearer` | Cumple la letra del RFC, pero el desafío nombra un esquema que esa ruta no acepta |
-| **B** | 401 sin el encabezado, como hoy, y se declara la excepción | Ningún cliente cambia; el incumplimiento queda escrito en el contrato en lugar de escondido |
-| **C** | 400 para credenciales inválidas, como el punto final de tokens de OAuth 2.0 (RFC 6749 §5.2) | Deja de ser 401 y no necesita desafío, pero cambia el contrato de `/sesiones` y lo que esperan la app y la web |
-
-**Quién:** C1 publica, C2 y D consumen. **Dónde quedará:** `dominio.yaml` · CU-08.
-
-**Votan:** C1, C2 y D, los tres que nombra «Quién». **Qué sigue:** con B no cambia el código: C1
-declara la excepción en `dominio.yaml` y CU-08. Con A o C, al registrar el voto se
-abre una tarea de C1 con el cambio en el dominio, en `dominio.yaml` y en CU-08; con
-C, además, la web y la app dejan de esperar 401 en credenciales malas. Mientras no se
-vote no hay tarea. No detiene T045 ni sus solicitudes; conviene resolverla antes de
-liberar.
+No queda ninguna abierta: D-09 a D-12 ya se votaron y están abajo, en «Decididas».
+Por qué estaban aquí y no resueltas en silencio:
+`docs/equipo/propagacion-decisiones-07-oct.md` §5 · M-2.
 
 Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escribir».
 
 ---
+
+## Decididas el 2 de noviembre de 2026
+
+D-12 se votó el 2 de noviembre, después del plazo del 29 de octubre. Ganó B, que no
+cambia código: T062 (4 de noviembre) no esperaba nada de ella. Lo que obliga a
+escribir está en «Lo que dejan las decisiones».
+
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| D-12 | ¿Qué desafío lleva el 401 de `POST /api/v1/sesiones`? | **B · 401 sin `WWW-Authenticate`, como hoy, y se declara la excepción.** El inicio de sesión recibe el correo y la contraseña en el cuerpo, y `Bearer` es el esquema de las rutas con sesión: anunciarlo aquí nombraría un mecanismo que esta ruta no acepta. Así ningún cliente cambia: la web distingue las credenciales incorrectas por el 401 | C1, C2 y D; los tres votaron B | Falta: declarar la excepción en `dominio.yaml` y en CU-08 (ver «Lo que dejan las decisiones») |
 
 ## Decididas, registradas el 27 de octubre de 2026
 
@@ -135,6 +120,7 @@ Los ADR 006, 007 y 011 ya se ratificaron en #173.
 |---|---|---|
 | D-09: el ADR nuevo del aviso dentro de la app, que diga también qué queda de los estados de envío (`PENDIENTE`, `ENVIADA` y `FALLIDA`) de `Notificacion` en `dominio.yaml` y en el modelo ER. Y quitar el correo de donde todavía se promete: RF-21, CU-11 (paso 6, alterno 6a y la poscondición), `navegacion.md` §3.2 y §3.3, `inventario-vistas.md` §8, el BPMN de alertas (`alertas.bpmn` y `alertas.svg`), las vistas `01-contexto`, `02-contenedores` y `04-componentes-dominio` de `arquitectura/` con sus `.png` y su `README.md`, y la fila de C1 en `entregas/2026-11-18-version-desplegada.md` | C1 y B | Antes de T066, la tarea de las alertas (C1, vence el 15 de noviembre) |
 | D-11: el RNF nuevo en `requerimientos.md`: el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona. Se cita desde `docs/datos/esquema-de-operacion.md` (el diagrama de §1 y la tabla de §2) | A, con B | Antes de T069 y T073 (A y D, vencen el 13 de noviembre), que cierran la consola y la cola |
+| D-12: declarar la excepción en `dominio.yaml` —la descripción de `CredencialesInvalidas` y la nota de la versión 0.2.2, que hoy la dan por abierta— y en CU-08, alterno 7a. También el Javadoc de `SinSesionHandler`, que dice «la decisión D-12, todavía abierta» | C1 | Antes de la entrega del 18 de noviembre |
 
 Las tres que vencían el 9 de octubre ya están hechas: la explicación de D-08 y P-09 en
 la entrega 2 (`docs/entregas/2026-10-09/README.md`); el modelo ER, el modelo de
