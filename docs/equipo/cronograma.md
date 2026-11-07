@@ -97,6 +97,12 @@ del 2 al 8 de noviembre. El Panel conserva su numeración: su semana 9 es la 8 d
 tablero, y sus semanas 10 a 14 son la 9 a la 13. El pie de cada tarjeta dice su tarea
 del Panel.
 
+**El hito de una tarjeta es la primera entrega que cae en su fecha límite o después:**
+«E3 — Construcción» hasta el 4 de noviembre, «E4 — Versión desplegada» del 5 al 18, y
+«E5 — Presentación» del 19 de noviembre al 9 de diciembre. El `hito` de cada archivo de
+`docs/equipo/semanas/` es el de sus tarjetas nuevas; en las semanas 8 y 10, que tienen
+una entrega a media semana, la nota del archivo dice cuáles van en el hito siguiente.
+
 **La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
 fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos
 lecturas; «la semana 7» sí.
@@ -142,6 +148,39 @@ Lo que cambia de alcance, y por qué:
 - Las alertas: D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11
   y otros documentos todavía dicen «por correo» (la lista está en
   `decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica.
+
+
+---
+
+## Recorte del 5 de noviembre
+
+La propuesta del 5 de noviembre, para terminar el 2 de diciembre, la aprobó el equipo; se
+registra el 7 de noviembre. El ritmo de las dos semanas anteriores, unas cuatro
+solicitudes integradas por semana, no alcanzaba para todo el alcance antes del 18.
+
+- **El núcleo de la investigación, para el 18:** compuertas y cuarentena operando (T064),
+  las seis operaciones de la consola (T069) y la consola (T068), el entorno de pruebas
+  (T049), el arnés de fallas (T070, que puede llegar hasta el 20) y el despliegue (T054),
+  que se hace a mano.
+- **El camino mínimo de cada usuario, a más tardar el 25:** la canasta en la app (T050 y
+  T056), el tablero y el detalle en la web (T047, T052 y T057) y la reconciliación con H3
+  (#206, el 22).
+
+**Salen del producto**, y quedan como deuda conocida en el documento de traspaso (T083):
+
+| Qué | Tareas y operaciones |
+|---|---|
+| Las alertas | T066 y la pantalla de T067, con `rangoHistorico` y `preciosVigentes`. El build de T067 pasa a T072 |
+| La cola de reconciliación | T073, con `colaDeVariantes` y `resolverVariante` |
+| El despliegue continuo | T065. Su certificado pasa a T054, porque la entrega del 18 pide HTTPS |
+| La exportación a CSV | `exportarArticulo` |
+| El índice como pantalla | El índice, la dispersión y la correlación de T069, con `indiceContraInpc`. H4 se calcula como análisis en T077, con la fuente de INEGI que estaba en T064 |
+
+**Las fechas que cambian:** T047, T049 y T050 vencen el 8 de noviembre; T052, el 15; T068,
+T071, T072 y T074, el 18; T070, el 20; la reconciliación (#206), el 22, y el detalle de
+artículo (#204), el 25. **Sin dueño todavía:** `costearCanasta`, `articulosAnomalos` y
+`serieDeArticulo`, que piden T056, T052 y T057, se asignan en la reunión del lunes 9;
+mientras, esas vistas van contra el simulador, y se dice.
 
 ---
 

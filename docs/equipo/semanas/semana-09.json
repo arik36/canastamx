@@ -2,9 +2,9 @@
   "semana": 9,
   "del": "2026-11-09",
   "al": "2026-11-15",
-  "hito": "E3 — Construcción",
+  "hito": "E4 — Versión desplegada",
   "columna": "Backlog",
-  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 9 al 15 de noviembre. Por ahora, T054 (#201) y T056 (#203), que vencían el 8 y el ajuste del 6 de noviembre recorrió al 13 y al 15. Hasta el 7, este archivo era la semana 9 anterior, del 2 al 8 de noviembre, con T058, que ahora está en semana-08.json. Lo que el Panel pone en su semana 10 (T064 a T073, que vencen del 13 al 15) se agrega aquí en la reunión del lunes 9, con lo que el equipo decida de la propuesta de recorte.",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 9 al 15 de noviembre. Por ahora, T054 (#201) y T056 (#203), que vencían el 8 y el ajuste del 6 de noviembre recorrió al 13 y al 15. Hasta el 7, este archivo era la semana 9 anterior, del 2 al 8 de noviembre, con T058, que ahora está en semana-08.json. Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), entraron el 7 de noviembre T052 (#190), que vencía el 1 y ahora vence el 15, y de la semana 10 del Panel, T064 y T069; T065, T066, T067 y T073 salieron del producto, y T068, T070, T071 y T072 pasaron a la semana 10.",
   "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre.",
   "tareas": [
     {
@@ -16,10 +16,10 @@
       "fecha": "2026-11-13",
       "titulo": "[S9][Infra] La máquina virtual en la nube y el primer despliegue",
       "que": "Preparar la máquina virtual del ADR 008 —Oracle Cloud en su plan gratuito, una instancia Ampere A1 con PostgreSQL en contenedor— y hacer en ella el primer despliegue del sistema. Ampere A1 es Arm: cada imagen tiene que existir para `arm64`. Hoy `main` no tiene el Dockerfile de ningún servicio, e `infra/traefik/` sólo trae `.gitkeep`. Lo que se despliega, con qué comandos y qué variables pide, sin sus valores, queda escrito en `infra/`: de ahí parte el despliegue continuo de T065.",
-      "criterio": "Desde fuera de la red del equipo, el dominio y la interfaz analítica contestan en la dirección pública, y esa dirección queda en esta tarjeta. Las bases sólo se alcanzan por la red interna de Docker Compose, como en `docs/arquitectura/05-despliegue.dot`. Ningún secreto entra al repositorio: los `.env` viven en la máquina virtual, y en `infra/` va su ejemplo sin valores, que pasa `python3 infra/scripts/revisar-env.py`.",
+      "criterio": "Desde fuera de la red del equipo, el dominio y la interfaz analítica contestan en la dirección pública por HTTPS, con un certificado válido, y esa dirección queda en esta tarjeta. Las bases sólo se alcanzan por la red interna de Docker Compose, como en `docs/arquitectura/05-despliegue.dot`. Ningún secreto entra al repositorio: los `.env` viven en la máquina virtual, y en `infra/` va su ejemplo sin valores, que pasa `python3 infra/scripts/revisar-env.py`.",
       "donde": "Rama `feat/aas-primer-despliegue` · `infra/`",
       "depende": [],
-      "nota_dependencia": "**Va después de T049 (#187)**, el entorno de pruebas, que vencía el 1 de noviembre y no tiene solicitud: el arnés de T070 y las 30 corridas de T076 corren sobre él. Por eso esta tarjeta pasa del 8 al 13, con margen para la entrega del 18, que es la versión desplegada. El ADR 008 se aceptó el 31 de octubre. B tiene además T059, que vencía el 4. **La replaneación del 25 de octubre dice «desplegado en la nube por HTTPS»**, y el certificado era de T065, que el ajuste del 6 de noviembre propone recortar: si la entrega del 18 va por HTTPS, el certificado entra en esta tarjeta."
+      "nota_dependencia": "**Va después de T049 (#187)**, el entorno de pruebas, que vencía el 1 de noviembre y no tiene solicitud: el arnés de T070 y las 30 corridas de T076 corren sobre él. Por eso esta tarjeta pasa del 8 al 13, con margen para la entrega del 18, que es la versión desplegada. El ADR 008 se aceptó el 31 de octubre. B tiene además T059, que vencía el 4. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), T065 sale del producto y su certificado entra aquí**: la entrega del 18 (T074) pide que el sistema responda por HTTPS desde fuera. El despliegue se hace a mano."
     },
     {
       "id": "T056",
@@ -35,7 +35,55 @@
       "depende": [
         "#188"
       ],
-      "nota_dependencia": "**Necesita T050 (#188)**, las rutas de canasta del dominio, que no tiene solicitud al 4 de noviembre; su tarjeta dice que destraba esta. Por eso pasa del 8 al 15: al 8, la pantalla contra un simulador de `dominio.yaml`, como T051 con la analítica; al 15, contra el dominio. **Ninguna tarea del Panel después de T058 dice quién sirve `costearCanasta` en la interfaz analítica real**: hasta que se decida, el costo es del simulador."
+      "nota_dependencia": "**Necesita T050 (#188)**, las rutas de canasta del dominio, que no tiene solicitud al 4 de noviembre; su tarjeta dice que destraba esta. Por eso pasa del 8 al 15: al 8, la pantalla contra un simulador de `dominio.yaml`, como T051 con la analítica; al 15, contra el dominio. **`costearCanasta` todavía no tiene dueño en la interfaz real: se asigna en la reunión del lunes 9**; hasta entonces, el costo es del simulador."
+    },
+    {
+      "id": "T052",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-15",
+      "titulo": "[S9][Web] El tablero analítico contra el simulador de la analítica",
+      "que": "El tablero del analista (`/tablero`, cuenta ANALISTA) pinta las anomalías con lo que contesta `GET /api/v1/anomalias` de `analitica.yaml` 0.2.1 (`x-rol: ANALISTA`, vista 2 del inventario), servidos por el simulador (`npx @stoplight/prism-cli@5.14.2 mock -p 4011 docs/analisis/openapi/analitica.yaml`) mientras llega T058. Las llamadas salen del servidor de Next, como las del dominio en T047, con el token de la sesión en `Authorization: Bearer`, para que el día que la analítica lo verifique (ADR 020) no cambie nada; la dirección va en una variable, `ANALITICA_URL`. Toda cifra lleva la población y el periodo que trae la respuesta (RNF-16), y mientras sea el simulador la vista lo dice.",
+      "criterio": "Con el simulador arriba y una cuenta ANALISTA, `/tablero` pinta las anomalías desde la API, no desde datos escritos en el código; cada cifra muestra su población y su periodo; sin la analítica, un aviso y no una pantalla rota; el aviso de ancho mínimo de D-08 sigue en 1025 px. El registro del simulador muestra `Authorization: Bearer` en cada llamada. `npm test`, `npm run lint` y `npm run build` pasan. Apuntar a la analítica real es cambiar `ANALITICA_URL`.",
+      "donde": "Rama `feat/kah-tablero-analitico` · `clients/web/`",
+      "depende": [
+        "#160"
+      ],
+      "nota_dependencia": "La rama sale de `main` después de T047 (#160, solicitud #176), que todavía no se integra. T058 (#199) trajo cuatro rutas de la analítica y ni `indiceContraInpc` ni `articulosAnomalos` están entre ellas: el tablero sigue contra el simulador, y se dice. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), el índice sale como pantalla y este tablero se queda con las anomalías**: H4 se calcula como análisis en T077. `articulosAnomalos` todavía no tiene dueño en la interfaz real: se asigna en la reunión del lunes 9. La vista de detalle que se abre desde aquí (T057, #204) vence el 25 de noviembre."
+    },
+    {
+      "id": "T064",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-09",
+      "fecha": "2026-11-15",
+      "titulo": "[S9][Datos] Las compuertas y la cuarentena operando sobre el esquema de operación",
+      "que": "Que la compuerta de calidad (#165) y la de lote dejen su rastro en el esquema de operación de `postgres-analytics`: `docs/datos/esquema-de-operacion.sql`, que hoy no se aplica en ninguna base, con las tablas `corrida`, `paso`, `cuarentena` e `incidente`, y `motivo` sembrada desde el SQL. Cada fila apartada queda en `cuarentena` con su motivo, su compuerta y la fila tal como llegó, y no pasa a la capa de consumo de T053. Un lote detenido por el umbral de D-07 abre su incidente (CU-04). Sólo la plataforma escribe estas tablas; la interfaz analítica únicamente cierra incidentes (P-08).",
+      "criterio": "Un registro defectuoso no llega a la capa de consumo y queda en la tabla `cuarentena` del esquema de operación con su motivo: materializar un lote con una fila defectuosa conocida la deja en `cuarentena` y fuera de `hechos_precio`. Cada corrida queda en `corrida` con sus `paso`, y un lote detenido, con su `incidente` abierto. `python -m pytest services/data-platform/tests/` pasa con las pruebas nuevas en el trabajo «Datos (Python)». La solicitud trae los conteos de una corrida real contra `postgres-analytics`.",
+      "donde": "Rama `feat/alm-compuertas-operando` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#200"
+      ],
+      "nota_dependencia": "Protege la capa de consumo de la estrella (#200). De estas tablas leen las seis operaciones de la consola (T069) y, con ellas, la consola de D (T068); sobre ellas se miden H1 y H2 en el experimento (T076 y T077). **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), la integración de INEGI que el Panel ponía aquí pasa a T077, con H4.**"
+    },
+    {
+      "id": "T069",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-09",
+      "fecha": "2026-11-15",
+      "titulo": "[S9][Datos] Cerrar la consola: las seis operaciones del operador en la interfaz analítica",
+      "que": "Las seis operaciones de `analitica.yaml` 0.2.1 que pide la consola (vista 4 de `docs/analisis/inventario-vistas.md`, CU-04 y CU-05), en `services/analytics-api/`, con `x-rol: OPERADOR` y el token del ADR 020 como las rutas de T058: `estadoDeLaPlataforma`, `listarCorridas`, `linajeDeLote`, `listarCuarentena`, `listarIncidentes` y `cerrarIncidente`. Leen el esquema de operación que escribe T064. `cerrarIncidente` es la única escritura de la interfaz: guarda la causa, la decisión, la fecha y el correo de quien cerró (D-11).",
+      "criterio": "Cada operación responde con el esquema del contrato, comprobado como en `test_rutas.py`. Con un token de OPERADOR responden 200, y con uno de ANALISTA o sin token, 401 `SinSesion`, como en `test_sesion.py`. Un aviso no se puede cerrar. Las pruebas corren en «Datos (Python)», y contra `postgres-analytics`, con una corrida real, `estadoDeLaPlataforma` trae los seis indicadores de CU-05 con su población.",
+      "donde": "Rama `feat/alm-operaciones-de-la-consola` · `services/analytics-api/`",
+      "depende": [
+        "T064"
+      ],
+      "nota_dependencia": "Lee las tablas de T064; mientras no estén, las pruebas de la CI usan el almacén de prueba, como en T058. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), lo demás que el Panel ponía en T069 —el índice de canasta, la dispersión de precios y la correlación contra el INPC— pasa a T077 como análisis (H4), y `indiceContraInpc` sale del producto.** `costearCanasta`, `articulosAnomalos` y `serieDeArticulo` se asignan en la reunión del lunes 9. Destraba la consola de D (T068, 18 de noviembre)."
     }
   ]
 }

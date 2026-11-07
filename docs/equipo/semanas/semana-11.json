@@ -2,9 +2,9 @@
   "semana": 11,
   "del": "2026-11-23",
   "al": "2026-11-29",
-  "hito": "E3 — Construcción",
+  "hito": "E5 — Presentación",
   "columna": "Backlog",
-  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 23 al 29 de noviembre, la semana del experimento. Por ahora, T057 (#204), la vista de detalle de artículo, que el ajuste del 6 de noviembre recorrió al 25 y dejó sin la exportación a CSV. T075 a T080, que el Panel pone en su semana 12, se agregan cuando se siembre esta semana.",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 23 al 29 de noviembre, la semana del experimento. Por ahora, T057 (#204), la vista de detalle de artículo, que el ajuste del 6 de noviembre recorrió al 25 y dejó sin la exportación a CSV. Entraron el 7 de noviembre T075 a T080, que el Panel pone en su semana 12.",
   "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre.",
   "tareas": [
     {
@@ -23,6 +23,95 @@
         "#190"
       ],
       "nota_dependencia": "**La aplicación web todavía no está en `main`**: entra con T047 (#160), que sigue en #176, y el tablero desde el que se abre la vista es T052 (#190), sin solicitud al 4 de noviembre. Por eso pasa del 8 al 25. **La exportación a CSV (`exportarArticulo`), que pide la vista 3, sale de esta tarjeta en el ajuste del 6 de noviembre**: si sobra tiempo antes del 30, es lo primero que se recupera. D tiene además T062, que vencía el 4."
+    },
+    {
+      "id": "T075",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-24",
+      "titulo": "[S11][Datos] Las cinco tipologías de falla y el procedimiento de cada corrida",
+      "que": "Especificar en `docs/experimento/protocolo.md`, antes de que B ejecute, las cinco tipologías de falla que inyecta el arnés de T070 y el procedimiento de cada corrida: qué se inyecta y en qué lote, cómo se comprueba el aislamiento de T049 antes de empezar, cómo se corren las de control con las validaciones desactivadas y qué se registra de las tres variables con las que T077 calcula la tasa de detección, la tasa de contención y la latencia media.",
+      "criterio": "`docs/experimento/protocolo.md` describe las cinco tipologías y el procedimiento. Cada tipología trae un ejemplo de la falla y el motivo con el que la compuerta debería apartarla o detener el lote, según el esquema de operación.",
+      "donde": "Rama `docs/alm-protocolo-experimento` · `docs/experimento/protocolo.md`",
+      "depende": [],
+      "nota_dependencia": "El arnés de T070 (B, 20 de noviembre) tiene que poder recibir las cinco sin cambiar su código. Las 30 corridas de T076 empiezan cuando esto esté."
+    },
+    {
+      "id": "T076",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-27",
+      "titulo": "[S11][Infra] Las 30 corridas del experimento y las de control",
+      "que": "Ejecutar las 30 corridas sobre el entorno aislado, más las corridas de control con las validaciones desactivadas, con el procedimiento de `docs/experimento/protocolo.md` (T075), y registrar las tres variables de cada una en `docs/experimento/bitacora.csv`. Antes de cada corrida, la comprobación de aislamiento de T049.",
+      "criterio": "`docs/experimento/bitacora.csv` trae las 30 corridas más las de control, con las tres variables de cada una, su tipología, su lote y su hora. Ninguna corrida escribe en desarrollo.",
+      "donde": "Rama `feat/aas-corridas` · `docs/experimento/bitacora.csv`",
+      "depende": [
+        "T075"
+      ],
+      "nota_dependencia": "Necesita el protocolo de T075 (24 de noviembre) y el arnés de T070 (20). T077 (29) calcula los resultados con esta bitácora."
+    },
+    {
+      "id": "T077",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-29",
+      "titulo": "[S11][Datos] Los resultados del experimento: H1 a H4 con datos reales",
+      "que": "Calcular con la bitácora de T076 la tasa de detección, la tasa de contención y la latencia media, contrastar las cuatro hipótesis en `docs/experimento/resultados.md` y redactar los hallazgos económicos. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), H4 se calcula aquí como análisis**: el índice de canasta (ADR 015), la dispersión de precios y la correlación contra el INPC de INEGI, que el Panel ponía en T064 y T069. H3 sale de la medición de #206.",
+      "criterio": "La tabla de resultados de H1 a H4 está llena con datos reales, cada cifra con su población: H1 contra el 95%, H2 contra los 15 minutos, H3 con la medición de #206 y H4 con su método escrito. Si una hipótesis no se cumple, se reporta la cifra que salió.",
+      "donde": "Rama `docs/alm-resultados` · `docs/experimento/resultados.md`",
+      "depende": [
+        "T076",
+        "#206"
+      ],
+      "nota_dependencia": "Usa la bitácora de T076 (27 de noviembre) y la medición de H3 de #206 (22). Alimenta la lámina de métricas (T084) y las presentaciones."
+    },
+    {
+      "id": "T078",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-29",
+      "titulo": "[S11][Dominio] La documentación técnica del dominio y el manual de operación",
+      "que": "La documentación técnica del servicio de dominio y su manual de operación, en `docs/`. Incluye comprobar que la redacción del README y el Javadoc del dominio que dejó #185 quedó corregida en la solicitud de T050.",
+      "criterio": "Los dos documentos existen en `docs/`, y la solicitud dice qué quedó del README y el Javadoc que dejó #185.",
+      "donde": "Rama `docs/lyl-documentacion-dominio` · `docs/`",
+      "depende": [],
+      "nota_dependencia": "El seguimiento del README y el Javadoc viene de T050 (#188)."
+    },
+    {
+      "id": "T079",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-29",
+      "titulo": "[S11][Móvil] La documentación de la app móvil y sus capturas para la presentación",
+      "que": "La documentación de la app móvil, en `docs/`, y las capturas para la presentación.",
+      "criterio": "La documentación existe y las capturas están en Drive, con el enlace en la documentación.",
+      "donde": "Rama `docs/orf-documentacion-movil` · `docs/`",
+      "depende": [],
+      "nota_dependencia": "Las capturas son del build de T072 (18 de noviembre)."
+    },
+    {
+      "id": "T080",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-11-23",
+      "fecha": "2026-11-29",
+      "titulo": "[S11][Web] La documentación de la interfaz web y sus capturas para la presentación",
+      "que": "La documentación de la interfaz web, en `docs/`, y las capturas para la presentación.",
+      "criterio": "La documentación existe y las capturas están en Drive, con el enlace en la documentación.",
+      "donde": "Rama `docs/kah-documentacion-web` · `docs/`",
+      "depende": [],
+      "nota_dependencia": "Las capturas son de las vistas que entraron: el acceso, el tablero, el detalle y la consola. La cola de reconciliación salió con el recorte."
     }
   ]
 }
