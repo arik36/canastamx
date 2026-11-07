@@ -1,0 +1,104 @@
+{
+  "semana": 8,
+  "del": "2026-11-02",
+  "al": "2026-11-08",
+  "hito": "E3 — Construcción",
+  "columna": "Backlog",
+  "fuente": "T053 a T057 del Panel, con la fecha de la replaneación del 25 de octubre (docs/equipo/cronograma.md): vencen el domingo 8 de noviembre en lugar del 1. cronograma.md llama «Semana 10» a estas fechas, las mismas de T058 a T063, que vencen el 4. El alcance es el del Panel con lo que lo cambió después: el ADR 014 (la lista de palabras que no identifican al artículo entra en T053), el ADR 008 (la máquina virtual de T054), D-08 y RNF-15 (la web, salvo el acceso, es de escritorio: T057), y lo que hay en main en 24400d3. **Ajuste del 6 de noviembre, para terminar el 2 de diciembre:** T053 se parte en dos tarjetas (la estrella sigue al 8; la reconciliación y H3 pasan al 22); T054 va después de T049 y pasa al 13; T055 va después de T050; T056 pasa al 15, y T057 al 25 y sin la exportación a CSV.",
+  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las cinco tarjetas que ya existen (#200 a #204), y la única nueva, la segunda parte de T053, entra en Backlog porque empieza el 9. Al correrlo se actualizan las fechas límite; los cuerpos de las que ya existen no, y por eso se reescriben aparte con `gh issue edit`. Lo pendiente de la semana 7 conserva su tarjeta: T049 (#187), T050 (#188) y T052 (#190) no tienen solicitud al 4 de noviembre, y T047 (#160) sigue en #176.",
+  "tareas": [
+    {
+      "id": "T053",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Datos] El esquema estrella cargado desde la capa intermedia",
+      "que": "Cargar la capa de consumo de `docs/datos/modelo-dimensional.md` en `postgres-analytics`, desde la capa intermedia de T048 y con SQL dentro de activos de Dagster (ADR 019), a partir de los SQL de T031 que ya se probaron en `docs/datos/probar-modelo-dimensional.py`: `hechos_precio`, las cuatro dimensiones (`dim_articulo`, `dim_establecimiento`, `dim_cadena` y `dim_fecha`) y los tres agregados del §4. Mientras no haya reconciliación, `articulo_canonico_key` es igual a `articulo_key`, como dice el modelo.",
+      "criterio": "`hechos_precio` y las cuatro dimensiones tienen datos en `postgres-analytics`, cargados por activos de Dagster desde la capa intermedia, con sus conteos en la descripción de la solicitud (el Panel decía `fact_precio_observado`; el nombre es el del modelo). Los tres agregados se calculan sobre `articulo_canonico_key`, así que la reconciliación los recalcula sin tocar los hechos.",
+      "donde": "Rama `feat/alm-esquema-estrella` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#186"
+      ],
+      "nota_dependencia": "T048 (#186) está en `main` desde #196: su capa intermedia es el origen. **La estrella va primero porque la leen las compuertas de T064, las operaciones de la analítica que faltan y la consola.** La reconciliación y la medición de H3, que el Panel ponía aquí, son la otra tarjeta de T053, con fecha del 22. **La revisión de dbt que el ADR 019 fechó el 2 de noviembre, «con el esquema estrella ya cargado», no tiene rastro en `main`**: hay que fecharla de nuevo o decidirla, y si dbt no entra, escribir el ADR que lo retira de R-07 y del README, como pide el ADR 019."
+    },
+    {
+      "id": "T053",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-09",
+      "fecha": "2026-11-22",
+      "titulo": "[S8][Datos] La reconciliación de productos versión uno y la medición de H3",
+      "que": "La segunda parte de T053: la reconciliación de productos versión uno, que reescribe `articulo_canonico_key` en `dim_articulo` y, con él, recalcula los agregados. Su receta es la del ADR 004 con lo que le agregó el ADR 014: reglas para las cinco formas ortográficas (plural, conector, abreviatura, unidad y orden de palabras); la lista de palabras que no identifican al artículo, como colores de empaque y nombres de línea comercial, por producto o por categoría, versionada y revisable; y la comparación difusa al final, calibrada para unir los «sí» de la muestra sin unir los «no». Con esa reconciliación se mide H3 sobre los 200 pares.",
+      "criterio": "`articulo_canonico_key` sale de la reconciliación y los agregados se recalculan sobre él sin tocar los hechos. La lista de palabras que no identifican está en el repositorio, por producto o por categoría, y `congelado` contra `descongelado`, el caso que dejó el ADR 004 para detectar un umbral flojo, no se une. H3 queda medida sobre los 200 pares como dicen los ADR 004 y 014: cobertura y precisión con su población, y aparte los pares que sólo difieren en `marca`. Si la meta no se alcanza, se reporta la cifra que salió.",
+      "donde": "Rama `feat/alm-reconciliacion` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#200"
+      ],
+      "nota_dependencia": "Va después de la estrella (#200), la primera tarjeta de T053, de la que se separó el 6 de noviembre para que la estrella no esperara a la reconciliación. H3 se contrasta en T077, el 29 de noviembre. T058 cerró en #199 con H3 pendiente de esta reconciliación."
+    },
+    {
+      "id": "T054",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-13",
+      "titulo": "[S8][Infra] La máquina virtual en la nube y el primer despliegue",
+      "que": "Preparar la máquina virtual del ADR 008 —Oracle Cloud en su plan gratuito, una instancia Ampere A1 con PostgreSQL en contenedor— y hacer en ella el primer despliegue del sistema. Ampere A1 es Arm: cada imagen tiene que existir para `arm64`. Hoy `main` no tiene el Dockerfile de ningún servicio, e `infra/traefik/` sólo trae `.gitkeep`. Lo que se despliega, con qué comandos y qué variables pide, sin sus valores, queda escrito en `infra/`: de ahí parte el despliegue continuo de T065.",
+      "criterio": "Desde fuera de la red del equipo, el dominio y la interfaz analítica contestan en la dirección pública, y esa dirección queda en esta tarjeta. Las bases sólo se alcanzan por la red interna de Docker Compose, como en `docs/arquitectura/05-despliegue.dot`. Ningún secreto entra al repositorio: los `.env` viven en la máquina virtual, y en `infra/` va su ejemplo sin valores, que pasa `python3 infra/scripts/revisar-env.py`.",
+      "donde": "Rama `feat/aas-primer-despliegue` · `infra/`",
+      "depende": [],
+      "nota_dependencia": "**Va después de T049 (#187)**, el entorno de pruebas, que vencía el 1 de noviembre y no tiene solicitud: el arnés de T070 y las 30 corridas de T076 corren sobre él. Por eso esta tarjeta pasa del 8 al 13, con margen para la entrega del 18, que es la versión desplegada. El ADR 008 se aceptó el 31 de octubre. B tiene además T059, que vencía el 4. **La replaneación del 25 de octubre dice «desplegado en la nube por HTTPS»**, y el certificado era de T065, que el ajuste del 6 de noviembre propone recortar: si la entrega del 18 va por HTTPS, el certificado entra en esta tarjeta."
+    },
+    {
+      "id": "T055",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Dominio] La cobertura de las pruebas de la lógica de dominio, medida y reportada",
+      "que": "Medir la cobertura de las pruebas sobre las clases de dominio, el paquete `mx.tecnm.canastamx.domain_service.domain` (hoy `canasta` y `usuario`), y reportarla. `pom.xml` no trae hoy ninguna herramienta de cobertura: la que se agregue va en la descripción de la solicitud con su razón, y la medición corre en el trabajo «Dominio (Java)» de la CI, no sólo en una máquina.",
+      "criterio": "El registro del trabajo «Dominio (Java)» de la solicitud muestra la cobertura de líneas y de ramas del paquete `domain`, y la descripción de la solicitud trae la misma cifra con su población: qué clases entran, cuántas pruebas corrieron («Tests run») y sobre qué commit. Las clases de dominio que queden sin cubrir se nombran. `mvn -B test` sigue en verde.",
+      "donde": "Rama `feat/lyl-cobertura-del-dominio` · `services/domain-service/`",
+      "depende": [],
+      "nota_dependencia": "**C1 hace primero T050 (#188)**, que vencía el 1 de noviembre, no tiene solicitud y T056 espera. Esta tarjeta va después y conserva el 8, la fecha que prometió la entrega del 4. T060 (4 de noviembre) deja las suites de JUnit en verde en la CI con su conteo, y la cobertura medida es de esta tarjeta. La cifra vale para el commit en el que se midió: T050 agrega reglas y pruebas a `Canasta`."
+    },
+    {
+      "id": "T056",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-15",
+      "titulo": "[S8][Móvil] La pantalla de canasta: se arma una canasta y se ve su costo estimado",
+      "que": "Que la pestaña Canasta, hoy una `PantallaVacia` en `clients/mobile/app/(tabs)/canasta.tsx`, opere: crear una canasta, agregarle artículos, cambiar su cantidad y quitarlos, con las rutas de canasta de `dominio.yaml` y la sesión que la app ya restaura desde #195; y ver su costo estimado con `costearCanasta` de `analitica.yaml`. La interfaz analítica real todavía no sirve `costearCanasta` (T058 trajo cuatro rutas) y el simulador de la app sólo cubre la búsqueda, así que el costo sale del simulador, ampliado a esa ruta, y se dice, como en la búsqueda de T051.",
+      "criterio": "Con una cuenta de la semilla, en el teléfono, se crea una canasta, se le agregan artículos, se cambia una cantidad y se quita uno, y al cerrar y volver a abrir la app la canasta sigue igual, porque vive en el dominio. Se ve su costo estimado con su población y su fecha, y se dice si viene del simulador.",
+      "donde": "Rama `feat/orf-canasta` · `clients/mobile/`",
+      "depende": [
+        "#188"
+      ],
+      "nota_dependencia": "**Necesita T050 (#188)**, las rutas de canasta del dominio, que no tiene solicitud al 4 de noviembre; su tarjeta dice que destraba esta. Por eso pasa del 8 al 15: al 8, la pantalla contra un simulador de `dominio.yaml`, como T051 con la analítica; al 15, contra el dominio. **Ninguna tarea del Panel después de T058 dice quién sirve `costearCanasta` en la interfaz analítica real**: hasta que se decida, el costo es del simulador."
+    },
+    {
+      "id": "T057",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-25",
+      "titulo": "[S8][Web] La vista de detalle de artículo y su comportamiento en los tres puntos de quiebre",
+      "que": "La vista 3 de `docs/analisis/inventario-vistas.md`, a la que se llega desde un artículo de la tabla de anómalos del tablero (`docs/analisis/navegacion.md`): el ícono del catálogo y la llave canónica del artículo; los cuatro indicadores —precio típico en el estado, variación contra la quincena anterior, mínimo y máximo—, cada uno con su población; la serie histórica por entidad; y el precio por establecimiento. Pide `serieDeArticulo` y `desgloseDeArticulo` de `analitica.yaml`, con el token de la sesión en cada llamada. La interfaz real sólo sirve `desgloseDeArticulo` (T058, con `x-rol: ANALISTA`); `serieDeArticulo` va contra el simulador, y se dice. En los puntos de quiebre manda D-08 con RNF-15: en la web sólo el acceso se adapta a los tres anchos, y lo demás, este detalle incluido, es de escritorio y debajo de 1025 px muestra el aviso de ancho mínimo y deja desplazarse.",
+      "criterio": "Con la cuenta ANALISTA de la semilla, la vista se abre desde el tablero y trae lo que pide la vista 3, con la población de cada cifra. Desde 1025 px no hay desplazamiento horizontal, y a 1024 y a 768 px aparece el aviso de ancho mínimo de D-08, con una captura en cada punto de quiebre. **El Panel decía «no produce desplazamiento horizontal en el punto más estrecho»; D-08 (7 de octubre) y RNF-15 lo cambiaron para todo lo que no es el acceso.**",
+      "donde": "Rama `feat/kah-detalle-de-articulo` · `clients/web/`",
+      "depende": [
+        "#160",
+        "#190"
+      ],
+      "nota_dependencia": "**La aplicación web todavía no está en `main`**: entra con T047 (#160), que sigue en #176, y el tablero desde el que se abre la vista es T052 (#190), sin solicitud al 4 de noviembre. Por eso pasa del 8 al 25. **La exportación a CSV (`exportarArticulo`), que pide la vista 3, sale de esta tarjeta en el ajuste del 6 de noviembre**: si sobra tiempo antes del 30, es lo primero que se recupera. D tiene además T062, que vencía el 4."
+    }
+  ]
+}
