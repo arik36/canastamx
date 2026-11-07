@@ -5,7 +5,7 @@
   "hito": "E4 — Versión desplegada",
   "columna": "Backlog",
   "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 16 al 22 de noviembre, la semana de la entrega del 18: versión final desplegada y congelamiento de funcionalidad (el lunes 16 es festivo). Por ahora, la segunda tarjeta de T053 (#206), la reconciliación versión uno y la medición de H3, que el ajuste del 6 de noviembre separó de la estrella y puso al 22. Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), entraron el 7 de noviembre T068, T070, T071, T072 y la entrega del 18, T074.",
-  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre. #206 (22 de noviembre) y T070 (20) vencen después de la entrega del 18 y van en «E5 — Presentación»: el hito de este archivo es el de las que vencen a más tardar el 18.",
+  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre. #206 (22 de noviembre) y el arnés de T070 (#213, 20) vencen después de la entrega del 18 y van en «E5 — Presentación»: el hito de este archivo es el de las que vencen a más tardar el 18.",
   "tareas": [
     {
       "id": "T053",
@@ -46,14 +46,31 @@
       "etiqueta": "infra",
       "inicio": "2026-11-16",
       "fecha": "2026-11-20",
-      "titulo": "[S10][Infra] El arnés de inyección de fallas y las pruebas de integración entre front y back",
-      "que": "El arnés que inyecta las fallas del experimento en el entorno de pruebas aislado (T049) y deja registrada cada inyección, para medir después la contención (H1) y la detección (H2). Las cinco tipologías las especifica A en T075 (24 de noviembre): el arnés tiene que poder recibirlas sin cambiar su código. Además, la suite de pruebas de integración entre front y back que pide el Panel, en la CI.",
-      "criterio": "El arnés ejecuta una corrida piloto contra el entorno de pruebas, después de que pasa la comprobación de aislamiento de T049, y deja la falla inyectada, su hora y lo que hizo la plataforma, sin escribir nada en desarrollo. La suite de integración corre en la canalización.",
+      "titulo": "[S10][Infra] El arnés de inyección de fallas",
+      "que": "El arnés que inyecta las fallas del experimento en el entorno de pruebas aislado (T049) y deja registrada cada inyección, para medir después la contención (H1) y la detección (H2). Las cinco tipologías las especifica A en T075 (24 de noviembre): el arnés tiene que poder recibirlas sin cambiar su código.",
+      "criterio": "El arnés ejecuta una corrida piloto contra el entorno de pruebas, después de que pasa la comprobación de aislamiento de T049, y deja la falla inyectada, su hora y lo que hizo la plataforma, sin escribir nada en desarrollo.",
       "donde": "Rama `feat/aas-arnes-de-fallas` · `infra/scripts/` y `docs/experimento/`",
       "depende": [
         "#187"
       ],
-      "nota_dependencia": "Necesita el entorno de pruebas de T049 (#187) y su comprobación de aislamiento. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), el arnés es núcleo y puede llegar hasta el 20**: sin él no hay 30 corridas (T076, 27 de noviembre). Vence después de la entrega del 18, así que va en «E5 — Presentación»."
+      "nota_dependencia": "Necesita el entorno de pruebas de T049 (#187) y su comprobación de aislamiento. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), el arnés es núcleo y puede llegar hasta el 20**: sin él no hay 30 corridas (T076, 27 de noviembre). Vence después de la entrega del 18, así que va en «E5 — Presentación». Las pruebas de integración entre front y back, que el Panel ponía aquí, son la otra tarjeta de T070, con fecha del 18, porque la entrega del 18 las pide."
+    },
+    {
+      "id": "T070",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Infra] Las pruebas de integración entre front y back",
+      "que": "La suite de pruebas de integración entre front y back que pide la entrega del 18: con el dominio, la interfaz analítica y la web levantados con Docker Compose en la CI, con las imágenes de T054, comprueba de punta a punta lo que cada cliente hace con el back. En la web, que las cuentas ANALISTA y OPERADOR inician sesión, que cada una abre su vista y no la otra, y que una llamada a la analítica con el token pasa y sin él da 401. En la app, lo mismo con su cliente de la API (`clients/mobile/api/`): iniciar sesión, buscar, comparar precios y armar una canasta contra el dominio y la analítica reales.",
+      "criterio": "La suite corre en la canalización, en un trabajo propio, y su registro muestra cuántas pruebas pasaron; levanta los servicios sin secretos reales, con un `.env` de prueba; y falla si cualquiera de los recorridos falla. La herramienta que se elija va con su razón en la solicitud.",
+      "donde": "Rama `feat/aas-pruebas-de-integracion` · `.github/workflows/ci.yml` e `infra/`",
+      "depende": [
+        "#160",
+        "#201"
+      ],
+      "nota_dependencia": "Se separó de T070 (#213) el 7 de noviembre, porque la entrega del 18 pide estas pruebas y el arnés puede llegar hasta el 20. Necesita la web en `main` (#160, solicitud #176) y las imágenes de T054 (#201)."
     },
     {
       "id": "T071",
@@ -78,9 +95,9 @@
       "etiqueta": "movil",
       "inicio": "2026-11-16",
       "fecha": "2026-11-18",
-      "titulo": "[S10][Móvil] El build instalable, probado en dos teléfonos",
-      "que": "El build instalable de la app (ADR 006, Expo), que el Panel repartía entre T067, el primero, y T072, el definitivo: con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), la pantalla de alertas de T067 sale y su build es éste. Hoy `clients/mobile/` tiene `app.json` y ningún `eas.json`: cómo se genera el build queda en el README de la app. Para operar fuera de la red del equipo, apunta a las direcciones públicas de T054 (#201).",
-      "criterio": "El build se instala y opera en dos teléfonos que no son el mismo: en los dos se inicia sesión, se busca y se arma una canasta contra el sistema desplegado, con capturas en la solicitud. El README de la app dice cómo se genera el build.",
+      "titulo": "[S10][Móvil] La versión final de la app: crear cuenta y el build instalable en dos teléfonos",
+      "que": "El build instalable de la app (ADR 006, Expo), que el Panel repartía entre T067, el primero, y T072, el definitivo: con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), la pantalla de alertas de T067 sale y su build es éste. Hoy `clients/mobile/` tiene `app.json` y ningún `eas.json`: cómo se genera el build queda en el README de la app. Para operar fuera de la red del equipo, apunta a las direcciones públicas de T054 (#201). **Además, lo que le falta a la app para la versión final:** crear cuenta desde la pantalla de acceso (CU-08, `POST /api/v1/cuentas`, que el dominio ya tiene), y en Descubrir, que mostraba el índice y «Precios que bajaron», un aviso de que no está disponible en esta versión, sin quitar la pestaña de D-01.",
+      "criterio": "El build se instala y opera en dos teléfonos que no son el mismo: en los dos se crea una cuenta nueva desde la app, se inicia sesión con ella, se busca, se comparan los precios de un artículo y se arma una canasta contra el sistema desplegado, con capturas en la solicitud. Descubrir muestra su aviso. El README de la app dice cómo se genera el build.",
       "donde": "Rama `feat/orf-build-instalable` · `clients/mobile/`",
       "depende": [
         "#203",
@@ -96,13 +113,13 @@
       "inicio": "2026-11-16",
       "fecha": "2026-11-18",
       "titulo": "[S10][Equipo] Entrega del 18 de noviembre: la versión final desplegada",
-      "que": "La entrega institucional del 18: el sistema desplegado y respondiendo desde fuera, el congelamiento de funcionalidad desde ese día y el video de respaldo grabado. El documento de la entrega queda en `docs/entregas/2026-11-18/` y dice qué entra y qué no: lo que el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre») sacó del producto (alertas, cola de reconciliación, despliegue continuo, exportación a CSV e índice como pantalla) y lo que llega después del 18 (la reconciliación y H3, #206, el 22; el detalle de artículo, #204, el 25).",
-      "criterio": "El sistema responde por HTTPS desde fuera y el video de respaldo está en Drive. `docs/entregas/2026-11-18/README.md` existe, dice de qué commit sale, lista lo que entra y lo que no, y lleva el enlace del video.",
+      "que": "La entrega institucional del 18, que pide las pruebas de integración entre front y back, la infraestructura implementada, datos de prueba en las bases y la versión final desplegada en ella; desde ese día hay congelamiento de funcionalidad, y el video de respaldo queda grabado. El documento de la entrega queda en `docs/entregas/2026-11-18/` y dice qué entra y qué no: lo que el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre») sacó del producto (alertas, cola de reconciliación, despliegue continuo, exportación a CSV e índice como pantalla) y lo que llega después del 18 (la reconciliación y H3, #206, el 22; el detalle de artículo, #204, el 25).",
+      "criterio": "El sistema responde por HTTPS desde fuera y con datos: en el despliegue, la plataforma procesó los lotes del alcance (la estrella y la cuarentena tienen filas), las cuentas de la semilla inician sesión y cada usuario hace lo suyo (el consumidor en la app, el analista en el tablero y el operador en la consola). Las pruebas de integración están en verde en la CI. El video de respaldo está en Drive. `docs/entregas/2026-11-18/README.md` existe, dice de qué commit sale, lista lo que entra y lo que no, y lleva el enlace del video.",
       "donde": "docs/entregas/2026-11-18/",
       "depende": [
         "#201"
       ],
-      "nota_dependencia": "El HTTPS depende del certificado de T054 (#201), porque T065 salió con el recorte. Después del 18 no entra funcionalidad nueva, salvo lo que el recorte dejó fechado después: #206 y #204."
+      "nota_dependencia": "El HTTPS y los datos de prueba dependen de T054 (#201), porque T065 salió con el recorte; las pruebas de integración son la segunda tarjeta de T070. **Después del 18, B vuelve a desplegar a mano lo que entre (#206 el 22 y #204 el 25), a más tardar el 29**, para que la presentación del 2 de diciembre use la versión final. Después del 18 no entra funcionalidad nueva, salvo lo que el recorte dejó fechado después."
     }
   ]
 }

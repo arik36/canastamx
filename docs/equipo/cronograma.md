@@ -172,15 +172,27 @@ solicitudes integradas por semana, no alcanzaba para todo el alcance antes del 1
 |---|---|
 | Las alertas | T066 y la pantalla de T067, con `rangoHistorico` y `preciosVigentes`. El build de T067 pasa a T072 |
 | La cola de reconciliación | T073, con `colaDeVariantes` y `resolverVariante` |
-| El despliegue continuo | T065. Su certificado pasa a T054, porque la entrega del 18 pide HTTPS |
+| El despliegue continuo | T065. Su certificado y sus datos de prueba pasan a T054, porque la entrega del 18 pide HTTPS y datos de prueba en las bases |
 | La exportación a CSV | `exportarArticulo` |
 | El índice como pantalla | El índice, la dispersión y la correlación de T069, con `indiceContraInpc`. H4 se calcula como análisis en T077, con la fuente de INEGI que estaba en T064 |
 
 **Las fechas que cambian:** T047, T049 y T050 vencen el 8 de noviembre; T052, el 15; T068,
 T071, T072 y T074, el 18; T070, el 20; la reconciliación (#206), el 22, y el detalle de
-artículo (#204), el 25. **Sin dueño todavía:** `costearCanasta`, `articulosAnomalos` y
-`serieDeArticulo`, que piden T056, T052 y T057, se asignan en la reunión del lunes 9;
-mientras, esas vistas van contra el simulador, y se dice.
+artículo (#204), el 25. **Las tres operaciones que piden los clientes**, `costearCanasta`, `articulosAnomalos` y
+`serieDeArticulo`, van en T069 (A), porque la arquitectura pone la interfaz analítica en A;
+si el equipo las pasa a C1, como sugería la propuesta, cambian de tarjeta.
+
+**Ajuste del 7 de noviembre, para que la entrega sea visible y cumpla el objetivo del
+proyecto** (sistema desplegado con clientes web y móvil, en contenedores y en la nube, con la
+entrega del 18 que pide integración entre front y back, infraestructura, datos de prueba y
+versión final desplegada):
+
+- T070 se parte: las pruebas de integración entre front y back vencen el 18, y el arnés, el 20.
+- T056 suma el detalle del artículo en la app, con sus precios por establecimiento
+  (`compararPrecios`, que ya sirve la interfaz real).
+- T072 suma crear cuenta en la app y el aviso de Descubrir, que se queda sin contenido.
+- T054 escribe los Dockerfile de los servicios y carga los datos de prueba, y T074 pide el
+  sistema desplegado con datos y el despliegue de lo que entre hasta el 29.
 
 ---
 
