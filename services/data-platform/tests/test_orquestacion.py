@@ -334,6 +334,31 @@ def test_el_umbral_de_d07_cuenta_las_dos_cuarentenas_juntas(entorno, columnas):
         "D-07 dice que no se promueve ni la parte que pasó")
 
 
+def test_rechazo_mide_lo_mismo_que_lote_promovido(entorno, columnas):
+    """La cifra de D-07 que va a CU-02 la saca `rechazo.py`, sin Dagster. Si un día
+    `lote_promovido` cambia cómo junta las cuarentenas y `rechazo.py` no, las dos
+    cifras se separan en silencio: es la falla que este proyecto estudia."""
+    import rechazo
+
+    d, llegada = entorno
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(94)]
+    filas += [fila(columnas, producto="", direccion="sin producto 1"),
+              fila(columnas, producto="", direccion="sin producto 2")]
+    filas += [fila(columnas, producto="Aceite", direccion="Centro", precio="40.00"),
+              fila(columnas, producto="Aceite", direccion="Centro", precio="200.00"),
+              fila(columnas, producto="Atun", direccion="Norte", precio="30.00"),
+              fila(columnas, producto="Atun", direccion="Norte", precio="150.00")]
+    ruta = escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido],
+                            partition_key="2026-07-Q2")
+    md = r.asset_materializations_for_node("lote_promovido")[0].metadata
+
+    m = rechazo.medir_lote(ruta, leer_contrato())
+    assert (m["fila"], m["grupo"]) == (2, 4)
+    assert m["proporcion"] == pytest.approx(md["proporcion_en_cuarentena"].value)
+    assert m["resultado"] == md["resultado"].value == "DETENIDO"
+
 def test_un_lote_limpio_se_promueve(entorno, columnas):
     d, llegada = entorno
     escribir_lote(llegada, "07-2026_Q2.csv",

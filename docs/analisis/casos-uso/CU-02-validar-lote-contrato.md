@@ -69,7 +69,17 @@
 2. El proceso levanta un incidente (CU-04).
 3. El caso de uso termina sin éxito. *El umbral es el **5% de las filas del lote**
    (contrato 1.3.4; D-07, RF-D07 del protocolo). Se confirma midiendo los 38 lotes
-   antes del 1 de noviembre.*
+   con el mismo código que aplica la plataforma:
+   `python services/data-platform/ingestion/rechazo.py --medir <los 38 lotes>
+   --escribir docs/analisis/casos-uso/CU-02-validar-lote-contrato.md`.*
+
+<!-- cifra-d07:inicio -->
+> Medido el 2026-11-08 con `services/data-platform/ingestion/rechazo.py --medir`, contrato 1.3.6, sobre 38 lotes y 2,658,906 filas del alcance (el contrato dice 2,658,906). No se escribe a mano: si algo cambia, se vuelve a correr.
+
+- **Ningún lote pasa del 5%**: los 38 se promueven, y el umbral de D-07 se confirma.
+- La proporción en cuarentena va de **0.0026%** a **0.4286%** por lote (mediana 0.0202%).
+- Filas en cuarentena: **1,089** (0.0410% del alcance): 0 de fila, 577 por el `?` y 512 de grupo. Registros por motivo: `codificacion_irrecuperable` 31, `colision_precio_alta` 512, `revision_humana` 546.
+<!-- cifra-d07:fin -->
 
 **6a · La capa intermedia no acepta la escritura**
 1. El proceso marca la corrida como fallida y no deja filas a medias.
