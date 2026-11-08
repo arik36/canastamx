@@ -36,7 +36,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * {@code security} o por la global (ver {@link SeguridadDelContrato}). No hay una lista
  * de rutas públicas aparte: si cambia el contrato o un controlador sin el otro, la
  * prueba falla y dice el método, la ruta y el motivo. Las operaciones del contrato
- * que todavía no tienen controlador (hoy, las de canastas y alertas) no cuentan.
+ * que todavía no tienen controlador (hoy, las de alertas) no cuentan.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -100,6 +100,19 @@ class RutasProtegidasTests {
             assertTrue(encontradas.get(0).startsWith(olvidada + ": dominio.yaml exige sesión"),
                     encontradas.get(0));
         });
+    }
+
+    @Test
+    void lasOchoOperacionesDeCanastaEstanImplementadasYProtegidas() throws IOException {
+        var declaradas = SeguridadDelContrato.leer(DOMINIO_YAML);
+        var canastas = declaradas.entrySet().stream()
+                .filter(e -> e.getKey().contains(" /api/v1/canastas"))
+                .map(Map.Entry::getKey).toList();
+        assertEquals(8, canastas.size());
+        var reales = implementadas();
+        for (String clave : canastas) {
+            assertTrue(reales.stream().anyMatch(r -> r.clave().equals(clave) && r.pideSesion()), clave);
+        }
     }
 
     @Test

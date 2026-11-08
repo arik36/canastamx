@@ -93,3 +93,16 @@ número se calibra junto con el 20%.
 | La compuerta del cruce: «¿estaba arriba o es su primera revisión?» | `bpmn/alertas.bpmn` | C1 |
 | La propuesta dice que el dominio y la analítica «no se llaman entre sí» y que la analítica tiene «cuatro endpoints de sólo lectura» | Documento de la entrega 2 | A |
 | Cuenta muestra el correo, no un nombre. La cola muestra cobertura y precisión con su población, o «se mide en T058» | Prototipo | D y C2 |
+
+## Implementación de canastas (T050, #188)
+
+El servicio de dominio implementa las ocho operaciones de canastas del contrato;
+las operaciones de alertas siguen pendientes. Todas las de canastas exigen sesión.
+El dueño se obtiene del token y una canasta ajena responde 404, igual que una ausente.
+`POST …/lineas` suma si el artículo ya existe; `PUT …/lineas` reemplaza la cantidad y
+responde 404 si no estaba. Quitar un artículo ausente también responde 404 sin cambios.
+La cantidad es un entero positivo. `Canasta` expone sólo `id`, `nombre` y `lineas`.
+
+Los datos inválidos, incluida la paginación y los parámetros de quitar un artículo,
+responden 400. Todos los errores usan `application/problem+json` con `type`, `title`
+y `status`. Sin sesión válida se responde 401 mediante el manejador compartido.

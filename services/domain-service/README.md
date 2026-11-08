@@ -1,6 +1,7 @@
 # Servicio de dominio
 
-Cuentas, sesiones y, después, canastas y alertas. El contrato es
+Cuentas, sesiones y las ocho operaciones de canastas. Las rutas de alertas todavía
+no están implementadas. El contrato es
 `docs/analisis/openapi/dominio.yaml`; el token, el ADR 020.
 
 ## Configuración: el `.env` de la raíz
@@ -38,7 +39,7 @@ la de `infra/envs/test`.
 ```bash
 # Linux o WSL, sin heredar variables de la terminal
 cd services/domain-service
-env -i PATH="$PATH" HOME="$HOME" ./mvnw -B test
+env -i PATH="$PATH" HOME="$HOME" ./mvnw -B test -DfailIfNoTests=true
 ```
 
 ```powershell
@@ -46,7 +47,7 @@ env -i PATH="$PATH" HOME="$HOME" ./mvnw -B test
 Get-ChildItem Env: | Where-Object Name -Match '^(OLTP_|JWT_)'
 #   si sale alguna: Remove-Item Env:NOMBRE   (y quítala de las variables de usuario)
 cd services\domain-service
-.\mvnw.cmd -B test
+.\mvnw.cmd -B test -DfailIfNoTests=true
 ```
 
 Ya no hace falta pasar `JWT_SECRET` en la orden: sale del `.env`. Si se pasa y el
@@ -71,3 +72,39 @@ Una ruta pide sesión recibiendo `@CuentaDeLaSesion Usuario cuenta`. Sin un toke
 Bearer válido de una cuenta que existe, el método no se llama y la respuesta es el 401
 `problem+json` con `WWW-Authenticate` (`SinSesionHandler`). `RutasProtegidasTests`
 falla si una ruta que `dominio.yaml` no declara pública (`security: []`) no lo recibe.
+
+## Canastas (T050, #188)
+
+Las ocho operaciones de `dominio.yaml` están implementadas: listar, crear, obtener,
+renombrar y borrar canastas; agregar, fijar la cantidad y quitar artículos. Todas
+reciben `@CuentaDeLaSesion`: el dueño se toma de la sesión. Una canasta ajena o un
+artículo ausente responde 404; los datos inválidos, 400. Los errores siguen P-03
+(`application/problem+json`). La respuesta de canasta sólo lleva `id`, `nombre` y
+`lineas`; cada línea lleva `articulo` y `cantidad` entera. El costo se consulta a la
+analítica, no se guarda aquí.
+
+Flyway aplica `V2__crear_canastas.sql` y `V3__ampliar_campos_canasta.sql`.
+V2 se conserva porque puede estar aplicada; V3 amplía los campos sin límite de
+longitud en el contrato y agrega el índice por dueño. Los cambios de una misma canasta se serializan
+con un bloqueo de fila dentro de la transacción. `CanastasTests` prueba las ocho
+operaciones, dueño, paginación, errores y borrado de líneas en PostgreSQL, con rollback.
+`CanastaTest` comprueba por separado las reglas de la entidad. La salida de Maven debe
+mostrar `Tests run` con un total mayor que cero.
+
+Correcciones de documentación para el seguimiento T078 que dejó #185:
+
+- `services/domain-service/README.md`: alcance actual, pruebas que fallan si no se
+  ejecuta ninguna y comportamiento de las rutas de canasta.
+- `docs/analisis/openapi/README.md`: distingue el contrato de las rutas implementadas
+  y documenta sumar frente a fijar, la sesión y los errores de canastas.
+- `domain/canasta/ReferenciaDeArticulo.java`: Javadoc de la identidad canónica y su
+  validación, con la regla de normalización expresada en texto.
+- `domain/canasta/Canasta.java`: Javadoc de sumar, reemplazar y quitar artículos.
+- `infrastructure/web/CuentaDeLaSesion.java` y `RutasProtegidasTests.java`: describen
+  la seguridad efectiva y sólo dejan alertas como rutas pendientes de implementar.
+- `infrastructure/security/JwtService.java`: aclara cómo se decodifica la clave sin
+  cambiar el estado de propuesta de ADR 020.
+
+Las rutas Java de esta lista son relativas a
+`services/domain-service/src/main/java/mx/tecnm/canastamx/domain_service/`, salvo
+`RutasProtegidasTests.java`, que está bajo `src/test/java` con el mismo paquete.

@@ -20,10 +20,10 @@ erDiagram
     }
 
     LINEA_CANASTA {
-        String canasta_id FK
-        VARCHAR producto
-        VARCHAR presentacion
-        INTEGER cantidad
+        String canasta_id PK, FK
+        VARCHAR producto PK
+        VARCHAR presentacion PK
+        INTEGER cantidad "NOT NULL; mayor que cero"
     }
 
     ALERTA {

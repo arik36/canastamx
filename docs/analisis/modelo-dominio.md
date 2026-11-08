@@ -152,6 +152,7 @@ classDiagram
         +Canasta(String id, String usuarioId, String nombre)
         +renombrar(String nuevo) void
         +agregar(ReferenciaDeArticulo articulo, Cantidad cantidad) void
+        +fijarCantidad(ReferenciaDeArticulo articulo, Cantidad cantidad) void
         +quitar(ReferenciaDeArticulo articulo) void
         +lineas() List~LineaDeCanasta~
         +id() String
