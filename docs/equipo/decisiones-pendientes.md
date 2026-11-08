@@ -20,6 +20,19 @@ Lo demás que sigue abierto se mide o se escribe: ver «Por medir» y «Por escr
 
 ---
 
+## Decididas el 7 de noviembre de 2026
+
+P-15 era de A y D, y se calibraba «antes de construir el tablero». El tablero (T052,
+#190) ya se está construyendo y la estrella todavía no está cargada (T053, #200), así
+que A decidió con los valores que ya trae el contrato, y D queda informada. Se
+confirman con el volumen real en T069 (#211), donde se escribe la consulta.
+
+| # | Decisión | Resultado | Quién | Dónde quedó |
+|---|---|---|---|---|
+| P-15 | ¿Con qué umbral y con qué mínimo de observaciones se marca un artículo como anómalo? | **Los valores por omisión de `articulosAnomalos`: más de 20% de variación quincenal del precio típico, en valor absoluto, con al menos 5 observaciones en cada una de las dos quincenas.** Son parámetros de la consulta: si en T069 salen demasiados o muy pocos, se cambia el valor por omisión en `analitica.yaml` sin tocar el código del tablero | A; D, informada | `analitica.yaml` 0.2.1 · `docs/analisis/openapi/README.md` |
+
+---
+
 ## Decididas el 2 de noviembre de 2026
 
 D-12 se votó el 2 de noviembre, después del plazo del 29 de octubre. Ganó B, que no
@@ -89,8 +102,8 @@ en que se anota.
 | Qué | Para qué | Quién | Antes de |
 |---|---|---|---|
 | El porcentaje de cuarentena de cada uno de los 38 lotes | Confirmar el 5% de D-07 | A | 1 de noviembre |
-| Cuántos artículos cumplen la canasta del ADR 015 | Saber si la canasta representa algo | A | T069 |
-| Cuántos artículos marca como anómalos el 20%, y con qué mínimo de observaciones | Calibrar P-15 | A y D | Antes de construir el tablero |
+| Cuántos artículos cumplen la canasta del ADR 015 | Saber si la canasta representa algo | A | T077 (#219): con el recorte, el índice se calcula ahí, como análisis de H4 |
+| Cuántos artículos marcan como anómalos el 20% y las 5 observaciones, con el volumen real | Confirmar P-15, decidida el 7 de noviembre | A | T069 (#211, 15 de noviembre), con la estrella cargada |
 
 ## Por escribir
 
@@ -110,17 +123,19 @@ noviembre.
 | ADR | Estado | Quién |
 |---|---|---|
 | 008 · dónde vive la base | En propuesta: su peso no dice de qué población es, y le falta el presupuesto de memoria de los 12 GB que le dejó el ADR 010 (§3). Va en T044 (#158) | B |
-| 020 · el token de sesión | En propuesta: HS256, `JWT_SECRET` como Base64 de 32 bytes y los claims `sub`, `rol`, `iat` y `exp`. El dominio ya lo aplica. Ratificarlo no cierra la verificación cruzada con la analítica: ésa es criterio de T058 (4 de noviembre) | A, con C1 |
 
-Los ADR 006, 007 y 011 ya se ratificaron en #173.
+Los ADR 006, 007 y 011 ya se ratificaron en #173, y el 020 el 7 de noviembre: la
+analítica lo verifica desde T058 (#199).
 
 ## Lo que dejan las decisiones
 
 | Qué | Quién | Antes de |
 |---|---|---|
 | D-09: el ADR nuevo del aviso dentro de la app, que diga también qué queda de los estados de envío (`PENDIENTE`, `ENVIADA` y `FALLIDA`) de `Notificacion` en `dominio.yaml` y en el modelo ER. Y quitar el correo de donde todavía se promete: RF-21, CU-11 (paso 6, alterno 6a y la poscondición), `navegacion.md` §3.2 y §3.3, `inventario-vistas.md` §8, el BPMN de alertas (`alertas.bpmn` y `alertas.svg`), las vistas `01-contexto`, `02-contenedores` y `04-componentes-dominio` de `arquitectura/` con sus `.png` y su `README.md`, y la fila de C1 en `entregas/2026-11-18-version-desplegada.md` | C1 y B | Antes de T066, la tarea de las alertas (C1, vence el 15 de noviembre) |
-| D-11: el RNF nuevo en `requerimientos.md`: el esquema de operación guarda el correo del operador como autor de la acción, y nada más de la persona. Se cita desde `docs/datos/esquema-de-operacion.md` (el diagrama de §1 y la tabla de §2) | A, con B | Antes de T069 y T073 (A y D, vencen el 13 de noviembre), que cierran la consola y la cola |
 | D-12: declarar la excepción en `dominio.yaml` —la descripción de `CredencialesInvalidas` y la nota de la versión 0.2.2, que hoy la dan por abierta— y en CU-08, alterno 7a. También el Javadoc de `SinSesionHandler`, que dice «la decisión D-12, todavía abierta» | C1 | Antes de la entrega del 18 de noviembre |
+
+La de D-11 quedó el 7 de noviembre: RNF-22 en `requerimientos.md`, citado desde el
+diagrama de §1 y la tabla de §2 de `docs/datos/esquema-de-operacion.md`.
 
 Las tres que vencían el 9 de octubre ya están hechas: la explicación de D-08 y P-09 en
 la entrega 2 (`docs/entregas/2026-10-09/README.md`); el modelo ER, el modelo de

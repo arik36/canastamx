@@ -99,6 +99,7 @@
 | RNF-19 | Arquitectura | Cuatro componentes desplegables por separado, comunicados por HTTP tras la puerta de enlace. El dominio consulta a la interfaz analítica para las alertas, con dos rutas de sólo lectura | Protocolo §10.7 · P-09 | — |
 | RNF-20 | Arquitectura | Al menos dos plataformas de desarrollo: Java, Python y TypeScript | Protocolo §10.7 | — |
 | RNF-21 | Seguridad | Las consolas exigen sesión con rol: analista para el tablero y el detalle, y operador para la consola y la cola. La app sólo crea cuentas de consumidor | P-07 | — |
+| RNF-22 | Privacidad | El esquema de operación guarda el correo del operador como autor de una acción —quién cerró un incidente o resolvió una variante— y nada más de la persona | D-11 | — |
 
 ## 4 · Acuerdos de nivel de servicio de datos
 
@@ -161,7 +162,7 @@ Objetivos específicos del protocolo:
 | RF-09 · RNF-06 | CU-12, CU-13 | 4 | — | T031 |
 | RF-10, RF-14 · RNF-08 · SLA-D-07 | CU-06, CU-14 | 6 | H3 | ADR 002, 004 y 014 |
 | RF-11, RF-15, RF-16 · SLA-D-08 | CU-07, CU-13 | 8 | H4 | ADR 015 · P-15 |
-| RF-12, RF-13 · RNF-07 · SLA-D-09 | CU-04, CU-05 | 5 | H1, H2 | BPMN de incidentes · P-08 |
+| RF-12, RF-13 · RNF-07, RNF-22 · SLA-D-09 | CU-04, CU-05 | 5 | H1, H2 | BPMN de incidentes · P-08 · D-11 |
 | SLA-D-04, SLA-D-05 | CU-02, CU-04 | 7 | H1, H2 | ADR 010 · 9 |
 | RF-17 a RF-23 · RNF-01 a 05, RNF-11, RNF-21 | CU-08 a CU-12 | Proyecto integrador (§10.7) | — | Modelo de dominio · ADR 003, 006, 007 y 011 · D-01, D-04, D-05 · P-07, P-10, P-13, P-14 |
 | RNF-12 a RNF-20 · R-07 | — | Proyecto integrador (§10.7) | — | ADR 008, 009 y 012 · #129 · D-08 · P-08, P-09 |
@@ -172,11 +173,10 @@ El objetivo 1 es este documento.
 
 | Qué falta | Afecta | Quién · cuándo |
 |---|---|---|
-| Los ADR del orquestador (Dagster), la interfaz analítica (FastAPI) y la validación (Pandera) | R-07 | A |
 | El ADR del cliente web (Next.js) | R-07 | D |
 | Medir el rechazo de cada uno de los 38 lotes, para confirmar el 5% | RF-24 | A · antes del 1 de noviembre |
-| Contar cuántos artículos cumplen la canasta del ADR 015 | RF-11 · SLA-D-08 | A · antes de T069 |
-| Calibrar el 20% de los anómalos y su mínimo de observaciones | RF-15 | A y D · antes de construir el tablero |
+| Contar cuántos artículos cumplen la canasta del ADR 015 | RF-11 · SLA-D-08 | A · en T077 (#219), con H4 |
+| Confirmar con el volumen real el 20% y las 5 observaciones de los anómalos (P-15, decidida el 7 de noviembre) | RF-15 | A · en T069 (#211) |
 
 ## Historial
 
@@ -184,3 +184,6 @@ El objetivo 1 es este documento.
   - **D ajustó RF-12, RF-13, RF-14 y RF-16.** Al integrarlos se recuperó el linaje de RF-12 y se corrigió el precio de RF-16: es la mediana, no un promedio.
   - **Entraron las decisiones D-02 a D-08 y P-01 a P-15.**
   - **Se agregó la columna del protocolo.** Con ella entraron RF-24 (RF-D07), RF-25 (RF-D12), RNF-21 (P-07) y SLA-D-10 (RNF-D05).
+- **7 de noviembre de 2026.**
+  - **Entró RNF-22 por D-11:** del operador se guarda sólo el correo, como autor de lo que cierra o resuelve.
+  - **§8 al día:** los ADR 016, 017 y 018 ya están escritos; P-15 se decidió con los valores por omisión y se confirma en T069; la canasta del ADR 015 se cuenta en T077, donde el recorte del 5 de noviembre dejó H4.

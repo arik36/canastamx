@@ -93,9 +93,9 @@ cada tarjeta va en la semana de su fecha límite.** Si una replaneación le muev
 fecha a otra semana, la tarjeta cambia de semana, de archivo en `docs/equipo/semanas/`
 y de prefijo en el título; si se vence, se queda en su semana, en «Retrasadas», hasta
 que tenga fecha nueva. Hasta el 7, las semanas 8 y 9 del tablero compartían las fechas
-del 2 al 8 de noviembre. El Panel conserva su numeración: su semana 9 es la 8 del
-tablero, y sus semanas 10 a 14 son la 9 a la 13. El pie de cada tarjeta dice su tarea
-del Panel.
+del 2 al 8 de noviembre. Desde el 7 de noviembre el Panel numera igual: su semana 9, del
+2 al 4 de noviembre, quedó en la 8, y sus semanas 10 a 14 son ahora la 9 a la 13. El pie
+de cada tarjeta dice su tarea del Panel.
 
 **El hito de una tarjeta es la primera entrega que cae en su fecha límite o después:**
 «E3 — Construcción» hasta el 4 de noviembre, «E4 — Versión desplegada» del 5 al 18, y
