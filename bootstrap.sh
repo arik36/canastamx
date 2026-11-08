@@ -22,7 +22,6 @@ DIRS=(
   "docs/entregas"
   "contracts"
   "services/data-platform/ingestion"
-  "services/data-platform/dbt"
   "services/data-platform/tests/fixtures"
   "services/analytics-api"
   "services/domain-service"

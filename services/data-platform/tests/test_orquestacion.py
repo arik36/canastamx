@@ -88,16 +88,16 @@ def entorno(tmp_path, monkeypatch):
 ACTIVOS = ["capa_cruda", "filas_revisadas", "lote_promovido", "capa_intermedia"]
 
 
-def test_hay_cuatro_activos_y_los_cuatro_estan_particionados(entorno):
+def test_hay_cinco_activos_y_los_cuatro_del_lote_estan_particionados(entorno):
     """T043 pidió tres; T048 agrega la capa intermedia, que depende de
-    `lote_promovido`. Los cuatro, particionados por la misma quincena."""
+    `lote_promovido`. Los cuatro, particionados por la misma quincena. T053 agrega
+    la capa de consumo, que no lo está: se recalcula entera (ver su sección)."""
     d, _ = entorno
     repo = d.defs.get_repository_def()
-    activos = repo.assets_defs_by_key
-    assert sorted(k.to_user_string() for k in activos) == sorted(ACTIVOS)
-    for clave, definicion in activos.items():
-        assert definicion.partitions_def is not None, (
-            f"{clave.to_user_string()} no está particionado")
+    activos = {k.to_user_string(): v for k, v in repo.assets_defs_by_key.items()}
+    assert sorted(activos) == sorted(ACTIVOS + ["capa_consumo"])
+    for nombre in ACTIVOS:
+        assert activos[nombre].partitions_def is not None, f"{nombre} no está particionado"
 
 
 def test_la_capa_intermedia_depende_de_lote_promovido(entorno):
@@ -862,3 +862,107 @@ def test_lote_promovido_dice_que_se_reparo_y_que_se_aparto(entorno, columnas):
     assert rep["valores_reparados"] == {"por_diccionario": 2, "por_frecuencia": 0}
     cuarentena = d.SALIDAS / "cuarentena-reparacion-07-2026_Q2.jsonl"
     assert len(cuarentena.read_text(encoding="utf-8").splitlines()) == 1
+
+
+# ── T053 · la capa de consumo, desde la intermedia ──────────────────────────
+#
+# Contra el criterio de #200: «`hechos_precio` y las cuatro dimensiones tienen datos
+# en `postgres-analytics`, cargados por activos de Dagster desde la capa intermedia.
+# Los tres agregados se calculan sobre `articulo_canonico_key`.» Con
+# `CANASTAMX_SIMULAR`, la estrella va al mismo DuckDB que la capa intermedia. Ese
+# DuckDB dura toda la sesión de pruebas, así que se compara contra lo que tenga la
+# capa intermedia, no contra un número fijo.
+
+def _tabla(d, tabla):
+    import duckdb
+
+    con = duckdb.connect(str(d.SALIDAS / "capa-intermedia.duckdb"), read_only=True)
+    try:
+        return con.execute(f"SELECT * FROM {tabla} ORDER BY ALL").df()
+    finally:
+        con.close()
+
+
+def _cargar_la_estrella(d):
+    r = dagster.materialize([d.capa_consumo])
+    assert r.success
+    return r
+
+
+def test_la_capa_de_consumo_no_esta_particionada_y_depende_de_la_intermedia(entorno):
+    d, _ = entorno
+    assert d.capa_consumo.partitions_def is None
+    deps = d.capa_consumo.asset_deps[d.capa_consumo.key]
+    assert {k.to_user_string() for k in deps} == {"capa_intermedia"}
+
+
+def test_la_estrella_tiene_un_hecho_por_observacion_de_la_capa_intermedia(entorno, columnas):
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    escribir_lote(llegada, "07-2026_Q1.csv", [
+        fila(columnas, producto="Frijol", fecha_registro="2026/07/05", precio="29.00",
+             cadena_comercial="Central de Abasto"),
+        fila(columnas, producto="Arroz", fecha_registro="2026/07/06",
+             cadena_comercial="Central de Abastos")], columnas)
+    _materializar(d, "2026-07-Q2")
+    _materializar(d, "2026-07-Q1")
+    r = _cargar_la_estrella(d)
+
+    capa = _tabla(d, "intermedia.observacion")
+    hechos = _tabla(d, "consumo.hechos_precio")
+    md = r.asset_materializations_for_node("capa_consumo")[0].metadata
+    assert len(hechos) == len(capa) == md["hechos_precio"].value == md["observaciones"].value
+    assert {"07-2026_Q1", "07-2026_Q2"} <= set(hechos["lote"])
+
+    for dim, llave in (("dim_articulo", "articulo_key"), ("dim_fecha", "fecha_key"),
+                       ("dim_establecimiento", "establecimiento_key"),
+                       ("dim_cadena", "cadena_key")):
+        tabla = _tabla(d, f"consumo.{dim}")
+        assert len(tabla) == md[dim].value > 0
+        assert hechos[llave].isin(tabla[llave]).all(), f"hay hechos sin su {dim}"
+
+    articulos = _tabla(d, "consumo.dim_articulo")
+    assert "Camarón" in set(articulos["producto"]), "el `?` reparado no llegó a la dimensión"
+    assert (articulos["articulo_canonico_key"] == articulos["articulo_key"]).all()
+    assert "central de abasto" in set(_tabla(d, "consumo.dim_cadena")["cadena_c"])
+
+    agregado = _tabla(d, "consumo.agg_articulo_entidad_quincena")
+    assert agregado["n"].sum() == len(hechos)
+    rango = _tabla(d, "consumo.rango_historico")
+    assert len(rango) == len(agregado[["articulo_canonico_key", "entidad"]].drop_duplicates())
+
+
+def test_cargar_la_estrella_dos_veces_deja_lo_mismo(entorno, columnas):
+    """RF-25: las llaves subrogadas se regeneran al recargar, y salen iguales."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    _materializar(d)
+    tablas = [f"consumo.{t}" for t in d.estrella.TABLAS]
+    r1 = _cargar_la_estrella(d)
+    antes = [_tabla(d, t) for t in tablas]
+    r2 = _cargar_la_estrella(d)
+    despues = [_tabla(d, t) for t in tablas]
+    assert all(a.equals(b) for a, b in zip(antes, despues))
+    h1, h2 = (r.asset_materializations_for_node("capa_consumo")[0].metadata["huella"].value
+              for r in (r1, r2))
+    assert h1 == h2
+
+
+def test_un_lote_detenido_no_deja_hechos_en_la_estrella(entorno, columnas):
+    """El 6% de D-07 detiene el lote; su partición de la capa intermedia queda vacía,
+    y la estrella, sin ninguno de sus hechos."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q1.csv", [
+        fila(columnas, producto="Frijol", fecha_registro="2026/07/05")], columnas)
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(94)]
+    filas += [fila(columnas, producto="", direccion=f"sin producto {i}") for i in range(6)]
+    escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+    _materializar(d, "2026-07-Q1")
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido,
+                             d.capa_intermedia], partition_key="2026-07-Q2")
+    assert r.asset_materializations_for_node(
+        "lote_promovido")[0].metadata["resultado"].value == "DETENIDO"
+    _cargar_la_estrella(d)
+
+    lotes = set(_tabla(d, "consumo.hechos_precio")["lote"])
+    assert "07-2026_Q1" in lotes and "07-2026_Q2" not in lotes
