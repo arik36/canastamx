@@ -143,6 +143,21 @@ def test_los_agregados_salen_de_articulo_canonico_key(contrato):
     assert con.execute("SELECT * FROM hechos_precio ORDER BY observacion_id").df().equals(hechos)
 
 
+def test_el_precio_de_la_cadena_es_la_mediana_de_sus_tiendas(contrato):
+    """§4: «El precio de una cadena es la mediana de sus tiendas en la entidad.» Una
+    tienda con tres observaciones a $10 y dos tiendas con una cada una, a $20 y $30:
+    la mediana de las observaciones sería $10, la de las tiendas es $20."""
+    tienda = {"Uno": ("tienda uno", "Tienda Uno"), "Dos": ("tienda dos", "Tienda Dos"),
+              "Tres": ("tienda tres", "Tienda Tres")}
+    filas = [{"clave_nombre_comercial": tienda[t][0], "nombre_comercial": tienda[t][1],
+              "precio": p} for t, p in (("Uno", "10.00"), ("Uno", "10.00"), ("Uno", "10.00"),
+                                         ("Dos", "20.00"), ("Tres", "30.00"))]
+    con, _ = _estrella(contrato, filas)
+    assert con.execute("SELECT n, n_tiendas, mediana FROM "
+                       "agg_articulo_cadena_entidad_quincena").fetchall() == [
+        (5, 3, Decimal("20.00"))]
+
+
 def test_la_mediana_es_un_precio_que_se_observo(contrato):
     """P-02: con dos precios, `quantile_cont` daría 26.50, que nadie cobró."""
     con, _ = _estrella(contrato, [{"precio": "25.00"}, {"precio": "28.00"}])

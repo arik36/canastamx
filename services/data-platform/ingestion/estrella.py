@@ -310,12 +310,22 @@ def agregados(con):
                max(h.precio) AS maximo
         {junta}
         GROUP BY ALL""")
+    # El precio de una cadena es la mediana de SUS TIENDAS (§4), no de sus
+    # observaciones: primero el precio de cada tienda en la quincena, la mediana de
+    # lo que se le observó, y después la mediana de esas tiendas. Con la mediana de
+    # las observaciones, una tienda con muchas marcas o muchos días decidiría el
+    # precio de toda la cadena. Así lo hacía T031; el modelo dice tiendas.
     con.execute(f"""CREATE OR REPLACE TABLE agg_articulo_cadena_entidad_quincena AS
-        SELECT a.articulo_canonico_key, h.cadena_key, e.entidad, f.quincena,
-               CAST(count(*) AS INTEGER) AS n,
-               CAST(count(DISTINCT h.establecimiento_key) AS INTEGER) AS n_tiendas,
-               quantile_disc(h.precio, 0.5) AS mediana
-        {junta}
+        WITH por_tienda AS (
+            SELECT a.articulo_canonico_key, h.cadena_key, e.entidad, f.quincena,
+                   h.establecimiento_key, count(*) AS n,
+                   quantile_disc(h.precio, 0.5) AS precio_de_la_tienda
+            {junta}
+            GROUP BY ALL)
+        SELECT articulo_canonico_key, cadena_key, entidad, quincena,
+               CAST(sum(n) AS INTEGER) AS n, CAST(count(*) AS INTEGER) AS n_tiendas,
+               quantile_disc(precio_de_la_tienda, 0.5) AS mediana
+        FROM por_tienda
         GROUP BY ALL""")
     con.execute("""CREATE OR REPLACE TABLE rango_historico AS
         SELECT articulo_canonico_key, entidad, min(mediana) AS desde, max(mediana) AS hasta,
