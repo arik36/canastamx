@@ -101,9 +101,12 @@ en que se anota.
 
 | Qué | Para qué | Quién | Antes de |
 |---|---|---|---|
-| El porcentaje de cuarentena de cada uno de los 38 lotes | Confirmar el 5% de D-07 | A | 1 de noviembre |
 | Cuántos artículos cumplen la canasta del ADR 015 | Saber si la canasta representa algo | A | T077 (#219): con el recorte, el índice se calcula ahí, como análisis de H4 |
 | Cuántos artículos marcan como anómalos el 20% y las 5 observaciones, con el volumen real | Confirmar P-15, decidida el 7 de noviembre | A | T069 (#211, 15 de noviembre), con la estrella cargada |
+
+El 5% de D-07 se confirmó con los 38 lotes, medidos con
+`services/data-platform/ingestion/rechazo.py`: ninguno pasa del umbral. La cifra y su
+fecha están en CU-02, alterno 5b.
 
 ## Por escribir
 
