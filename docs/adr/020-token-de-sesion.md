@@ -1,8 +1,9 @@
 # ADR 020 · El token de sesión entre el dominio y la analítica
 
 - **Fecha:** 23 de octubre de 2026
-- **Estado:** propuesta. El dominio ya lo aplica; falta que A lo ratifique para la
-  analítica (ADR 017), que todavía no verifica tokens.
+- **Estado:** aceptada el 7 de noviembre de 2026. El dominio lo aplica, y la analítica
+  (ADR 017) lo verifica desde T058 (#199), con la prueba cruzada contra el dominio en
+  la integración continua.
 - **Participantes:** C1, que emite el token; A, que lo verifica para `x-rol`; B, por
   la integración continua y el `.env`
 

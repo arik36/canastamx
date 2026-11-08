@@ -4,7 +4,7 @@
   "al": "2026-11-29",
   "hito": "E5 — Presentación",
   "columna": "Backlog",
-  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 23 al 29 de noviembre, la semana del experimento. Por ahora, T057 (#204), la vista de detalle de artículo, que el ajuste del 6 de noviembre recorrió al 25 y dejó sin la exportación a CSV. Entraron el 7 de noviembre T075 a T080, que el Panel pone en su semana 12.",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 23 al 29 de noviembre, la semana del experimento. Por ahora, T057 (#204), la vista de detalle de artículo, que el ajuste del 6 de noviembre recorrió al 25 y dejó sin la exportación a CSV. Entraron el 7 de noviembre T075 a T080, que hasta el 7 de noviembre el Panel ponía en su semana 12.",
   "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre.",
   "tareas": [
     {

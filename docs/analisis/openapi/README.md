@@ -63,7 +63,7 @@ Hoy el validador da **0 errores y 5 avisos esperados**:
 | P-10 | ¿Quién calcula el costo de la canasta? | **La analítica,** con `POST /api/v1/canastas/costo` | A, C1 y D |
 | P-13 | ¿El usuario tiene nombre? | **No:** se quita del modelo ER, y la cuenta se identifica con su correo | C1 |
 | P-14 | ¿De qué entidad es el precio de una alerta? | **La alerta guarda su entidad:** la elegida en la app al crearla | C1 |
-| P-15 | ¿Qué es un artículo «anómalo»? | **Variación quincenal del precio típico mayor al 20%**, en valor absoluto. Se calibra con el volumen real | A y D |
+| P-15 | ¿Qué es un artículo «anómalo»? | **Variación quincenal del precio típico mayor al 20%**, en valor absoluto, con al menos 5 observaciones en cada quincena. El 7 de noviembre se quedó con esos valores por omisión; se confirman con el volumen real en T069 | A y D |
 
 ## Correcciones que salieron de la revisión
 
