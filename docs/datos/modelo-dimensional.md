@@ -157,6 +157,11 @@ variantes, los agregados se recalculan y los hechos no se tocan.
 observaron, como el precio típico de la interfaz analítica, y nunca pasan por punto
 flotante (P-02). El guion de T031 medía con `quantile_cont`.
 
+**El precio de una cadena se calcula en dos pasos:** el de cada tienda en la quincena
+es la mediana de lo que se le observó, y el de la cadena, la mediana de sus tiendas.
+Así una tienda con muchas marcas o muchos días no decide el precio de toda la cadena.
+El guion de T031 tomaba la mediana de todas las observaciones de la cadena.
+
 ---
 
 ## 5 · Diccionario
