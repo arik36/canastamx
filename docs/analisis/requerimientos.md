@@ -130,7 +130,7 @@ no corre.
 | R-04 | La fuente no trae imágenes: cada artículo se muestra con el ícono de su catálogo | ADR 010 · 6 |
 | R-05 | Cerveza, vinos y licores, y cigarrillos se ocultan por omisión en la canasta básica | ADR 010 · 7 |
 | R-06 | Congelamiento de funcionalidad el 18 de noviembre. El experimento corre en las semanas 12 y 13 | Cronograma |
-| R-07 | Tecnología: web en Next.js, móvil en Expo, dominio en Spring Boot con arquitectura hexagonal, plataforma de datos en Python (Dagster, dbt, Pandera), interfaz analítica en FastAPI, dos PostgreSQL, MinIO, Traefik y Docker Compose en una máquina de Oracle | Protocolo §10.7 · README · ADR 003, 008 y 009 |
+| R-07 | Tecnología: web en Next.js, móvil en Expo, dominio en Spring Boot con arquitectura hexagonal, plataforma de datos en Python (Dagster y Pandera), interfaz analítica en FastAPI, dos PostgreSQL, MinIO, Traefik y Docker Compose en una máquina de Oracle | Protocolo §10.7 · README · ADR 003, 008 y 009 |
 
 ## 6 · Supuestos y dependencias
 

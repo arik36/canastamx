@@ -22,7 +22,7 @@ Componentes desplegables de forma independiente detrás de una puerta de enlace:
 
 | Componente | Ruta | Tecnologías | Responsable |
 |---|---|---|---|
-| Plataforma de datos | `services/data-platform` | Python, Dagster, dbt, Pandera | A |
+| Plataforma de datos | `services/data-platform` | Python, Dagster, DuckDB, Pandera | A |
 | Interfaz analítica | `services/analytics-api` | Python, FastAPI | A |
 | Servicio de dominio | `services/domain-service` | Java 21, Spring Boot | C1 |
 | Cliente web | `clients/web` | Next.js, TypeScript | D |

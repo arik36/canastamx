@@ -1,4 +1,4 @@
-"""CanastaMX · los cuatro activos particionados y el sensor (ADR 016).
+"""CanastaMX · los cuatro activos particionados, la capa de consumo y el sensor (ADR 016).
 
 ## Qué es un activo, y por qué no es «la tarea de ingerir»
 
@@ -15,10 +15,10 @@ consola, en el experimento y en el código.
 Las 38 particiones **no están escritas aquí**: salen de `alcance.ventana` del
 contrato. Si la ventana cambia, cambian las particiones sin tocar este archivo.
 
-## Los cuatro activos
+## Los cinco activos
 
-    capa_cruda ──> filas_revisadas ──> lote_promovido ──> capa_intermedia
-    (ingesta.py)   (compuerta.py)      (reparacion.py,    (intermedia.py)
+    capa_cruda ──> filas_revisadas ──> lote_promovido ──> capa_intermedia ──> capa_consumo
+    (ingesta.py)   (compuerta.py)      (reparacion.py,    (intermedia.py)     (estrella.py)
                                         lote.py + D-07)
 
 1. **`capa_cruda`** envuelve `ingestion/ingesta.py`. No lo reescribe: lo corre y
@@ -39,6 +39,12 @@ contrato. Si la ventana cambia, cambian las particiones sin tocar este archivo.
    `postgres-analytics`. Comprueba que la cuenta cuadre con el linaje: exactamente
    las que `lote_promovido` dejó salir menos las sobrantes de captura doble. Un
    lote detenido deja su partición vacía.
+5. **`capa_consumo`** (T053) llama a `estrella.cargar()`: el esquema estrella de
+   `docs/datos/modelo-dimensional.md`, recalculado entero desde la capa intermedia
+   y reemplazado en una transacción. **No está particionado**, porque sus
+   dimensiones y sus agregados cruzan quincenas, y por eso no lo dispara el sensor:
+   se materializa después de cargar los lotes. Comprueba que cada observación de la
+   capa intermedia sea un hecho.
 
 ## El sensor y H2
 
@@ -62,10 +68,10 @@ cuenta sus 15 minutos (SLA-D-05): sin él, los 15 minutos no tienen desde cuánd
 Necesita `dagster` **y** `dagster-webserver`, las dos en la misma versión. Están
 en `requirements.txt`; con sólo la primera, `dagster dev` falla pidiendo la otra.
 
-Sin `CANASTAMX_SIMULAR`, la capa cruda va a MinIO y la intermedia a
-`postgres-analytics`: hacen falta las `S3_*` y las `ANALYTICS_*` del `.env`
-(`set -a; source .env; set +a`). Con simulación, la intermedia queda en
-`capa-intermedia.duckdb`, dentro de la carpeta de corridas.
+Sin `CANASTAMX_SIMULAR`, la capa cruda va a MinIO, y la intermedia y la de consumo
+a `postgres-analytics`: hacen falta las `S3_*` y las `ANALYTICS_*` del `.env`
+(`set -a; source .env; set +a`). Con simulación, la intermedia y la de consumo
+quedan en `capa-intermedia.duckdb`, dentro de la carpeta de corridas.
 """
 
 # OJO · aquí NO va `from __future__ import annotations`. Con él, las anotaciones
@@ -101,6 +107,7 @@ INGESTA = PLATAFORMA / "ingestion"
 sys.path.insert(0, str(INGESTA))
 
 import compuerta
+import estrella
 import intermedia
 import lote as reglas_de_lote
 import reparacion
@@ -520,6 +527,29 @@ def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dic
             "filas": res_capa["filas_salida"], "huella": huella}
 
 
+# ── Activo 5 · la capa de consumo (T053) ──────────────────────────────────
+
+@asset(
+    deps=[capa_intermedia],
+    description="El esquema estrella de modelo-dimensional.md, recalculado entero desde "
+                "la capa intermedia y reemplazado en una transacción. No está "
+                "particionado: sus dimensiones y agregados cruzan quincenas. Se "
+                "materializa después de cargar los lotes.",
+    compute_kind="duckdb",
+)
+def capa_consumo(context: AssetExecutionContext) -> dict:
+    contrato = leer_contrato()
+    r = estrella.cargar(contrato, simular=SIMULAR)
+    context.add_output_metadata({
+        "observaciones": r["observaciones"],
+        **{t: r["en_destino"][t] for t in estrella.TABLAS},
+        "huella": r["huella"],
+        "destino": MetadataValue.json({k: r[k] for k in ("motor", "donde", "esquema")}),
+        "version_contrato": contrato["version"],
+    })
+    return {"filas": r["en_destino"], "huella": r["huella"]}
+
+
 # ── El sensor ──────────────────────────────────────────────────────────────
 
 # La partición NO se repite aquí: Dagster la deduce de los activos
@@ -572,7 +602,7 @@ def archivo_nuevo(context: SensorEvaluationContext):
 
 
 defs = Definitions(
-    assets=[capa_cruda, filas_revisadas, lote_promovido, capa_intermedia],
+    assets=[capa_cruda, filas_revisadas, lote_promovido, capa_intermedia, capa_consumo],
     jobs=[corrida_del_lote],
     sensors=[archivo_nuevo],
 )

@@ -42,13 +42,22 @@ Vive en el almacén analítico (`postgres-analytics`), en la capa de consumo. Se
 carga desde la capa intermedia, que es la que repara el `?`, normaliza, aplica la
 clave de fila y separa la cuarentena con su motivo.
 
+**Cómo se carga (T053, #200).** En el esquema `consumo`, con el activo
+`capa_consumo` (`services/data-platform/ingestion/estrella.py`). **Se recalcula
+entera** desde `intermedia.observacion` y se reemplaza en una transacción, porque las
+dimensiones y los agregados cruzan quincenas: por eso no está particionada, y las
+llaves subrogadas se regeneran al recargar y salen iguales si la capa intermedia no
+cambió (RF-25). Cada observación de la capa intermedia es un hecho: si la cuenta no
+cuadra, no se carga. Las llaves foráneas no se declaran; las pruebas comprueban que
+ningún hecho quede huérfano.
+
 ---
 
 ## 2 · Tabla de hechos · `hechos_precio`
 
 | Columna | Tipo | Qué es |
 |---|---|---|
-| `observacion_id` | `bigint` · llave primaria | Identifica la observación y la liga con su fila de la capa cruda |
+| `observacion_id` | `bigint` · llave primaria | Numera las observaciones de la carga, por `lote`, `huella_fila` y `ocurrencia`. Se regenera al recargar, como las llaves de las dimensiones |
 | `fecha_key` | `int` → `dim_fecha` | Fecha de registro, como `AAAAMMDD` |
 | `articulo_key` | `int` → `dim_articulo` | El artículo: producto + presentación |
 | `establecimiento_key` | `int` → `dim_establecimiento` | La tienda donde se observó |
@@ -58,6 +67,8 @@ clave de fila y separa la cuarentena con su motivo.
 | `catalogo` | `text` | El catálogo de **esa** observación |
 | `precio` | `numeric(12,2)` | **La medida**, en pesos |
 | `lote` | `text` | El lote de la fuente del que vino, como `07-2026_Q2` |
+| `huella_fila` | `text` | La huella de la fila tal como llegó. Con `lote` y `ocurrencia` es la llave de la capa intermedia, y por ella se llega a la fila de la capa cruda |
+| `ocurrencia` | `int` | Qué repetición es de esa misma fila dentro del lote, desde 1 |
 | `ingerido_en` | `timestamptz` | Cuándo entró a la capa cruda, según el registro de la corrida |
 
 **Tres decisiones, con su porqué:**
@@ -141,6 +152,10 @@ hechos.
 
 Los tres se calculan sobre `articulo_canonico_key`. Cuando T053 reconcilie
 variantes, los agregados se recalculan y los hechos no se tocan.
+
+**Los cuantiles son `quantile_disc`**: la mediana, el p25 y el p75 son precios que se
+observaron, como el precio típico de la interfaz analítica, y nunca pasan por punto
+flotante (P-02). El guion de T031 medía con `quantile_cont`.
 
 ---
 
