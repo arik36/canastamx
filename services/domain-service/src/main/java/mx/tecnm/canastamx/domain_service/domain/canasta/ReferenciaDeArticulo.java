@@ -4,35 +4,30 @@ import java.text.Normalizer;
 import java.util.Locale;
 
 /**
- * Identidad de un artículo: producto + presentación (ADR 002).
- * La marca NO va aquí — va en el registro de precio.
- *
- * Se guarda YA normalizado, con la misma regla que declara
- * contracts/qqp-v1.yaml -> normalizacion.canonica.
+ * Identidad de un artículo: producto y presentación (ADR 002).
+ * La marca pertenece al registro de precio. Se normalizan ambos campos según
+ * {@code contracts/qqp-v1.yaml}, regla {@code normalizacion.canonica}, antes de
+ * comprobar que no estén vacíos.
  */
 public record ReferenciaDeArticulo(String producto, String presentacion) {
-  //La marca NO va aquí: ADR 002. Va en el registro de precio
     public ReferenciaDeArticulo {
-        producto = canonica(exigir(producto, "producto"));
-        presentacion = canonica(exigir(presentacion, "presentacion"));
+        producto = exigir(canonica(producto), "producto");
+        presentacion = exigir(canonica(presentacion), "presentacion");
     }
 
-    private static String exigir(String v, String campo) {
-        if (v == null || v.isBlank()) {
+    private static String exigir(String valor, String campo) {
+        if (valor.isBlank()) {
             throw new IllegalArgumentException(campo + " no puede ir vacío");
         }
-
-        return v;
+        return valor;
     }
 
-    /**
-     * Equivale a:
-     * trim(regexp_replace(regexp_replace(
-     * lower(strip_accents(col)), '[^a-z0-9 ]', ' ', 'g'),
-     * '\\s+', ' ', 'g'))
-     */
-    static String canonica(String s) {
-        return Normalizer.normalize(s, Normalizer.Form.NFD)
+    /** Quita acentos y signos, convierte a minúsculas y compacta los espacios. */
+    static String canonica(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        return Normalizer.normalize(texto, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9 ]", " ")

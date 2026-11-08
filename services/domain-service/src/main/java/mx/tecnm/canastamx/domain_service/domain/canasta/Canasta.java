@@ -33,19 +33,41 @@ public class Canasta {
         this.nombre = nuevo.trim();
     }
 
+    /** Agregar un artículo repetido suma su cantidad (CU-09, alterno 6b). */
     public void agregar(ReferenciaDeArticulo articulo, Cantidad cantidad) {
+        var nueva = new LineaDeCanasta(articulo, cantidad);
         for (int i = 0; i < lineas.size(); i++) {
             if (lineas.get(i).articulo().equals(articulo)) {
                 lineas.set(i, lineas.get(i).sumar(cantidad));
                 return;
             }
         }
-
-        lineas.add(new LineaDeCanasta(articulo, cantidad));
+        lineas.add(nueva);
     }
 
+    /** Reemplaza la cantidad; una referencia ausente no crea una línea. */
+    public void fijarCantidad(ReferenciaDeArticulo articulo, Cantidad cantidad) {
+        var nueva = new LineaDeCanasta(articulo, cantidad);
+        for (int i = 0; i < lineas.size(); i++) {
+            if (lineas.get(i).articulo().equals(articulo)) {
+                lineas.set(i, nueva);
+                return;
+            }
+        }
+        throw new ArticuloNoExisteException();
+    }
+
+    /** Avisa si el artículo no estaba, sin modificar la canasta (CU-09, 8a). */
     public void quitar(ReferenciaDeArticulo articulo) {
-        lineas.removeIf(l -> l.articulo().equals(articulo));
+        if (!lineas.removeIf(linea -> linea.articulo().equals(articulo))) {
+            throw new ArticuloNoExisteException();
+        }
+    }
+
+    public static class ArticuloNoExisteException extends IllegalArgumentException {
+        public ArticuloNoExisteException() {
+            super("el artículo no existe en la canasta");
+        }
     }
 
     public List<LineaDeCanasta> lineas() {

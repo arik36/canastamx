@@ -127,6 +127,7 @@ paths:
                 properties:
                   canastas: { type: array, items: { $ref: "#/components/schemas/Canasta" } }
                   total: { type: integer, minimum: 0 }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
         "401": { $ref: "#/components/responses/SinSesion" }
     post:
       tags: [Canastas]
@@ -239,6 +240,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Canasta" }
+        "400": { $ref: "#/components/responses/DatosInvalidos" }
         "401": { $ref: "#/components/responses/SinSesion" }
         "404":
           description: La canasta no existe, o el artículo no está en ella (alterno 8a)
