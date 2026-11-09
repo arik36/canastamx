@@ -1,0 +1,103 @@
+{
+  "semana": 8,
+  "del": "2026-11-02",
+  "al": "2026-11-08",
+  "hito": "E3 — Construcción",
+  "columna": "Esta Semana",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 2 al 8 de noviembre: T058 (#191), la tarea de la entrega del 4, que hasta el 7 estaba en la semana 9 (la replaneación del 25 de octubre le agregó la prueba cruzada del token del ADR 020 y puso su trabajo preparatorio del 26 de octubre al 1 de noviembre); y la estrella de T053 (#200) y la cobertura de T055 (#202), que vencen el 8. El resto de T053 a T057, que el ajuste del 6 de noviembre recorrió, está en semana-09.json, semana-10.json y semana-11.json. T059 a T063, que vencían el 4, no tienen tarjeta. El 7 de noviembre, con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), entraron aquí T047 (#160), T049 (#187) y T050 (#188), que estaban vencidas y el recorte fechó al 8.",
+  "nota": "Con «columna», volver a correrlo no les toca el Status a las tarjetas que ya existen. T058 (#191) está cerrada con #199. #160, #187, #188, #200 y #202 vencen el 8, después de la entrega del 4, y van en «E4 — Versión desplegada»: el hito de este archivo es el de T058 y el de una tarjeta nueva que venciera a más tardar el 4.",
+  "tareas": [
+    {
+      "id": "T058",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-04",
+      "titulo": "[S8][Datos] La interfaz analítica: cuatro endpoints y el token del dominio verificado",
+      "que": "**Del 26 de octubre al 1 de noviembre, lo preparatorio:** el esqueleto de `services/analytics-api/` (FastAPI, ADR 017) con la verificación del token del ADR 020 —sólo HS256 al verificar, la clave son los 32 bytes que decodifica `JWT_SECRET`, y los claims `sub`, `rol`, `iat` y `exp` obligatorios y sin tolerancia de reloj—, el rol de `x-rol` exigido en cada ruta que lo declara (P-07), y la prueba cruzada contra el dominio. **Del 2 al 4 de noviembre:** cuatro endpoints de sólo lectura de `analitica.yaml` 0.2.1, nombrados en esta tarjeta antes de empezarlos, contra lo que haya ese día en `postgres-analytics` (la capa intermedia de T048; la estrella de T053 vence el 8). La medición de H3 sobre los 200 pares (ADR 004) se hace contra la reconciliación de T053, así que no cabe antes del 4: el 4 se reporta como pendiente, con su fecha, y no se estima.",
+      "criterio": "Prueba cruzada en verde: un token que emite `POST /api/v1/sesiones` del dominio para las cuentas de la semilla de T044 se acepta; uno alterado, vencido, firmado con otra clave o con otro algoritmo, o al que le falte un claim, recibe 401 `SinSesion`; una ruta con `x-rol: ANALISTA` responde 200 con el token de una cuenta ANALISTA y 401 `SinSesion` con el de una OPERADOR o sin token, como dice `analitica.yaml` 0.2.1. Esas pruebas corren con `pytest` en el trabajo «Datos (Python)» de la CI —hoy sólo corre `services/data-platform/tests/`—, con un token firmado con la misma clave y los mismos claims que `JwtService`, y una vez de punta a punta contra el dominio real, con su salida pegada en esta tarjeta. Los cuatro endpoints responden con los esquemas del contrato y toda cifra agregada trae su `poblacion`. El ADR 020 se ratifica aparte (A, con C1, en la boleta): ratificarlo no cierra esta tarjeta.",
+      "donde": "Rama `feat/alm-interfaz-analitica` · `services/analytics-api/` y `.github/workflows/ci.yml`",
+      "depende": [
+        "#157",
+        "#158"
+      ],
+      "nota_dependencia": "Necesita las cuentas ANALISTA y OPERADOR de la semilla de T044 (#158) y, para los datos, la capa intermedia de T048 (semana 7). **Mientras esta prueba cruzada no pase, las rutas con `x-rol` no se liberan**, aunque el ADR 020 esté ratificado y el dominio ya lo aplique en `main`. H3 queda como pendiente identificado, porque depende de T053 (8 de noviembre); hasta que se mida, la cola dice «se mide en T058»."
+    },
+    {
+      "id": "T053",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Datos] El esquema estrella cargado desde la capa intermedia",
+      "que": "Cargar la capa de consumo de `docs/datos/modelo-dimensional.md` en `postgres-analytics`, desde la capa intermedia de T048 y con SQL dentro de activos de Dagster (ADR 019), a partir de los SQL de T031 que ya se probaron en `docs/datos/probar-modelo-dimensional.py`: `hechos_precio`, las cuatro dimensiones (`dim_articulo`, `dim_establecimiento`, `dim_cadena` y `dim_fecha`) y los tres agregados del §4. Mientras no haya reconciliación, `articulo_canonico_key` es igual a `articulo_key`, como dice el modelo.",
+      "criterio": "`hechos_precio` y las cuatro dimensiones tienen datos en `postgres-analytics`, cargados por activos de Dagster desde la capa intermedia, con sus conteos en la descripción de la solicitud (el Panel decía `fact_precio_observado`; el nombre es el del modelo). Los tres agregados se calculan sobre `articulo_canonico_key`, así que la reconciliación los recalcula sin tocar los hechos.",
+      "donde": "Rama `feat/alm-esquema-estrella` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#186"
+      ],
+      "nota_dependencia": "T048 (#186) está en `main` desde #196: su capa intermedia es el origen. **La estrella va primero porque la leen las compuertas de T064, las operaciones de la analítica que faltan y la consola.** La reconciliación y la medición de H3, que el Panel ponía aquí, son la otra tarjeta de T053, con fecha del 22. **La revisión de dbt que el ADR 019 fechó el 2 de noviembre, «con el esquema estrella ya cargado», no tiene rastro en `main`**: hay que fecharla de nuevo o decidirla, y si dbt no entra, escribir el ADR que lo retira de R-07 y del README, como pide el ADR 019."
+    },
+    {
+      "id": "T055",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-11-02",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Dominio] La cobertura de las pruebas de la lógica de dominio, medida y reportada",
+      "que": "Medir la cobertura de las pruebas sobre las clases de dominio, el paquete `mx.tecnm.canastamx.domain_service.domain` (hoy `canasta` y `usuario`), y reportarla. `pom.xml` no trae hoy ninguna herramienta de cobertura: la que se agregue va en la descripción de la solicitud con su razón, y la medición corre en el trabajo «Dominio (Java)» de la CI, no sólo en una máquina.",
+      "criterio": "El registro del trabajo «Dominio (Java)» de la solicitud muestra la cobertura de líneas y de ramas del paquete `domain`, y la descripción de la solicitud trae la misma cifra con su población: qué clases entran, cuántas pruebas corrieron («Tests run») y sobre qué commit. Las clases de dominio que queden sin cubrir se nombran. `mvn -B test` sigue en verde.",
+      "donde": "Rama `feat/lyl-cobertura-del-dominio` · `services/domain-service/`",
+      "depende": [],
+      "nota_dependencia": "**C1 hace primero T050 (#188)**, que vencía el 1 de noviembre, no tiene solicitud y T056 espera. Esta tarjeta va después y conserva el 8, la fecha que prometió la entrega del 4. T060 (4 de noviembre) deja las suites de JUnit en verde en la CI con su conteo, y la cobertura medida es de esta tarjeta. La cifra vale para el commit en el que se midió: T050 agrega reglas y pruebas a `Canasta`."
+    },
+    {
+      "id": "T047",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Web] Estructura de la aplicación web, con acceso y navegación",
+      "que": "Escribir el **ADR del cliente web** (Next.js o el Vite que exporta Figma) antes del código. Crear la estructura del proyecto y las rutas de las cinco vistas web: acceso, tablero, detalle, consola y cola. Conectar el acceso a `POST /api/v1/sesiones` y mandar según el rol: tablero al analista, consola al operador (P-07). Barra lateral con **el correo y el rol** de la sesión, nunca un nombre (P-13). Aviso de ancho mínimo en las consolas por debajo de 1025 px (D-08). Además, rehacer las capturas del prototipo con los puntos 12, 13 y 14 de `diseno.md` §7 ya corregidos.",
+      "criterio": "Las cinco rutas existen y se navega entre ellas. Entrar como analista abre el tablero y como operador la consola; escribir a mano la ruta de la consola siendo analista no la abre. La barra muestra correo y rol. A 1024 px la consola avisa del ancho mínimo y a 1025 no. Toda cifra en pantalla lleva su población (RNF-16). Los puntos 12, 13 y 14 de `diseno.md` §7 quedan marcados como resueltos.",
+      "donde": "`clients/web/`, `docs/adr/` y `docs/entregas/diseno.md`",
+      "depende": [
+        "#157"
+      ],
+      "nota_dependencia": "El token de C1 llega a mitad de semana. La estructura, las rutas y las capturas corregidas no dependen de él: van primero. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), vence el 8 de noviembre:** falta aplicar `pr176-dominio-completo.patch`, que restaura `iniciarSesion` y `urlDelDominio` en `clients/web/src/lib/dominio.mjs`, y que la descripción de #176 cite el ADR 022 y diga `Closes #160`. De esta tarjeta dependen el tablero (#190), el detalle (#204) y la consola (T068)."
+    },
+    {
+      "id": "T049",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Infra] El entorno de pruebas aislado que usará el experimento",
+      "que": "Dejar listo para el experimento el entorno de `infra/envs/test/` que entró con #129. Entre contenedores ya no se repite nada con desarrollo (proyecto `canastamx_test`, puertos 5442, 5443, 9010 y 9011, volúmenes y red con su prefijo); lo que falta está fuera de Docker. La plataforma de datos corre en la máquina y escribe donde digan sus variables, y cinco de ellas no están en ningún `.env.example`: `CANASTAMX_LOTES`, `CANASTAMX_CORRIDAS`, `CANASTAMX_SIMULAR`, `CANASTAMX_FECHA_REFERENCIA` y `DAGSTER_HOME`, que también guarda estado (las corridas, el sensor y las filas de cada lote). Agregarlas al `.env.example` de pruebas, con carpetas propias fuera del repositorio; explicar en el `README.md` cómo apuntar la plataforma a pruebas, cómo comprobar a dónde apunta y cómo bajar sólo pruebas; y escribir en `infra/envs/test/` la comprobación de aislamiento que T070 y T076 van a correr antes de cada corrida. Con A, una corrida de la plataforma contra pruebas con el sensor encendido.",
+      "criterio": "Con los dos entornos arriba a la vez no se repite ningún nombre, puerto, volumen ni red; una tabla creada en la base analítica de pruebas no aparece en la de desarrollo; la corrida con A deja objetos en `canastamx-bronze-test` y ninguno nuevo en `canastamx-bronze`, con su evidencia y su `DAGSTER_HOME` fuera de las carpetas de desarrollo. `down -v` de pruebas borra sus volúmenes y deja los de desarrollo. El `.env.example` de pruebas declara las variables de la plataforma sin ningún valor secreto y pasa `python3 infra/scripts/revisar-env.py`, y la comprobación de aislamiento se detiene diciendo qué falla si la terminal apunta a desarrollo.",
+      "donde": "Rama `feat/aas-entorno-de-pruebas` · `infra/envs/test/`",
+      "depende": [],
+      "nota_dependencia": "T044 (#158) ya está hecha: entró con #197 el 2 de noviembre, con el ADR 008 aceptado y el script de cuentas. **Esta tarjeta va antes que T054 (#201)**, el primer despliegue, que vence el 13 de noviembre. La corrida con A es la misma que pide T048 contra MinIO, y su salida tampoco está en #186: se hace una vez y se pega en las dos tarjetas. T049 destraba el arnés de inyección de fallas (T070) y las 30 corridas (T076, 27 de noviembre)."
+    },
+    {
+      "id": "T050",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-10-26",
+      "fecha": "2026-11-08",
+      "titulo": "[S8][Dominio] Las rutas de canasta contra dominio.yaml",
+      "que": "Primero, las reglas que el contrato promete y `Canasta` no cumple hoy: `fijar` para `PUT …/lineas` (CU-09, paso 7), que reemplaza la cantidad y no agrega la línea si no existe; `quitar` que avisa cuando el artículo no está (alterno 8a), en lugar del `removeIf` callado de hoy; `ReferenciaDeArticulo` que normaliza antes de validar, para que un producto hecho sólo de puntos no quede vacío; y la cantidad nula rechazada haya o no línea previa. Una prueba JUnit por regla en `CanastaTest`; en `modelo-er.md`, `LINEA_CANASTA` con su llave primaria (`canasta_id`, `producto`, `presentacion`) y `cantidad NOT NULL`, y `fijar` en `modelo-dominio.md`. Después, las ocho operaciones de canasta de `dominio.yaml`, con el dueño tomado de la sesión (`@CuentaDeLaSesion`), 404 para la canasta ajena y todo error como `application/problem+json` (P-03); y en el contrato, el 400 que les falta a `GET /api/v1/canastas` y a `DELETE …/lineas`. En la misma solicitud: `org.yaml:snakeyaml` como dependencia directa de prueba en `pom.xml` (hoy llega de forma transitiva y la usan `ContratoOpenApiEsquemasTest`, `SeguridadDelContrato` y `SeguridadDelContratoTest`), y la redacción pendiente del README y el Javadoc del dominio que dejó #185, con seguimiento en T078.",
+      "criterio": "`CanastaTest` suma al menos una prueba por cada una de las cuatro reglas (hoy tiene 4), y el registro del trabajo «Dominio (Java)» de la solicitud muestra «Tests run» con el total: «0 tests» en verde es un falso positivo. Las ocho operaciones contestan con los códigos del contrato, y todo error, incluido el 401 sin sesión, sale como `application/problem+json` con `type`, `title` y `status`. `RutasProtegidasTests` pasa con las ocho rutas, que en `dominio.yaml` piden sesión. Una `Canasta` trae `id`, `nombre` y `lineas`, y nada más. `PUT …/lineas` deja la cantidad que se mandó; fijar o quitar un artículo que no está es 404 y la canasta no cambia; la canasta de otra cuenta es 404. `pom.xml` declara `org.yaml:snakeyaml` con `<scope>test</scope>` y sin versión (la fija Spring Boot), y `mvn -B test` pasa. La descripción de la solicitud lista cada corrección de README y Javadoc, archivo por archivo. `redocly lint` da 0 errores y los mismos 5 avisos.",
+      "donde": "Rama `feat/lyl-rutas-de-canasta` · `services/domain-service/`, `docs/analisis/openapi/` (`dominio.yaml` y su `README.md`), `docs/analisis/modelo-er.md` y `docs/analisis/modelo-dominio.md`",
+      "depende": [
+        "#157"
+      ],
+      "nota_dependencia": "T045 (#157) está en `main`: la sesión, el rol y `@CuentaDeLaSesion` sirven tal cual. **Lo que el Panel ponía aquí, alertas y notificaciones, va después:** D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11 y otros documentos todavía dicen «por correo» (la lista está en `docs/equipo/decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica. Las rutas de canasta tienen contrato y no esperan nada. D-12 se votó el 2 de noviembre y ganó B, que no cambia código: lo que le deja a C1, declarar la excepción en `dominio.yaml` y en CU-08, está en «Lo que dejan las decisiones» de `decisiones-pendientes.md` y no entra aquí. **Esta tarea destraba T056 (#203, C2), que vence el 15 de noviembre**, y va antes que la cobertura de T055 (#202)."
+    }
+  ]
+}

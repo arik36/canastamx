@@ -78,10 +78,30 @@ estaba registrado en `docs/equipo/semanas/semana-04.json`, en su campo `fuente`.
 | 12 al 18 de octubre · arranca la construcción | Semana 7 | Semana 6 |
 | 19 al 25 de octubre · **la semana 7 se recorrió** | Semana 8 | — · lo pendiente de la semana 6 |
 | 26 de octubre al 1 de noviembre | Semana 9 | Semana 7 |
-| 2 al 8 de noviembre · **entrega del 4** | Semana 10 | Semanas 8 (vence el 8) y 9 (vence el 4) |
+| 2 al 8 de noviembre · **entrega del 4** | Semana 10 | Semana 8 |
+| 9 al 15 de noviembre | Semana 11 | Semana 9 |
+| 16 al 22 de noviembre · **entrega del 18** | Semana 12 | Semana 10 |
+| 23 al 29 de noviembre · el experimento | Semana 13 | Semana 11 |
+| 30 de noviembre al 6 de diciembre · **presentación del 2** | Semana 14 | Semana 12 |
+| 7 al 9 de diciembre · **presentaciones del 7 y del 9** | — | Semana 13 |
 
 Desde el 26 de octubre la diferencia es de dos: la semana 7 del tablero no arrancó el
 19 de octubre sino el 26 (ver «Replaneación del 25 de octubre»).
+
+**Desde el 7 de noviembre, cada semana del tablero es una semana del calendario, y
+cada tarjeta va en la semana de su fecha límite.** Si una replaneación le mueve la
+fecha a otra semana, la tarjeta cambia de semana, de archivo en `docs/equipo/semanas/`
+y de prefijo en el título; si se vence, se queda en su semana, en «Retrasadas», hasta
+que tenga fecha nueva. Hasta el 7, las semanas 8 y 9 del tablero compartían las fechas
+del 2 al 8 de noviembre. Desde el 7 de noviembre el Panel numera igual: su semana 9, del
+2 al 4 de noviembre, quedó en la 8, y sus semanas 10 a 14 son ahora la 9 a la 13. El pie
+de cada tarjeta dice su tarea del Panel.
+
+**El hito de una tarjeta es la primera entrega que cae en su fecha límite o después:**
+«E3 — Construcción» hasta el 4 de noviembre, «E4 — Versión desplegada» del 5 al 18, y
+«E5 — Presentación» del 19 de noviembre al 9 de diciembre. El `hito` de cada archivo de
+`docs/equipo/semanas/` es el de sus tarjetas nuevas; en las semanas 8 y 10, que tienen
+una entrega a media semana, la nota del archivo dice cuáles van en el hito siguiente.
 
 **La regla, para no volver a tropezar: en los mensajes y en los pendientes se usan
 fechas, no números de semana.** «Antes del 12 de octubre» no se presta a dos
@@ -128,6 +148,51 @@ Lo que cambia de alcance, y por qué:
 - Las alertas: D-09 ya se votó (B, sólo el aviso dentro de la app), pero RF-21, CU-11
   y otros documentos todavía dicen «por correo» (la lista está en
   `decisiones-pendientes.md`), y el disparo necesita `preciosVigentes` de la analítica.
+
+
+---
+
+## Recorte del 5 de noviembre
+
+La propuesta del 5 de noviembre, para terminar el 2 de diciembre, la aprobó el equipo; se
+registra el 7 de noviembre. El ritmo de las dos semanas anteriores, unas cuatro
+solicitudes integradas por semana, no alcanzaba para todo el alcance antes del 18.
+
+- **El núcleo de la investigación, para el 18:** compuertas y cuarentena operando (T064),
+  las seis operaciones de la consola (T069) y la consola (T068), el entorno de pruebas
+  (T049), el arnés de fallas (T070, que puede llegar hasta el 20) y el despliegue (T054),
+  que se hace a mano.
+- **El camino mínimo de cada usuario, a más tardar el 25:** la canasta en la app (T050 y
+  T056), el tablero y el detalle en la web (T047, T052 y T057) y la reconciliación con H3
+  (#206, el 22).
+
+**Salen del producto**, y quedan como deuda conocida en el documento de traspaso (T083):
+
+| Qué | Tareas y operaciones |
+|---|---|
+| Las alertas | T066 y la pantalla de T067, con `rangoHistorico` y `preciosVigentes`. El build de T067 pasa a T072 |
+| La cola de reconciliación | T073, con `colaDeVariantes` y `resolverVariante` |
+| El despliegue continuo | T065. Su certificado y sus datos de prueba pasan a T054, porque la entrega del 18 pide HTTPS y datos de prueba en las bases |
+| La exportación a CSV | `exportarArticulo` |
+| El índice como pantalla | El índice, la dispersión y la correlación de T069, con `indiceContraInpc`. H4 se calcula como análisis en T077, con la fuente de INEGI que estaba en T064 |
+
+**Las fechas que cambian:** T047, T049 y T050 vencen el 8 de noviembre; T052, el 15; T068,
+T071, T072 y T074, el 18; T070, el 20; la reconciliación (#206), el 22, y el detalle de
+artículo (#204), el 25. **Las tres operaciones que piden los clientes**, `costearCanasta`, `articulosAnomalos` y
+`serieDeArticulo`, van en T069 (A), porque la arquitectura pone la interfaz analítica en A;
+si el equipo las pasa a C1, como sugería la propuesta, cambian de tarjeta.
+
+**Ajuste del 7 de noviembre, para que la entrega sea visible y cumpla el objetivo del
+proyecto** (sistema desplegado con clientes web y móvil, en contenedores y en la nube, con la
+entrega del 18 que pide integración entre front y back, infraestructura, datos de prueba y
+versión final desplegada):
+
+- T070 se parte: las pruebas de integración entre front y back vencen el 18, y el arnés, el 20.
+- T056 suma el detalle del artículo en la app, con sus precios por establecimiento
+  (`compararPrecios`, que ya sirve la interfaz real).
+- T072 suma crear cuenta en la app y el aviso de Descubrir, que se queda sin contenido.
+- T054 escribe los Dockerfile de los servicios y carga los datos de prueba, y T074 pide el
+  sistema desplegado con datos y el despliegue de lo que entre hasta el 29.
 
 ---
 

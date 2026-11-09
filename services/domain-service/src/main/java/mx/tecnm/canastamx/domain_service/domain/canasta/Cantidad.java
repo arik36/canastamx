@@ -10,6 +10,6 @@ public record Cantidad(int unidades) {
     }
 
     public Cantidad mas(Cantidad otra) {
-        return new Cantidad(unidades + otra.unidades);
+        return new Cantidad(Math.addExact(unidades, otra.unidades));
     }
 }

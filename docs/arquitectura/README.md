@@ -142,6 +142,6 @@ usa cada contenedor lo confirma B en el ADR 008, cuando entren Dagster y FastAPI
 
 | Qué | Afecta | Quién |
 |---|---|---|
-| ADR 016 a 019: Dagster, FastAPI, Pandera y dbt | El contenedor de la plataforma y la interfaz analítica | A, con la firma de B |
+| ADR 016 a 019 y 023: Dagster, FastAPI, Pandera y SQL en DuckDB, sin dbt | El contenedor de la plataforma y la interfaz analítica | A, con la firma de B |
 | D-09: el servicio de correo | El contexto, los contenedores y el despliegue | C1 y B |
 | La memoria de cada contenedor | El despliegue | B, en el ADR 008 |

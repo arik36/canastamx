@@ -85,7 +85,7 @@ erDiagram
         timestamptz abierto_en
         text estado "ABIERTO, CERRADO o INFORMATIVO"
         text causa "la escribe la interfaz analítica"
-        text cerrado_por "correo del operador"
+        text cerrado_por "correo del operador (RNF-22)"
         boolean reprocesar_lote
     }
     VARIANTE {
@@ -95,7 +95,7 @@ erDiagram
         numeric parecido
         text cadena
         text estado "PENDIENTE, APROBADA, RECHAZADA o ASIGNADA"
-        text resuelta_por "la escribe la interfaz analítica"
+        text resuelta_por "correo del operador (RNF-22)"
     }
     EQUIVALENCIA {
         text original_producto PK
@@ -114,8 +114,8 @@ erDiagram
 | `corrida` | Una fila por corrida. Un lote reprocesado tiene varias, y la vigente es la última | CU-01, CU-02 (paso 8), RF-08 | Plataforma |
 | `paso` | Cada etapa de la corrida, con filas de entrada y salida y su hora | El linaje de CU-05 (paso 5) y RF-12 | Plataforma |
 | `cuarentena` | Cada fila apartada, con su motivo, su compuerta y la fila tal como llegó | CU-02 (3a, 4a y 5a), SLA-D-09 | Plataforma |
-| `incidente` | Incidentes y avisos. Los incidentes se cierran con causa, decisión, fecha y quién; los avisos no se cierran | CU-04, RF-13, SLA-D-09 | Plataforma (los abre) · Interfaz analítica (los cierra) |
-| `variante` | La cola: la variante, la sugerencia, su parecido y la decisión del operador | CU-06 (2b), CU-14 | Plataforma (las detecta) · Interfaz analítica (las resuelve) |
+| `incidente` | Incidentes y avisos. Los incidentes se cierran con causa, decisión, fecha y quién: el correo del operador, y nada más de la persona (RNF-22); los avisos no se cierran | CU-04, RF-13, SLA-D-09 | Plataforma (los abre) · Interfaz analítica (los cierra) |
+| `variante` | La cola: la variante, la sugerencia, su parecido y la decisión del operador, con su correo (RNF-22) | CU-06 (2b), CU-14 | Plataforma (las detecta) · Interfaz analítica (las resuelve) |
 | `equivalencia` | El diccionario de artículos: qué escritura es qué artículo canónico | CU-06 (pasos 3 y 3a), CU-14 (paso 5), RF-D10 | Plataforma |
 
 **Del diccionario a la capa de consumo.** En cada corrida, la plataforma pasa a

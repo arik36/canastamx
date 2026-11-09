@@ -79,7 +79,7 @@ jobs:
       - name: Compilar
         if: steps.existe.outputs.hay == 'si'
         working-directory: services/domain-service
-        run: mvn -B compile
+        run: mvn -B clean compile
 
       # Una clave nueva en cada corrida: no se guarda ni se muestra. Es Base64 de
       # 32 bytes aleatorios, el formato que exige el dominio (ADR 020).
@@ -96,6 +96,29 @@ jobs:
         if: steps.existe.outputs.hay == 'si'
         working-directory: services/domain-service
         run: mvn -B test -DfailIfNoTests=true
+
+      - name: Configurar Python para el resumen de cobertura
+        if: steps.existe.outputs.hay == 'si'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cobertura de líneas y ramas del dominio (T055)
+        if: steps.existe.outputs.hay == 'si'
+        working-directory: services/domain-service
+        run: |
+          python -m unittest discover -s scripts -p 'test_*.py' -v
+          python scripts/resumir_cobertura.py
+
+      - name: Informe de cobertura del dominio
+        if: steps.existe.outputs.hay == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-dominio-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            services/domain-service/target/site/jacoco/
+            services/domain-service/target/cobertura-dominio.md
 
   # ── Plataforma de datos · Python 3.12 ─────────────────────────────────────
   datos:
@@ -133,6 +156,14 @@ jobs:
         run: |
           pip install -r services/data-platform/requirements.txt
           python -m pytest services/data-platform/tests/ -v
+
+      # T058 · la prueba cruzada del token (ADR 020) y las cuatro rutas contra
+      # analitica.yaml. Sin base y sin dominio: lo de punta a punta corre a mano.
+      - name: Pruebas de la interfaz analítica
+        if: steps.existe.outputs.hay == 'si'
+        run: |
+          pip install -r services/analytics-api/requirements.txt
+          python -m pytest services/analytics-api/tests/ -v
 
   # ── Higiene del repositorio · corre siempre, desde el día uno ─────────────
   # Este es el único que verifica de verdad desde el principio, y es el que

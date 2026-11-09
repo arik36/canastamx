@@ -1,7 +1,8 @@
 # ADR 019 · Las transformaciones: se pospone dbt
 
 - **Fecha:** 11 de octubre de 2026
-- **Estado:** aceptada el 11 de octubre de 2026, con revisión fechada el 2 de noviembre de 2026
+- **Estado:** aceptada el 11 de octubre de 2026. Revisada el 7 de noviembre de 2026: dbt
+  no entra (ADR 023)
 - **Participantes:** A, dueña del frente de datos
 
 ## Contexto

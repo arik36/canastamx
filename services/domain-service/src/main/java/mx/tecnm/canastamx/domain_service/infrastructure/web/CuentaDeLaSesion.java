@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
  * Sin un token Bearer válido de una cuenta que existe, el método no se llama y
  * la respuesta es el 401 de {@link SinSesionHandler}.
  *
- * <p>Toda ruta que {@code dominio.yaml} no declare con {@code security: []} lo
- * lleva; {@code RutasProtegidasTests} lo comprueba.
+ * <p>Toda operación implementada que {@code dominio.yaml} declara protegida lo
+ * lleva (por su seguridad propia o la global); {@code RutasProtegidasTests} lo comprueba.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

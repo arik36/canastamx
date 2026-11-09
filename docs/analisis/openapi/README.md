@@ -63,7 +63,7 @@ Hoy el validador da **0 errores y 5 avisos esperados**:
 | P-10 | ¿Quién calcula el costo de la canasta? | **La analítica,** con `POST /api/v1/canastas/costo` | A, C1 y D |
 | P-13 | ¿El usuario tiene nombre? | **No:** se quita del modelo ER, y la cuenta se identifica con su correo | C1 |
 | P-14 | ¿De qué entidad es el precio de una alerta? | **La alerta guarda su entidad:** la elegida en la app al crearla | C1 |
-| P-15 | ¿Qué es un artículo «anómalo»? | **Variación quincenal del precio típico mayor al 20%**, en valor absoluto. Se calibra con el volumen real | A y D |
+| P-15 | ¿Qué es un artículo «anómalo»? | **Variación quincenal del precio típico mayor al 20%**, en valor absoluto, con al menos 5 observaciones en cada quincena. El 7 de noviembre se quedó con esos valores por omisión; se confirman con el volumen real en T069 | A y D |
 
 ## Correcciones que salieron de la revisión
 
@@ -93,3 +93,16 @@ número se calibra junto con el 20%.
 | La compuerta del cruce: «¿estaba arriba o es su primera revisión?» | `bpmn/alertas.bpmn` | C1 |
 | La propuesta dice que el dominio y la analítica «no se llaman entre sí» y que la analítica tiene «cuatro endpoints de sólo lectura» | Documento de la entrega 2 | A |
 | Cuenta muestra el correo, no un nombre. La cola muestra cobertura y precisión con su población, o «se mide en T058» | Prototipo | D y C2 |
+
+## Implementación de canastas (T050, #188)
+
+El servicio de dominio implementa las ocho operaciones de canastas del contrato;
+las operaciones de alertas siguen pendientes. Todas las de canastas exigen sesión.
+El dueño se obtiene del token y una canasta ajena responde 404, igual que una ausente.
+`POST …/lineas` suma si el artículo ya existe; `PUT …/lineas` reemplaza la cantidad y
+responde 404 si no estaba. Quitar un artículo ausente también responde 404 sin cambios.
+La cantidad es un entero positivo. `Canasta` expone sólo `id`, `nombre` y `lineas`.
+
+Los datos inválidos, incluida la paginación y los parámetros de quitar un artículo,
+responden 400. Todos los errores usan `application/problem+json` con `type`, `title`
+y `status`. Sin sesión válida se responde 401 mediante el manejador compartido.

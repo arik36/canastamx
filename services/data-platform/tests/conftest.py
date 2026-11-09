@@ -17,6 +17,10 @@ Dos medidas, y la segunda es la que importa:
    modificación— al empezar, y otra al terminar. Si cambió algo, la suite termina
    con error y dice qué. Así, si mañana alguien escribe una prueba que se salta la
    variable, no lo descubre perdiendo evidencia.
+
+Y una revisión antes de empezar (T048): que estén las dos tablas del `?` que el
+contrato declara. Sin ellas no avanza ningún lote, y es mejor decirlo una vez que
+en cincuenta pruebas.
 """
 
 import os
@@ -35,6 +39,24 @@ def pytest_configure(config):
     temporal = tempfile.mkdtemp(prefix="canastamx-corridas-de-prueba-")
     os.environ["CANASTAMX_CORRIDAS"] = temporal
     config._canastamx_corridas = temporal
+
+
+def pytest_sessionstart(session):
+    """Sin las tablas del `?` que declara el contrato, ningún lote avanza (CU-03 ·
+    2c), y decenas de pruebas fallarían por esa sola razón. Se dice una vez, al
+    principio, con lo que hay que hacer."""
+    import yaml
+
+    raiz = Path(__file__).resolve().parents[3]
+    contrato = yaml.safe_load((raiz / "contracts" / "qqp-v1.yaml").read_text(encoding="utf-8"))
+    rep = contrato["normalizacion"]["reparar_interrogantes"]
+    faltan = [r for r in (rep.get("diccionario"), (rep.get("ambiguo") or {}).get("candidatos"))
+              if r and not (raiz / r).exists()]
+    if faltan:
+        pytest.exit(
+            f"el contrato {contrato['version']} declara {', '.join(faltan)} y no está en el "
+            "repositorio. La tabla de los ambiguos sale del corpus: "
+            "python docs/datos/perfilado/mojibake-ambiguos.py --escribir", returncode=1)
 
 
 def _foto(carpeta):

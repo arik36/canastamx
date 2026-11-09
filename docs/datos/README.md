@@ -40,6 +40,7 @@ Hay dependencias reales entre ellos. Éste es el orden que funciona:
 | 7 | `medir-decisiones.py` | Las cifras que pidieron los ADR del 11 de septiembre. | 1 |
 | 8 | `h3-entre-cadenas.py` | ¿Las cadenas escriben distinto el mismo producto? | 1 |
 | 9 | `h3-muestra-para-calificar.py` | Arma la muestra de 200 pares que H3 necesita de verdad. | 8 |
+| 10 | `mojibake-ambiguos.py` | Los gemelos de cada `?` ambiguo y sus filas en el corpus. Escribe `contracts/mojibake-ambiguos.csv` (contrato 1.3.6), y sólo si reproduce el diccionario entrada por entrada. | 2 |
 
 `diagnostico.py` es de la primera semana y ya no forma parte del flujo: quedó
 como registro de cómo se encontró el problema de los archivos con esquema

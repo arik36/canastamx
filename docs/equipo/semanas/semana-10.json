@@ -1,0 +1,125 @@
+{
+  "semana": 10,
+  "del": "2026-11-16",
+  "al": "2026-11-22",
+  "hito": "E4 — Versión desplegada",
+  "columna": "Backlog",
+  "fuente": "Desde el 7 de noviembre, cada semana del tablero es una semana del calendario y cada tarjeta va en la semana de su fecha límite (docs/equipo/cronograma.md, la tabla de semanas). Aquí queda lo que vence del 16 al 22 de noviembre, la semana de la entrega del 18: versión final desplegada y congelamiento de funcionalidad (el lunes 16 es festivo). Por ahora, la segunda tarjeta de T053 (#206), la reconciliación versión uno y la medición de H3, que el ajuste del 6 de noviembre separó de la estrella y puso al 22. Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), entraron el 7 de noviembre T068, T070, T071, T072 y la entrega del 18, T074.",
+  "nota": "Con «columna»: «Backlog», volver a correrlo no les toca el Status a las tarjetas que ya existen; las nuevas entran en Backlog y en la reunión del lunes se pasan a «Esta Semana», como siempre. #206 (22 de noviembre) y el arnés de T070 (#213, 20) vencen después de la entrega del 18 y van en «E5 — Presentación»: el hito de este archivo es el de las que vencen a más tardar el 18.",
+  "tareas": [
+    {
+      "id": "T053",
+      "clave": "A",
+      "frente": "Datos",
+      "etiqueta": "datos",
+      "inicio": "2026-11-09",
+      "fecha": "2026-11-22",
+      "titulo": "[S10][Datos] La reconciliación de productos versión uno y la medición de H3",
+      "que": "La segunda parte de T053: la reconciliación de productos versión uno, que reescribe `articulo_canonico_key` en `dim_articulo` y, con él, recalcula los agregados. Su receta es la del ADR 004 con lo que le agregó el ADR 014: reglas para las cinco formas ortográficas (plural, conector, abreviatura, unidad y orden de palabras); la lista de palabras que no identifican al artículo, como colores de empaque y nombres de línea comercial, por producto o por categoría, versionada y revisable; y la comparación difusa al final, calibrada para unir los «sí» de la muestra sin unir los «no». Con esa reconciliación se mide H3 sobre los 200 pares.",
+      "criterio": "`articulo_canonico_key` sale de la reconciliación y los agregados se recalculan sobre él sin tocar los hechos. La lista de palabras que no identifican está en el repositorio, por producto o por categoría, y `congelado` contra `descongelado`, el caso que dejó el ADR 004 para detectar un umbral flojo, no se une. H3 queda medida sobre los 200 pares como dicen los ADR 004 y 014: cobertura y precisión con su población, y aparte los pares que sólo difieren en `marca`. Si la meta no se alcanza, se reporta la cifra que salió.",
+      "donde": "Rama `feat/alm-reconciliacion` · `services/data-platform/` y `docs/datos/`",
+      "depende": [
+        "#200"
+      ],
+      "nota_dependencia": "Va después de la estrella (#200), la primera tarjeta de T053, de la que se separó el 6 de noviembre para que la estrella no esperara a la reconciliación. H3 se contrasta en T077, el 29 de noviembre. T058 cerró en #199 con H3 pendiente de esta reconciliación."
+    },
+    {
+      "id": "T068",
+      "clave": "D",
+      "frente": "Web",
+      "etiqueta": "web",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Web] La consola de observabilidad conectada a los seis indicadores reales",
+      "que": "La vista 4 de `docs/analisis/inventario-vistas.md` para la cuenta OPERADOR: los seis indicadores de CU-05 (última corrida; frescura, en «no aplica» mientras la fuente no publique; filas procesadas; volumen en cuarentena del alcance con su porcentaje; avisos de esquema; incidentes abiertos), el linaje entre capas, el historial de avisos e incidentes (RF-13), con los avisos en azul y sin cierre, y el cierre de un incidente con su causa (CU-04). Pide `/operacion/estado`, `/corridas`, `/cuarentena`, `/incidentes` y el cierre, con el token de la sesión. Primero contra el simulador de `analitica.yaml`; cuando entre T069, contra la interfaz real.",
+      "criterio": "Los seis indicadores leen datos del sistema y un incidente salta a la vista en tres segundos. Con la cuenta OPERADOR de la semilla, la consola trae cada indicador con su población y su fecha, y un incidente se cierra con su causa; con la de ANALISTA la ruta no se abre. Debajo de 1025 px aparece el aviso de ancho mínimo de D-08. `npm test`, `npm run lint` y `npm run build` pasan, y la solicitud trae una captura contra la interfaz real.",
+      "donde": "Rama `feat/kah-consola` · `clients/web/`",
+      "depende": [
+        "#160"
+      ],
+      "nota_dependencia": "La aplicación web entra con T047 (#160, solicitud #176). Las operaciones reales son de T069 (A, 15 de noviembre); hasta entonces, el simulador, y se dice. **Es parte del núcleo de la entrega del 18: es la consola que enseña el experimento.**"
+    },
+    {
+      "id": "T070",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-20",
+      "titulo": "[S10][Infra] El arnés de inyección de fallas",
+      "que": "El arnés que inyecta las fallas del experimento en el entorno de pruebas aislado (T049) y deja registrada cada inyección, para medir después la contención (H1) y la detección (H2). Las cinco tipologías las especifica A en T075 (24 de noviembre): el arnés tiene que poder recibirlas sin cambiar su código.",
+      "criterio": "El arnés ejecuta una corrida piloto contra el entorno de pruebas, después de que pasa la comprobación de aislamiento de T049, y deja la falla inyectada, su hora y lo que hizo la plataforma, sin escribir nada en desarrollo.",
+      "donde": "Rama `feat/aas-arnes-de-fallas` · `infra/scripts/` y `docs/experimento/`",
+      "depende": [
+        "#187"
+      ],
+      "nota_dependencia": "Necesita el entorno de pruebas de T049 (#187) y su comprobación de aislamiento. **Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), el arnés es núcleo y puede llegar hasta el 20**: sin él no hay 30 corridas (T076, 27 de noviembre). Vence después de la entrega del 18, así que va en «E5 — Presentación». Las pruebas de integración entre front y back, que el Panel ponía aquí, son la otra tarjeta de T070, con fecha del 18, porque la entrega del 18 las pide."
+    },
+    {
+      "id": "T070",
+      "clave": "B",
+      "frente": "Infra",
+      "etiqueta": "infra",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Infra] Las pruebas de integración entre front y back",
+      "que": "La suite de pruebas de integración entre front y back que pide la entrega del 18: con el dominio, la interfaz analítica y la web levantados con Docker Compose en la CI, con las imágenes de T054, comprueba de punta a punta lo que cada cliente hace con el back. En la web, que las cuentas ANALISTA y OPERADOR inician sesión, que cada una abre su vista y no la otra, y que una llamada a la analítica con el token pasa y sin él da 401. En la app, lo mismo con su cliente de la API (`clients/mobile/api/`): iniciar sesión, buscar, comparar precios y armar una canasta contra el dominio y la analítica reales.",
+      "criterio": "La suite corre en la canalización, en un trabajo propio, y su registro muestra cuántas pruebas pasaron; levanta los servicios sin secretos reales, con un `.env` de prueba; y falla si cualquiera de los recorridos falla. La herramienta que se elija va con su razón en la solicitud.",
+      "donde": "Rama `feat/aas-pruebas-de-integracion` · `.github/workflows/ci.yml` e `infra/`",
+      "depende": [
+        "#160",
+        "#201"
+      ],
+      "nota_dependencia": "Se separó de T070 (#213) el 7 de noviembre, porque la entrega del 18 pide estas pruebas y el arnés puede llegar hasta el 20. Necesita la web en `main` (#160, solicitud #176) y las imágenes de T054 (#201)."
+    },
+    {
+      "id": "T071",
+      "clave": "C1",
+      "frente": "Dominio",
+      "etiqueta": "dominio",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Dominio] Los pendientes del servicio de dominio para la entrega del 18",
+      "que": "Con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), T071 se reduce a lo que la entrega del 18 necesita del dominio: declarar la excepción de D-12 en `dominio.yaml` (la descripción de `CredencialesInvalidas` y la nota de la versión 0.2.2, que hoy la dan por abierta), en CU-08 (alterno 7a) y en el Javadoc de `SinSesionHandler`, como pide «Lo que dejan las decisiones» de `docs/equipo/decisiones-pendientes.md`; y cerrar o dar de baja con su razón los issues abiertos del frente dominio.",
+      "criterio": "No quedan issues abiertos del frente dominio: cada uno está cerrado por su solicitud o con una nota que dice por qué no entra. `dominio.yaml`, CU-08 y el Javadoc declaran la excepción de D-12 y dicen lo mismo; `redocly lint` da 0 errores y los mismos avisos, y `mvn -B test` pasa.",
+      "donde": "Rama `feat/lyl-pendientes-del-dominio` · `services/domain-service/`, `docs/analisis/openapi/dominio.yaml` y `docs/analisis/casos-uso/`",
+      "depende": [
+        "#188"
+      ],
+      "nota_dependencia": "Va después de T050 (#188) y de la cobertura de T055 (#202). Las alertas (T066), que el Panel ponía en esta semana para C1, salieron del producto con el recorte."
+    },
+    {
+      "id": "T072",
+      "clave": "C2",
+      "frente": "Móvil",
+      "etiqueta": "movil",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Móvil] La versión final de la app: crear cuenta y el build instalable en dos teléfonos",
+      "que": "El build instalable de la app (ADR 006, Expo), que el Panel repartía entre T067, el primero, y T072, el definitivo: con el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre»), la pantalla de alertas de T067 sale y su build es éste. Hoy `clients/mobile/` tiene `app.json` y ningún `eas.json`: cómo se genera el build queda en el README de la app. Para operar fuera de la red del equipo, apunta a las direcciones públicas de T054 (#201). **Además, lo que le falta a la app para la versión final:** crear cuenta desde la pantalla de acceso (CU-08, `POST /api/v1/cuentas`, que el dominio ya tiene), y en Descubrir, que mostraba el índice y «Precios que bajaron», un aviso de que no está disponible en esta versión, sin quitar la pestaña de D-01.",
+      "criterio": "El build se instala y opera en dos teléfonos que no son el mismo: en los dos se crea una cuenta nueva desde la app, se inicia sesión con ella, se busca, se comparan los precios de un artículo y se arma una canasta contra el sistema desplegado, con capturas en la solicitud. Descubrir muestra su aviso. El README de la app dice cómo se genera el build.",
+      "donde": "Rama `feat/orf-build-instalable` · `clients/mobile/`",
+      "depende": [
+        "#203",
+        "#201"
+      ],
+      "nota_dependencia": "Necesita la canasta de T056 (#203) y el despliegue de T054 (#201). Va en la entrega del 18, que es la versión desplegada."
+    },
+    {
+      "id": "T074",
+      "clave": "A",
+      "frente": "Equipo",
+      "etiqueta": "entrega",
+      "inicio": "2026-11-16",
+      "fecha": "2026-11-18",
+      "titulo": "[S10][Equipo] Entrega del 18 de noviembre: la versión final desplegada",
+      "que": "La entrega institucional del 18, que pide las pruebas de integración entre front y back, la infraestructura implementada, datos de prueba en las bases y la versión final desplegada en ella; desde ese día hay congelamiento de funcionalidad, y el video de respaldo queda grabado. El documento de la entrega queda en `docs/entregas/2026-11-18/` y dice qué entra y qué no: lo que el recorte aprobado (docs/equipo/cronograma.md, «Recorte del 5 de noviembre») sacó del producto (alertas, cola de reconciliación, despliegue continuo, exportación a CSV e índice como pantalla) y lo que llega después del 18 (la reconciliación y H3, #206, el 22; el detalle de artículo, #204, el 25).",
+      "criterio": "El sistema responde por HTTPS desde fuera y con datos: en el despliegue, la plataforma procesó los lotes del alcance (la estrella y la cuarentena tienen filas), las cuentas de la semilla inician sesión y cada usuario hace lo suyo (el consumidor en la app, el analista en el tablero y el operador en la consola). Las pruebas de integración están en verde en la CI. El video de respaldo está en Drive. `docs/entregas/2026-11-18/README.md` existe, dice de qué commit sale, lista lo que entra y lo que no, y lleva el enlace del video.",
+      "donde": "docs/entregas/2026-11-18/",
+      "depende": [
+        "#201"
+      ],
+      "nota_dependencia": "El HTTPS y los datos de prueba dependen de T054 (#201), porque T065 salió con el recorte; las pruebas de integración son la segunda tarjeta de T070. **Después del 18, B vuelve a desplegar a mano lo que entre (#206 el 22 y #204 el 25), a más tardar el 29**, para que la presentación del 2 de diciembre use la versión final. Después del 18 no entra funcionalidad nueva, salvo lo que el recorte dejó fechado después."
+    }
+  ]
+}

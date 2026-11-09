@@ -27,7 +27,8 @@ Igual que en `compuerta.py`: ninguna cifra del contrato vive en este archivo.
 |---|---|
 | `normalizacion.canonica` · `.mayusculas_sin_acentos` | las expresiones SQL |
 | `normalizacion.orden` | que reparar el `?` va ANTES de normalizar |
-| `normalizacion.reparar_interrogantes.diccionario` | las 1,650 reparaciones |
+| `normalizacion.reparar_interrogantes` | las 1,650 del diccionario y los ambiguos que resuelve la frecuencia, por `reparacion.py` |
+| `columnas.precio.se_compara_como` | el tipo en que se resta el precio |
 | `clave_de_fila.columnas` | qué columnas forman el grupo |
 | `clave_de_fila.normaliza_por_columna` | con qué expresión se compara cada una |
 | `clave_de_fila.captura_doble.menos_de` | la frontera de la captura doble ($1) |
@@ -38,12 +39,13 @@ Igual que en `compuerta.py`: ninguna cifra del contrato vive en este archivo.
 
 ## Lo que este archivo NO hace, y por qué
 
-**No deduplica la captura doble: la cuenta.** Deduplicar es transformar, y las
-transformaciones de capa cruda a intermedia son de la semana del 19 al 25 de
-octubre (cronograma, semana 8). Aquí se cuentan los tres cubos —grupos y filas
-sobrantes de cada uno— para que la deduplicación de la semana que entra se
-compruebe contra estas cifras, y para volver a medir lo que el contrato 1.3.3
-pidió medir en la primera corrida de la compuerta.
+**No deduplica la captura doble: la cuenta.** Deduplicar es transformar, y eso lo
+hace la capa intermedia (`intermedia.py`, T048). Aquí se cuentan los tres cubos
+—grupos y filas sobrantes de cada uno— para que la deduplicación se compruebe
+contra estas cifras, y para volver a medir lo que el contrato 1.3.3 pidió medir en
+la primera corrida de la compuerta. Las dos usan la misma consulta para la clave
+(`sql_con_clave()`): si cada una armara la suya, la cuenta dejaría de cuadrar en
+cuanto una cambiara.
 
 ## Dos errores de la versión anterior, corregidos el 15 de octubre de 2026
 
@@ -59,7 +61,6 @@ pidió medir en la primera corrida de la compuerta.
    Cargar esta cuarentena habría fallado fila por fila el día que la base exista.
 """
 
-import csv
 import datetime as dt
 import json
 import numbers
@@ -69,7 +70,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ingesta import CONTRATO, leer_contrato
+from ingesta import leer_contrato
 from salida_segura import preparar_salida
 
 NOMBRE_COMPUERTA = "lote_contra_el_contrato"
@@ -145,28 +146,39 @@ def expresion_canonica(contrato, columna):
 
 
 def reparaciones(contrato, columnas=None):
-    """El diccionario del `?`, leído del archivo que el contrato declara.
+    """Las reparaciones del `?` con que se compara la clave: {(columna, valor_roto):
+    reparado}.
 
-    Devuelve {(columna, valor_roto): reparado}. Si el contrato declara el
-    diccionario y el archivo no está, es un error del repositorio, no un detalle:
-    sin él las claves se comparan rotas y los grupos salen mal.
+    Son las del diccionario **y** las de los ambiguos que la regla por frecuencia
+    resuelve, porque `clave_de_fila.compara` dice `repara_interrogantes`, que es
+    la regla entera y no sólo su diccionario. Hasta T048 aquí se leía sólo el
+    diccionario, y un `Kellogg?s` que la frecuencia repara seguía partiendo su
+    grupo. La regla vive en `reparacion.py`, que es quien también aparta lo
+    irreparable: así las dos leen lo mismo.
+
+    Si el contrato declara una tabla y el archivo no está, es un error del
+    repositorio, no un detalle: sin ella las claves se comparan rotas.
     """
-    rep = contrato["normalizacion"]["reparar_interrogantes"]
-    ruta = CONTRATO.parent.parent / rep["diccionario"]
-    if not ruta.exists():
-        raise FileNotFoundError(
-            f"el contrato declara el diccionario {rep['diccionario']} y no existe "
-            f"en {ruta}"
-        )
-    permitidas = set(rep["aplica_a"])
-    if columnas is not None:
-        permitidas &= set(columnas)
-    with ruta.open(encoding="utf-8") as f:
-        return {
-            (r["columna"], r["valor_roto"]): r["reparado"]
-            for r in csv.DictReader(f)
-            if r["columna"] in permitidas
-        }
+    from reparacion import reparaciones_del_contrato
+
+    return reparaciones_del_contrato(contrato, columnas)
+
+
+def precio_como_se_compara(contrato):
+    """El tipo en que se resta el precio: `columnas.precio.se_compara_como`.
+
+    En flotante, una diferencia de $1.00 sale 0.99999 y cae en el cubo
+    equivocado (`razon_del_casteo`). Hasta T048 el `DECIMAL(12,2)` estaba escrito
+    en la consulta; ahora se lee, y se acepta sólo con forma `DECIMAL(p,s)`.
+    """
+    tipo = str(contrato["columnas"]["precio"].get("se_compara_como") or "")
+    encontrado = re.fullmatch(r"\s*DECIMAL\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*", tipo,
+                              re.IGNORECASE)
+    if not encontrado:
+        raise ValueError(
+            f"`columnas.precio.se_compara_como` dice «{tipo}»; se esperaba "
+            "DECIMAL(p,s)")
+    return f"DECIMAL({encontrado.group(1)},{encontrado.group(2)})"
 
 
 def cifras_que_el_contrato_no_declara(contrato=None):
@@ -226,6 +238,35 @@ def _sql_de_la_clave(contrato, columnas_clave):
     return partes
 
 
+def sql_con_clave(contrato, origen="lote", reparaciones_tabla="diccionario"):
+    """La consulta que da, por cada fila de `origen`, su `__i__`, su precio como lo
+    compara el contrato (`__precio__`) y las columnas `k_` de la clave de fila.
+
+    `origen` es una tabla con la columna `__i__`; `reparaciones_tabla`, una con
+    (columna, valor_roto, reparado). La usan esta compuerta, para contar los cubos,
+    y `intermedia.py`, para deduplicar: con dos consultas parecidas, una fila
+    podría caer en un grupo aquí y en otro allá, y la cuenta de las sobrantes
+    dejaría de cuadrar con lo que la capa intermedia quita.
+    """
+    columnas_clave = list(contrato["clave_de_fila"]["columnas"])
+    uniones = "\n".join(
+        f'LEFT JOIN {reparaciones_tabla} d_{c} ON d_{c}.columna = \'{c}\' '
+        f'AND d_{c}.valor_roto = CAST(l."{c}" AS VARCHAR)'
+        for c in columnas_clave
+    )
+    claves = ",\n           ".join(_sql_de_la_clave(contrato, columnas_clave))
+    # TRY_CAST y no CAST: una fila con el precio ilegible ya la aparta
+    # `compuerta.py` con motivo `tipo_invalido`. Aquí no se vuelve a juzgar: se
+    # deja fuera del cálculo de la diferencia para no inventar una colisión.
+    return f"""
+        SELECT l.__i__,
+               TRY_CAST(l."precio" AS {precio_como_se_compara(contrato)}) AS __precio__,
+               {claves}
+        FROM {origen} l
+        {uniones}
+    """
+
+
 def _resumen_vacio():
     return {"filas_entrada": 0, "grupos": 0,
             "grupos_captura_doble": 0, "sobrantes_captura_doble": 0,
@@ -282,27 +323,10 @@ def revisar_grupos(df, contrato=None, compuerta=NOMBRE_COMPUERTA):
     con.register("lote", df.reset_index(drop=True).assign(__i__=range(len(df))))
     con.register("diccionario", tabla_dic)
 
-    uniones = "\n".join(
-        f'LEFT JOIN diccionario d_{c} ON d_{c}.columna = \'{c}\' '
-        f'AND d_{c}.valor_roto = CAST(l."{c}" AS VARCHAR)'
-        for c in columnas_clave
-    )
-    claves = ",\n           ".join(_sql_de_la_clave(contrato, columnas_clave))
     ks = ", ".join(f"k_{c}" for c in columnas_clave)
-
-    # TRY_CAST y no CAST: una fila con el precio ilegible ya la aparta
-    # `compuerta.py` con motivo `tipo_invalido`. Aquí no se vuelve a juzgar: se
-    # deja fuera del cálculo de la diferencia para no inventar una colisión. Y
-    # DECIMAL(12,2) porque lo pide `columnas.precio.se_compara_como`: en flotante,
+    # El precio va en el tipo de `columnas.precio.se_compara_como`: en flotante,
     # una diferencia de $1.00 sale 0.99999 y cae en el cubo equivocado.
-    con.execute(f"""
-        CREATE OR REPLACE TABLE con_clave AS
-        SELECT l.__i__,
-               TRY_CAST(l."precio" AS DECIMAL(12,2)) AS __precio__,
-               {claves}
-        FROM lote l
-        {uniones}
-    """)
+    con.execute(f"CREATE OR REPLACE TABLE con_clave AS {sql_con_clave(contrato)}")
     # Las fronteras van como parámetros, no pegadas en el SQL: son cifras del
     # contrato y no se escriben aquí ni siquiera de paso.
     con.execute(f"""

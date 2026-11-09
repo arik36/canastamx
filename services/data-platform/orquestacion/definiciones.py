@@ -1,4 +1,4 @@
-"""CanastaMX · los tres activos particionados y el sensor (ADR 016).
+"""CanastaMX · los cuatro activos particionados, la capa de consumo y el sensor (ADR 016).
 
 ## Qué es un activo, y por qué no es «la tarea de ingerir»
 
@@ -15,22 +15,36 @@ consola, en el experimento y en el código.
 Las 38 particiones **no están escritas aquí**: salen de `alcance.ventana` del
 contrato. Si la ventana cambia, cambian las particiones sin tocar este archivo.
 
-## Los tres activos
+## Los cinco activos
 
-    capa_cruda ──> filas_revisadas ──> lote_promovido
-    (ingesta.py)   (compuerta.py)      (lote.py + D-07)
+    capa_cruda ──> filas_revisadas ──> lote_promovido ──> capa_intermedia ──> capa_consumo
+    (ingesta.py)   (compuerta.py)      (reparacion.py,    (intermedia.py)     (estrella.py)
+                                        lote.py + D-07)
 
 1. **`capa_cruda`** envuelve `ingestion/ingesta.py`. No lo reescribe: lo corre y
    lee su registro de corrida. Lo que ya hacía —controles C1, `?` en los filtros,
    filas de otra quincena, escritura particionada— sigue siendo suyo.
 2. **`filas_revisadas`** llama a `compuerta.revisar_lote()`: Pandera contra el
    contrato, fila por fila, y la cuarentena con un motivo por fila.
-3. **`lote_promovido`** llama a `lote.revisar_grupos()` y
+3. **`lote_promovido`** llama a `reparacion.apartar_irreparables()` —el `?` que no
+   se puede reparar (CU-03)—, a `lote.revisar_grupos()` y
    `lote.revisar_frescura()` —lo que necesita el lote completo— y después a
-   `compuerta.decidir_promocion()`, que aplica el 5% de D-07 **sobre las dos
+   `compuerta.decidir_promocion()`, que aplica el 5% de D-07 **sobre las tres
    cuarentenas juntas**. Ése es el orden correcto y no es un detalle: si el umbral
-   se evaluara antes de las reglas de grupo, un lote con muchas colisiones altas
-   pasaría por debajo del 5% y se promovería.
+   se evaluara antes del `?` o de las reglas de grupo, un lote lleno de texto
+   irreparable o de colisiones altas pasaría por debajo del 5% y se promovería.
+4. **`capa_intermedia`** (T048) llama a `intermedia.construir()` con las filas que
+   el lote dejó salir —repara, tipa y quita la captura doble— y a
+   `intermedia.cargar()`, que reemplaza la partición del lote en
+   `postgres-analytics`. Comprueba que la cuenta cuadre con el linaje: exactamente
+   las que `lote_promovido` dejó salir menos las sobrantes de captura doble. Un
+   lote detenido deja su partición vacía.
+5. **`capa_consumo`** (T053) llama a `estrella.cargar()`: el esquema estrella de
+   `docs/datos/modelo-dimensional.md`, recalculado entero desde la capa intermedia
+   y reemplazado en una transacción. **No está particionado**, porque sus
+   dimensiones y sus agregados cruzan quincenas, y por eso no lo dispara el sensor:
+   se materializa después de cargar los lotes. Comprueba que cada observación de la
+   capa intermedia sea un hecho.
 
 ## El sensor y H2
 
@@ -53,6 +67,11 @@ cuenta sus 15 minutos (SLA-D-05): sin él, los 15 minutos no tienen desde cuánd
 
 Necesita `dagster` **y** `dagster-webserver`, las dos en la misma versión. Están
 en `requirements.txt`; con sólo la primera, `dagster dev` falla pidiendo la otra.
+
+Sin `CANASTAMX_SIMULAR`, la capa cruda va a MinIO, y la intermedia y la de consumo
+a `postgres-analytics`: hacen falta las `S3_*` y las `ANALYTICS_*` del `.env`
+(`set -a; source .env; set +a`). Con simulación, la intermedia y la de consumo
+quedan en `capa-intermedia.duckdb`, dentro de la carpeta de corridas.
 """
 
 # OJO · aquí NO va `from __future__ import annotations`. Con él, las anotaciones
@@ -88,7 +107,10 @@ INGESTA = PLATAFORMA / "ingestion"
 sys.path.insert(0, str(INGESTA))
 
 import compuerta
+import estrella
+import intermedia
 import lote as reglas_de_lote
+import reparacion
 from ingesta import CORRIDAS, leer_contrato, sha256_de
 from salida_segura import CODIFICACION_DE_LOS_HIJOS, entorno_utf8
 
@@ -254,6 +276,12 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
         if ruta.exists():
             registro = json.loads(ruta.read_text(encoding="utf-8"))
 
+    # `ingerido_en` (SLA-D-10): la hora que el registro de la ingesta le pone a su
+    # corrida. En simulación no hay registro —no se escribe nada— y se toma la hora
+    # de este activo, que es cuando terminó la ingesta simulada.
+    ingerido_en = (registro.get("corrida")
+                   or dt.datetime.now(dt.UTC).isoformat(timespec="seconds"))
+
     cinco = registro.get("cinco_cifras", {})
     context.add_output_metadata({
         "quincena": quincena,
@@ -262,9 +290,11 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
         "filas_escritas": cinco.get("filas_escritas"),
         "objetos": cinco.get("objetos"),
         "huella": huella_del_lote(registro),
+        "ingerido_en": ingerido_en,
         "salida": MetadataValue.md(f"```\n{hecho.stdout[-2000:]}\n```"),
     })
     return {"quincena": quincena, "archivo": str(archivo),
+            "lote": nombre_de_lote(quincena), "ingerido_en": ingerido_en,
             "simulado": SIMULAR, "registro": registro,
             "huella": huella_del_lote(registro)}
 
@@ -286,6 +316,10 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
     # leer el archivo entero medía el 5% de D-07 sobre la población equivocada.
     df = compuerta.leer_alcance(ruta, contrato)
 
+    # Lo que el linaje lleva hasta la capa intermedia: de qué lote y a qué hora.
+    traza = {"lote": capa_cruda.get("lote") or nombre_de_lote(capa_cruda["quincena"]),
+             "ingerido_en": capa_cruda.get("ingerido_en")}
+
     limpias, registros, resumen = compuerta.revisar_lote(df, contrato, ruta.name)
     if limpias is None:
         # Nivel LOTE: le falta una columna al archivo entero. No hay filas que
@@ -293,7 +327,7 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
         context.add_output_metadata({"resultado": resumen["resultado"],
                                      "motivo_lote": resumen["motivo_lote"]})
         return {"quincena": capa_cruda["quincena"], "resumen": resumen,
-                "detenido": True, "registros": [], "limpias": None}
+                "detenido": True, "registros": [], "limpias": None, **traza}
 
     SALIDAS.mkdir(parents=True, exist_ok=True)
     lote_nombre = nombre_de_lote(capa_cruda["quincena"])
@@ -313,57 +347,17 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
             "detenido": False, "registros": registros,
             # El marco viaja tal cual: conserva sus tipos —la fecha tipada del
             # parquet— y sus columnas aunque no sobreviva ninguna fila.
-            "limpias": limpias}
+            "limpias": limpias, **traza}
 
 
 # ── Activo 3 · la decisión de promover el lote ─────────────────────────────
 
-@asset(
-    partitions_def=QUINCENAS,
-    description="Lo que necesita el lote completo: colisión de precio alta por "
-                "grupo y frescura, en DuckDB. Después el 5% de D-07 sobre las dos "
-                "cuarentenas juntas.",
-    compute_kind="duckdb",
-)
-def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dict:
-    contrato = leer_contrato()
-    quincena = filas_revisadas["quincena"]
-    lote_nombre = nombre_de_lote(quincena)
-
-    if filas_revisadas["detenido"]:
-        resumen = dict(filas_revisadas["resumen"])
-        context.add_output_metadata({"resultado": resumen["resultado"],
-                                     "motivo_lote": resumen.get("motivo_lote")})
-        return {"quincena": quincena, "resumen": resumen}
-
-    limpias = filas_revisadas["limpias"]
-    por_fila = filas_revisadas["resumen"]
-
-    _, grupos, res_grupo = reglas_de_lote.revisar_grupos(limpias, contrato)
-    frescura = reglas_de_lote.revisar_frescura(
-        limpias, contrato, FECHA_REFERENCIA)
-
-    # El umbral de D-07 se evalúa sobre las DOS cuarentenas. Si se evaluara sólo
-    # sobre la de fila, un lote lleno de colisiones altas pasaría por debajo del 5%.
-    resumen = {
-        "filas_entrada": por_fila["filas_entrada"],
-        "filas_en_cuarentena": (por_fila["filas_en_cuarentena"]
-                                + res_grupo["filas_en_cuarentena"]),
-        "registros_de_cuarentena": (por_fila["registros_de_cuarentena"]
-                                    + res_grupo["registros_de_cuarentena"]),
-        "filas_salida": res_grupo["filas_salida"],
-        "por_motivo": {**por_fila["por_motivo"], **res_grupo["por_motivo"]},
-        "por_fila": por_fila,
-        "por_grupo": res_grupo,
-        "frescura": frescura,
-    }
-    resumen = compuerta.decidir_promocion(resumen, contrato)
-
+def _registrar_lote(context, contrato, lote_nombre, quincena, resumen, frescura):
+    """El registro del lote, que `intermedia.py --verificar` lee para comprobar la
+    capa contra su linaje. Se escribe en TODA corrida, también en la que se detiene
+    porque al archivo le falta una columna: si no, quedaría el de la corrida
+    anterior, y la comprobación cuadraría contra otro resultado."""
     SALIDAS.mkdir(parents=True, exist_ok=True)
-    jsonl = SALIDAS / f"cuarentena-grupo-{lote_nombre}.jsonl"
-    with jsonl.open("w", encoding="utf-8") as f:
-        for r in grupos:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
     registro = SALIDAS / f"lote-{lote_nombre}.json"
     registro.write_text(json.dumps({
         "lote": lote_nombre, "quincena": quincena,
@@ -373,7 +367,7 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         # 15 de octubre, después de la 1.3.5, se leyó un registro de la 1.3.4 y lo
         # único que avisó fue un KeyError.
         "version_contrato": contrato["version"],
-        "fecha_de_referencia": frescura.get("fecha_referencia") or FECHA_REFERENCIA,
+        "fecha_de_referencia": (frescura or {}).get("fecha_referencia") or FECHA_REFERENCIA,
         "corrida": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         # El instante del disparo lo pone el sensor en las etiquetas. En una
         # corrida hecha a mano no hay, y eso no es un error: es que nadie la
@@ -381,6 +375,69 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         "disparo": _disparo(context),
         "resumen": resumen,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
+    return registro
+
+
+@asset(
+    partitions_def=QUINCENAS,
+    description="Lo que necesita el lote completo: el `?` que no se puede reparar "
+                "(CU-03), la colisión de precio alta por grupo y la frescura, en "
+                "DuckDB. Después el 5% de D-07 sobre las tres cuarentenas juntas.",
+    compute_kind="duckdb",
+)
+def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dict:
+    contrato = leer_contrato()
+    quincena = filas_revisadas["quincena"]
+    lote_nombre = filas_revisadas.get("lote") or nombre_de_lote(quincena)
+    traza = {"quincena": quincena, "lote": lote_nombre,
+             "ingerido_en": filas_revisadas.get("ingerido_en")}
+
+    if filas_revisadas["detenido"]:
+        resumen = dict(filas_revisadas["resumen"])
+        registro = _registrar_lote(context, contrato, lote_nombre, quincena, resumen, None)
+        context.add_output_metadata({"resultado": resumen["resultado"],
+                                     "motivo_lote": resumen.get("motivo_lote"),
+                                     "registro": str(registro)})
+        return {**traza, "resumen": resumen, "promovidas": None}
+
+    limpias = filas_revisadas["limpias"]
+    por_fila = filas_revisadas["resumen"]
+
+    # CU-03 · el `?` que no se puede reparar va a cuarentena ANTES de las reglas de
+    # grupo y del 5%: así cuenta para D-07, y los grupos se forman con el texto ya
+    # reparado (las filas siguen tal como llegaron; la reparación la aplica la
+    # capa intermedia, con el mismo mapa).
+    reparables, rep_registros, res_rep = reparacion.apartar_irreparables(limpias, contrato)
+    promovibles, grupos, res_grupo = reglas_de_lote.revisar_grupos(reparables, contrato)
+    frescura = reglas_de_lote.revisar_frescura(
+        limpias, contrato, FECHA_REFERENCIA)
+
+    # El umbral de D-07 se evalúa sobre las TRES cuarentenas. Si se evaluara sólo
+    # sobre la de fila, un lote lleno de colisiones altas o de texto irreparable
+    # pasaría por debajo del 5%. Son conjuntos de filas que no se tocan: cada etapa
+    # recibe lo que la anterior dejó pasar.
+    etapas = (por_fila, res_rep, res_grupo)
+    resumen = {
+        "filas_entrada": por_fila["filas_entrada"],
+        "filas_en_cuarentena": sum(e["filas_en_cuarentena"] for e in etapas),
+        "registros_de_cuarentena": sum(e["registros_de_cuarentena"] for e in etapas),
+        "filas_salida": res_grupo["filas_salida"],
+        "por_motivo": {**por_fila["por_motivo"], **res_rep["por_motivo"],
+                       **res_grupo["por_motivo"]},
+        "por_fila": por_fila,
+        "por_reparacion": res_rep,
+        "por_grupo": res_grupo,
+        "frescura": frescura,
+    }
+    resumen = compuerta.decidir_promocion(resumen, contrato)
+
+    SALIDAS.mkdir(parents=True, exist_ok=True)
+    for nombre, filas in (("reparacion", rep_registros), ("grupo", grupos)):
+        with (SALIDAS / f"cuarentena-{nombre}-{lote_nombre}.jsonl").open(
+                "w", encoding="utf-8") as f:
+            for r in filas:
+                f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    registro = _registrar_lote(context, contrato, lote_nombre, quincena, resumen, frescura)
 
     context.add_output_metadata({
         "resultado": resumen["resultado"],
@@ -390,17 +447,107 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         "grupos_en_colision": res_grupo["grupos_en_colision"],
         # Los tres cubos de la clave de fila, en grupos y filas sobrantes: es lo
         # que el contrato 1.3.3 pidió volver a medir en la primera corrida, y
-        # contra lo que se compara la deduplicación de la semana del 19.
+        # contra lo que `capa_intermedia` comprueba su deduplicación.
         "cubos_de_la_clave": MetadataValue.json({
             cubo: {"grupos": res_grupo[f"grupos_{cubo}"],
                    "sobrantes": res_grupo[f"sobrantes_{cubo}"]}
             for cubo in ("captura_doble", "observaciones_multiples", "en_colision")}),
+        # CU-03 · paso 4: cuántos valores se repararon en cada columna, y cuántas
+        # filas se apartaron y por qué.
+        "reparacion": MetadataValue.json({
+            "por_columna": res_rep["por_columna"],
+            "valores_reparados": res_rep["valores_reparados"],
+            "filas_en_cuarentena": res_rep["filas_en_cuarentena"],
+            "por_motivo": res_rep["por_motivo"]}),
         "frescura": MetadataValue.json(frescura),
         "por_motivo": MetadataValue.json(resumen["por_motivo"]),
         "registro": str(registro),
         "version_contrato": contrato["version"],
     })
-    return {"quincena": quincena, "resumen": resumen}
+    # Un lote detenido no deja salir nada: D-07 dice que no se promueve ni la parte
+    # que pasó.
+    salen = None if resumen["resultado"] == "DETENIDO" else promovibles
+    return {**traza, "resumen": resumen, "promovidas": salen}
+
+
+# ── Activo 4 · la capa intermedia (T048) ───────────────────────────────────
+
+@asset(
+    partitions_def=QUINCENAS,
+    description="La capa intermedia del lote: el texto reparado, el precio tipado "
+                "y sin captura doble, en postgres-analytics. Reemplaza la "
+                "partición; un lote detenido la deja vacía.",
+    compute_kind="duckdb",
+)
+def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dict:
+    contrato = leer_contrato()
+    quincena, lote_nombre = lote_promovido["quincena"], lote_promovido["lote"]
+    resumen = lote_promovido["resumen"]
+    promovidas = lote_promovido.get("promovidas")
+    ingerido_en = lote_promovido.get("ingerido_en")
+
+    if promovidas is None:
+        con, res_capa = intermedia.capa_vacia(contrato), {
+            "filas_entrada": 0, "sobrantes_captura_doble": 0, "filas_salida": 0,
+            "reparadas_por_columna": {}}
+        esperadas = 0
+    else:
+        if not ingerido_en:
+            raise RuntimeError(f"el lote {lote_nombre} llegó sin `ingerido_en`: la capa "
+                               "cruda tenía que dejarlo en el linaje (SLA-D-10)")
+        con, res_capa = intermedia.construir(promovidas, contrato, lote_nombre, ingerido_en)
+        # El criterio de T048, comprobado en cada corrida y no sólo en las pruebas:
+        # exactamente las que dejó salir el lote menos las sobrantes de captura
+        # doble que contó la compuerta de grupo.
+        esperadas = (resumen["filas_salida"]
+                     - resumen["por_grupo"]["sobrantes_captura_doble"])
+        if res_capa["filas_salida"] != esperadas:
+            raise RuntimeError(
+                f"la capa intermedia de {lote_nombre} tiene {res_capa['filas_salida']:,} "
+                f"filas y el linaje dice {esperadas:,} ({resumen['filas_salida']:,} que "
+                f"dejó salir el lote − {resumen['por_grupo']['sobrantes_captura_doble']:,} "
+                "sobrantes de captura doble). No se carga una cuenta que no cuadra")
+
+    huella = intermedia.huella_de_la_capa(con)
+    destino = intermedia.cargar(con, lote_nombre, contrato, simular=SIMULAR)
+
+    context.add_output_metadata({
+        "lote": lote_nombre,
+        "resultado_del_lote": resumen["resultado"],
+        "filas_cargadas": res_capa["filas_salida"],
+        "filas_esperadas": esperadas,
+        "sobrantes_quitadas": res_capa["sobrantes_captura_doble"],
+        "reparadas_por_columna": MetadataValue.json(res_capa["reparadas_por_columna"]),
+        "huella": huella,
+        "ingerido_en": ingerido_en,
+        "destino": MetadataValue.json({k: v for k, v in destino.items()}),
+        "version_contrato": contrato["version"],
+    })
+    return {"quincena": quincena, "lote": lote_nombre,
+            "filas": res_capa["filas_salida"], "huella": huella}
+
+
+# ── Activo 5 · la capa de consumo (T053) ──────────────────────────────────
+
+@asset(
+    deps=[capa_intermedia],
+    description="El esquema estrella de modelo-dimensional.md, recalculado entero desde "
+                "la capa intermedia y reemplazado en una transacción. No está "
+                "particionado: sus dimensiones y agregados cruzan quincenas. Se "
+                "materializa después de cargar los lotes.",
+    compute_kind="duckdb",
+)
+def capa_consumo(context: AssetExecutionContext) -> dict:
+    contrato = leer_contrato()
+    r = estrella.cargar(contrato, simular=SIMULAR)
+    context.add_output_metadata({
+        "observaciones": r["observaciones"],
+        **{t: r["en_destino"][t] for t in estrella.TABLAS},
+        "huella": r["huella"],
+        "destino": MetadataValue.json({k: r[k] for k in ("motor", "donde", "esquema")}),
+        "version_contrato": contrato["version"],
+    })
+    return {"filas": r["en_destino"], "huella": r["huella"]}
 
 
 # ── El sensor ──────────────────────────────────────────────────────────────
@@ -409,7 +556,7 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
 # seleccionados, y pasarla es redundante desde la 1.11.
 corrida_del_lote = define_asset_job(
     "corrida_del_lote",
-    selection=[capa_cruda, filas_revisadas, lote_promovido],
+    selection=[capa_cruda, filas_revisadas, lote_promovido, capa_intermedia],
 )
 
 
@@ -455,7 +602,7 @@ def archivo_nuevo(context: SensorEvaluationContext):
 
 
 defs = Definitions(
-    assets=[capa_cruda, filas_revisadas, lote_promovido],
+    assets=[capa_cruda, filas_revisadas, lote_promovido, capa_intermedia, capa_consumo],
     jobs=[corrida_del_lote],
     sensors=[archivo_nuevo],
 )
