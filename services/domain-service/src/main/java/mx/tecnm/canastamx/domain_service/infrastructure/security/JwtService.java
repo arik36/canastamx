@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * Emite y verifica el token de sesión según el ADR 020 (en propuesta): HS256 y
+ * Emite y verifica el token de sesión según el ADR 020 (aceptado): HS256 y
  * ningún otro algoritmo. La clave se obtiene al decodificar {@code JWT_SECRET},
  * que contiene 32 bytes aleatorios en Base64 estándar.
  */
