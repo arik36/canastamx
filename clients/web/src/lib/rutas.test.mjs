@@ -31,6 +31,11 @@ test('sin sesión, toda vista manda al acceso', () => {
   assert.deepEqual(decidir('/acceso', undefined), { pasa: true })
 })
 
+test('con sesión, la raíz manda a la vista del rol y no a la página de ejemplo de Next', () => {
+  assert.deepEqual(decidir('/', 'ANALISTA'), { redirigeA: '/tablero' })
+  assert.deepEqual(decidir('/', 'OPERADOR'), { redirigeA: '/consola' })
+})
+
 test('el analista que escribe a mano una vista del operador vuelve al tablero', () => {
   assert.deepEqual(decidir('/consola', 'ANALISTA'), { redirigeA: '/tablero' })
   assert.deepEqual(decidir('/cola', 'ANALISTA'), { redirigeA: '/tablero' })

@@ -47,7 +47,8 @@ export function decidir(ruta, rol) {
   if (!inicio) {
     return ruta === '/acceso' ? { pasa: true } : { redirigeA: '/acceso' }
   }
-  if (ruta === '/acceso') {
+  // La raíz no es una vista: con sesión manda a la del rol, igual que el acceso.
+  if (ruta === '/acceso' || ruta === '/') {
     return { redirigeA: inicio }
   }
   const pide = rolQuePide(ruta)
