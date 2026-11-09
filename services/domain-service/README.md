@@ -66,6 +66,36 @@ where correo_electronico ~ '^prueba-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}@ca
 
 Borrarlas es decisión de quien administra esa base.
 
+## Cobertura del dominio (T055, #202)
+
+[JaCoCo 0.8.16](https://www.jacoco.org/jacoco/trunk/doc/maven.html) mide líneas y
+ramas con la misma suite Maven y admite Java 21. El agente se prepara antes de
+ejecutar las pruebas y el informe se genera al final de `test`. La población son
+las clases compiladas de `mx.tecnm.canastamx.domain_service.domain` (`canasta` y
+`usuario`, incluidas clases internas). No entran controladores, persistencia,
+seguridad ni servicios de aplicación. Se mide la ejecución de toda la suite,
+incluidas las pruebas de integración. No se exige un porcentaje mínimo.
+
+Desde `services/domain-service`, con la base de pruebas encendida:
+
+```bash
+mvn -B clean test -DfailIfNoTests=true
+python scripts/resumir_cobertura.py
+```
+
+Abre `target/site/jacoco/index.html` para ver las líneas y ramas por clase. El
+script toma los contadores de `target/site/jacoco/jacoco.csv` y el total `Tests run`
+de Surefire. Imprime el resumen, las clases sin líneas ejecutadas y el SHA del
+checkout, y escribe `target/cobertura-dominio.md`. Si hay cambios sin commit,
+lo indica. Usa `clean` antes de medir para descartar informes de corridas previas.
+
+En **Dominio (Java)**, el paso **Cobertura de líneas y ramas del dominio (T055)**
+publica esa misma información en el registro y en el resumen de la ejecución.
+El artefacto `cobertura-dominio-<SHA>` contiene el informe navegable y el CSV.
+Para la solicitud de cambios y la entrega del 18 (#216), copia las cifras y el
+SHA del resumen de esa corrida de CI. En un PR, el SHA puede corresponder al
+commit de prueba que GitHub crea al combinar la rama con `main`.
+
 ## Rutas protegidas
 
 Una ruta pide sesión recibiendo `@CuentaDeLaSesion Usuario cuenta`. Sin un token
@@ -102,8 +132,9 @@ Correcciones de documentación para el seguimiento T078 que dejó #185:
 - `domain/canasta/Canasta.java`: Javadoc de sumar, reemplazar y quitar artículos.
 - `infrastructure/web/CuentaDeLaSesion.java` y `RutasProtegidasTests.java`: describen
   la seguridad efectiva y sólo dejan alertas como rutas pendientes de implementar.
-- `infrastructure/security/JwtService.java`: aclara cómo se decodifica la clave sin
-  cambiar el estado de propuesta de ADR 020.
+- `infrastructure/security/JwtService.java`: aclara cómo se decodifica la clave.
+  Su Javadoc se alinea en T055 con la aceptación del ADR 020 del 7 de noviembre;
+  la descripción del token en `dominio.yaml` queda para T071 (#214), junto con D-12.
 
 Las rutas Java de esta lista son relativas a
 `services/domain-service/src/main/java/mx/tecnm/canastamx/domain_service/`, salvo
