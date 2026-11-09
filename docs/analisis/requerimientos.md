@@ -173,7 +173,6 @@ El objetivo 1 es este documento.
 
 | Qué falta | Afecta | Quién · cuándo |
 |---|---|---|
-| El ADR del cliente web (Next.js) | R-07 | D |
 | Contar cuántos artículos cumplen la canasta del ADR 015 | RF-11 · SLA-D-08 | A · en T077 (#219), con H4 |
 | Confirmar con el volumen real el 20% y las 5 observaciones de los anómalos (P-15, decidida el 7 de noviembre) | RF-15 | A · en T069 (#211) |
 
