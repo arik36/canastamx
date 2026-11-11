@@ -497,7 +497,8 @@ def test_las_compuertas_no_importan_dagster():
     """La prueba de que la fecha de salida del ADR 016 es ejecutable: si Dagster se
     va, estos archivos siguen corriendo. `reparacion.py` e `intermedia.py` son de
     T048: el `?` y la capa intermedia tampoco pueden depender de la orquestación."""
-    for nombre in ("compuerta.py", "lote.py", "reparacion.py", "intermedia.py"):
+    for nombre in ("compuerta.py", "lote.py", "reparacion.py", "intermedia.py",
+                   "operacion.py"):
         texto = codigo_sin_comentarios(PLATAFORMA / "ingestion" / nombre)
         assert "dagster" not in texto.lower(), (
             f"{nombre} menciona dagster; entonces irse de Dagster costaría "
@@ -966,3 +967,145 @@ def test_un_lote_detenido_no_deja_hechos_en_la_estrella(entorno, columnas):
 
     lotes = set(_tabla(d, "consumo.hechos_precio")["lote"])
     assert "07-2026_Q1" in lotes and "07-2026_Q2" not in lotes
+
+
+# ── T064 · las compuertas escriben en el esquema de operación ──────────────
+#
+# Contra el criterio de #210: «Materializar un lote con una fila defectuosa conocida
+# la deja en `cuarentena` y fuera de `hechos_precio`. Cada corrida queda en
+# `corrida` con sus filas de `paso`; un lote detenido tiene su `incidente`
+# abierto.» Se lee la base, no los metadatos.
+
+def _operacion(d, sql, params=()):
+    import duckdb
+
+    con = duckdb.connect(str(d.SALIDAS / "capa-intermedia.duckdb"), read_only=True)
+    try:
+        return con.execute(sql, list(params)).fetchall()
+    finally:
+        con.close()
+
+
+def _corrida_de(r):
+    return r.asset_materializations_for_node("lote_promovido")[0].metadata["corrida_id"].value
+
+
+def test_una_fila_defectuosa_conocida_queda_en_cuarentena_y_fuera_de_hechos_precio(
+        entorno, columnas):
+    import json
+
+    d, llegada = entorno
+    buenas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(30)]
+    escribir_lote(llegada, "07-2026_Q2.csv",
+                  [*buenas, fila(columnas, producto="", direccion="la defectuosa")], columnas)
+    corrida = _corrida_de(_materializar(d))
+    _cargar_la_estrella(d)
+
+    apartadas = _operacion(d, "SELECT motivo, compuerta, huella_fila, fila "
+                              "FROM operacion.cuarentena WHERE corrida_id = ?", [corrida])
+    assert len(apartadas) == 1
+    motivo, compuerta, huella, tal_como_llego = apartadas[0]
+    assert (motivo, compuerta) == ("valor_requerido_vacio", "contrato_por_fila")
+    tal_como_llego = json.loads(tal_como_llego)
+    assert tal_como_llego["direccion"] == "la defectuosa" and not tal_como_llego["producto"]
+
+    # La huella es la misma en la cuarentena y en los hechos (`intermedia.huellas()`):
+    # las 30 buenas están, y la defectuosa no.
+    hechos = {h for (h,) in _operacion(d, "SELECT huella_fila FROM consumo.hechos_precio "
+                                          "WHERE lote = '07-2026_Q2'")}
+    assert len(hechos) == 30 and huella not in hechos
+
+
+def test_cada_corrida_queda_con_sus_pasos_y_lo_que_sale_de_uno_entra_al_siguiente(
+        entorno, columnas, contrato):
+    d, llegada = entorno
+    ruta = escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+    corrida = _corrida_de(_materializar(d))
+
+    assert _operacion(d, "SELECT lote, quincena, archivo, sha256_entrada, version_contrato, "
+                         "CAST(fecha_de_referencia AS VARCHAR), filas_leidas, filas_aceptadas, "
+                         "filas_en_cuarentena, resultado, terminada_en >= iniciada_en "
+                         "FROM operacion.corrida WHERE id = ?", [corrida]) == [
+        ("07-2026_Q2", "2026-07-Q2", str(ruta), d.sha256_de(ruta), contrato["version"],
+         "2026-08-10", 31, 31, 0, "CORRECTA", True)]
+    pasos = _operacion(d, "SELECT capa, nombre, filas_entrada, filas_salida, resultado "
+                          "FROM operacion.paso WHERE corrida_id = ? ORDER BY orden", [corrida])
+    assert [p[:2] for p in pasos] == [
+        ("CRUDA", "ingesta"), ("COMPUERTA", "contrato_por_fila"),
+        ("COMPUERTA", "reparar_interrogantes"), ("COMPUERTA", "lote_contra_el_contrato"),
+        ("COMPUERTA", "promocion_del_lote"), ("INTERMEDIA", "capa_intermedia")]
+    from itertools import pairwise
+
+    for a, b in pairwise(pasos[1:]):
+        assert a[3] == b[2], f"{a[1]} dejó salir {a[3]} y a {b[1]} entraron {b[2]}"
+    # A la capa intermedia entran las 31 y quedan 28: sin las 3 de captura doble.
+    assert pasos[-1][2:] == (31, 28, "PASO")
+
+
+def test_un_lote_que_d07_detiene_tiene_su_incidente_abierto(entorno, columnas):
+    d, llegada = entorno
+    filas = [fila(columnas, producto=f"P{i}", direccion=f"C{i}") for i in range(94)]
+    filas += [fila(columnas, producto="", direccion=f"sin producto {i}") for i in range(6)]
+    escribir_lote(llegada, "07-2026_Q2.csv", filas, columnas)
+    corrida = _corrida_de(_materializar(d))
+
+    assert _operacion(d, "SELECT resultado, filas_leidas, filas_aceptadas, filas_en_cuarentena "
+                         "FROM operacion.corrida WHERE id = ?", [corrida]) == [
+        ("RECHAZADA", 100, 0, 6)]
+    assert _operacion(d, "SELECT severidad, estado, compuerta, motivo, filas_afectadas "
+                         "FROM operacion.incidente WHERE corrida_id = ?", [corrida]) == [
+        ("INCIDENTE", "ABIERTO", "promocion_del_lote", "rechazo_mayor_al_umbral", 6)]
+    assert _operacion(d, "SELECT count(*) FROM operacion.cuarentena WHERE corrida_id = ?",
+                      [corrida]) == [(6,)]
+    assert _operacion(d, "SELECT nombre, filas_salida, resultado FROM operacion.paso "
+                         "WHERE corrida_id = ? ORDER BY orden", [corrida])[-2:] == [
+        ("promocion_del_lote", 0, "DETENIDO"), ("capa_intermedia", 0, "PASO")]
+    # H2 lo mide (SLA-D-05) y la consola lo cuenta.
+    assert _operacion(d, "SELECT cumple_h2 FROM operacion.deteccion WHERE incidente_id IN "
+                         "(SELECT id FROM operacion.incidente WHERE corrida_id = ?)",
+                      [corrida]) == [(True,)]
+    assert _operacion(d, "SELECT incidentes_abiertos FROM "
+                         "operacion.estado_de_la_plataforma")[0][0] >= 1
+
+
+def test_las_columnas_que_el_contrato_no_declara_dejan_un_aviso(entorno, columnas):
+    """CU-02 · 2a: el lote entra completo, y la consola cuenta un aviso de esquema."""
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv",
+                  [{**fila(columnas, producto=f"P{i}", direccion=f"C{i}"), "folio": str(i)}
+                   for i in range(5)], [*columnas, "folio"])
+    corrida = _corrida_de(_materializar(d))
+    assert _operacion(d, "SELECT resultado, filas_aceptadas FROM operacion.corrida "
+                         "WHERE id = ?", [corrida]) == [("CON_AVISOS", 5)]
+    assert _operacion(d, "SELECT severidad, estado, compuerta, motivo FROM operacion.incidente "
+                         "WHERE corrida_id = ?", [corrida]) == [
+        ("AVISO", "INFORMATIVO", "deriva_de_esquema", "columnas_extra")]
+
+
+def test_un_lote_de_2025_queda_en_corrida_con_su_quincena(entorno, columnas):
+    d, llegada = entorno
+    escribir_lote(llegada, "11-2025_01.csv",
+                  [fila(columnas, producto="P", fecha_registro="2025/11/10")], columnas)
+    corrida = _corrida_de(_materializar(d, "2025-11-Q1"))
+    assert _operacion(d, "SELECT lote, quincena, resultado FROM operacion.corrida "
+                         "WHERE id = ?", [corrida]) == [("11-2025_01", "2025-11-Q1", "CORRECTA")]
+
+
+def test_si_la_carga_falla_la_corrida_queda_fallida(entorno, columnas, monkeypatch):
+    d, llegada = entorno
+    escribir_lote(llegada, "07-2026_Q2.csv", _lote_de_t048(columnas), columnas)
+
+    def se_cae(*_, **__):
+        raise RuntimeError("se cayó la base a la mitad de la carga")
+
+    monkeypatch.setattr(d.intermedia, "cargar", se_cae)
+    r = dagster.materialize([d.capa_cruda, d.filas_revisadas, d.lote_promovido,
+                             d.capa_intermedia], partition_key="2026-07-Q2",
+                            raise_on_error=False)
+    assert not r.success
+    corrida = _corrida_de(r)
+    assert _operacion(d, "SELECT resultado FROM operacion.corrida WHERE id = ?",
+                      [corrida]) == [("FALLIDA",)]
+    assert _operacion(d, "SELECT nombre, filas_entrada, filas_salida, resultado "
+                         "FROM operacion.paso WHERE corrida_id = ? ORDER BY orden DESC "
+                         "LIMIT 1", [corrida]) == [("capa_intermedia", 31, None, "FALLO")]

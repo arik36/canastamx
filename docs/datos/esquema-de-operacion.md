@@ -2,6 +2,7 @@
 
 **Dueña:** A · **Fecha:** 7 de octubre de 2026 · **SQL:** [`esquema-de-operacion.sql`](./esquema-de-operacion.sql)
 · **Prueba:** [`probar-esquema-de-operacion.sql`](./probar-esquema-de-operacion.sql)
+· **Lo escribe:** [`operacion.py`](../../services/data-platform/ingestion/operacion.py), desde T064 (#210)
 
 **Qué es.** Las tablas de lo que *le pasa* a los datos: cada corrida, cada fila
 apartada, cada incidente y aviso, cada variante en la cola y cada decisión del
@@ -73,6 +74,7 @@ erDiagram
         text motivo FK "sólo motivos de nivel FILA"
         text compuerta
         char huella_fila "la une con el experimento de H1"
+        integer ocurrencia "la copia, si llegó idéntica dos veces"
         text grupo "la clave de fila, en colisiones"
         jsonb fila "tal como llegó"
     }
@@ -129,7 +131,7 @@ automática, CU-06 · 3a). Con eso reescribe `dim_articulo.articulo_canonico_key
 |---|---|
 | Un motivo de lote no va a la cuarentena de filas | Llave compuesta `(motivo, nivel)` con `nivel = 'FILA'` |
 | La colisión alta aparta el grupo completo | `colision_precio_alta` exige `grupo` |
-| El lote tiene el formato de la fuente | `lote` como `07-2026_Q2`. El `L-2026-Q18` del prototipo no entra |
+| El lote tiene el formato de la fuente | `lote` como `07-2026_Q2` o, en 2025, `01-2025_01`: la fuente no nombra igual los dos años. El `L-2026-Q18` del prototipo no entra |
 | El 100% de los incidentes cerrados tiene su causa (SLA-D-09) | Un incidente cerrado exige causa, decisión, fecha y quién |
 | Los avisos no se cierran (RF-13) | Un aviso es siempre `INFORMATIVO` |
 | Asignar a mano dice a qué artículo | `ASIGNADA` exige el artículo asignado |
@@ -209,15 +211,58 @@ El recorrido:
 Además, **seis operaciones que deben fallar fallan:** las seis reglas de la tabla del §2.
 Al terminar no deja nada en la base.
 
-## 6 · Lo que cambia en la plataforma
+**Desde T064 el SQL se aplica las veces que sea:** las tablas y los índices con
+`IF NOT EXISTS`, las vistas con `CREATE OR REPLACE` y el catálogo con
+`ON CONFLICT`, que sólo reescribe un motivo si cambió. La plataforma lo aplica antes
+de escribir cada corrida; a mano, `python services/data-platform/ingestion/operacion.py
+--aplicar`. El recorrido de prueba busca sus filas por su archivo y su producto, así
+que también se corre en la base con corridas reales; las vistas del final las
+muestran junto con las suyas.
 
-- **Hoy la ingesta guarda cada corrida como JSON** en `ingestion/corridas/`. Cuando
-  exista el esquema, la inserta en `corrida`, con el JSON completo en `detalle`. El
-  archivo puede quedar como respaldo.
-- **La compuerta (CU-02) escribe en `cuarentena` y `paso`.** Si el lote pasa del 5%,
-  abre un `incidente` con `rechazo_mayor_al_umbral`.
-- **La reconciliación (CU-06) escribe en `variante` lo dudoso,** y en cada corrida
-  pasa a `equivalencia` lo resuelto.
+## 6 · Lo que escribe la plataforma (T064)
+
+`services/data-platform/ingestion/operacion.py`, que llaman los activos del lote y
+que no sabe de Dagster (ADR 016):
+
+| Activo | Qué escribe |
+|---|---|
+| `lote_promovido` | La corrida y sus pasos: la capa cruda, las tres compuertas y la promoción. Cada fila apartada, con su motivo, su compuerta y la fila tal como llegó. El incidente si el lote se detuvo, y el aviso si el archivo trae columnas que el contrato no declara. Todo en una transacción |
+| `capa_intermedia` | Su paso, al final de la corrida, y la hora de término. Si la carga falla, la corrida queda `FALLIDA` |
+
+Cómo se llena:
+- **El resultado:** `RECHAZADA` si el lote se detuvo y `CON_AVISOS` si levantó un
+  aviso. Si no, `CORRECTA`, aunque haya filas en cuarentena por debajo del 5%: es el
+  flujo normal de CU-02 (3a, 4a y 5a continúan).
+- **Las filas:** leídas son las del alcance, la población de D-07 y de la consola;
+  aceptadas, las que dejaron salir las compuertas. Lo que sale de cada paso es lo
+  que entra al siguiente.
+- **`iniciada_en`** es el disparo del sensor, el cero de H2 (SLA-D-05). En una
+  corrida que nadie disparó, el primer paso.
+- **El incidente** lleva el motivo y la compuerta que detuvo el lote:
+  `rechazo_mayor_al_umbral` en `promocion_del_lote`, con las filas apartadas, o
+  `columna_requerida_faltante` en `contrato_por_fila`, con el lote entero.
+- **`ocurrencia`:** si una fila llega dos veces idéntica, son dos filas apartadas con
+  la misma huella, la 1 y la 2, como en la capa intermedia.
+- **`detalle`** guarda el registro de la ingesta, el resumen de las compuertas y las
+  columnas extra. Los archivos de `corridas/` se quedan como respaldo, y sus JSONL de
+  cuarentena traen además la evidencia de cada motivo: qué valor, qué gemelos, qué
+  diferencia.
+- **Si la escritura falla, el activo falla.** Una fila apartada sin su registro no
+  pasa en silencio.
+
+**En la simulación** (`CANASTAMX_SIMULAR`), el esquema va al DuckDB de la carpeta de
+corridas, con este mismo SQL y siete reemplazos para lo que DuckDB no entiende
+(`A_DUCKDB`): el esquema de la conexión, la identidad, la columna guardada, `jsonb`,
+el borrado en cascada y los índices. Si el SQL cambia y uno ya no se encuentra, la
+traducción se detiene.
+
+**La evidencia** es `operacion.py --contar`: las filas de cada tabla, los indicadores
+de `estado_de_la_plataforma` y cuatro cuentas que tienen que cuadrar. Son la
+cuarentena con su corrida, aceptadas más cuarentena igual a leídas, cada paso con el
+siguiente y cada lote detenido con su incidente.
+
+**La reconciliación (CU-06)** escribirá en `variante` lo dudoso, y en cada corrida
+pasará a `equivalencia` lo resuelto (#206).
 
 ## 7 · Lo que queda abierto
 
@@ -225,4 +270,6 @@ Al terminar no deja nada en la base.
 |---|---|
 | ~~Declarar en el contrato los tres motivos que faltan~~ | **Hecho** el 15 de octubre de 2026: contrato 1.3.5, `motivos_de_fila` |
 | Las tablas del experimento de H1: qué filas se inyectaron y con qué tipología | A · T075 |
-| Cuánto tiempo se guardan las filas de `cuarentena`. Hoy son como máximo 5,992 filas, poco espacio | A · antes del despliegue |
+| Cuánto tiempo se guardan las filas de `cuarentena`. Cada reproceso de un lote suma las de su corrida | A · antes del despliegue |
+| Las detenciones de la ingesta (CU-01: archivo ilegible, controles C1, `?` en un filtro, filas de otra quincena, columna faltante) no dejan corrida ni incidente: la capa cruda falla antes, y queda el error en Dagster | Sin asignar |
+| Los avisos de frescura (`frescura_avisa` y `frescura_bloquea`): la corrida guarda su estado y sus días, pero no abre aviso. Mientras el corpus esté congelado es `NO_APLICA` | Sin asignar |
