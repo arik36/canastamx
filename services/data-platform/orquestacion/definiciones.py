@@ -46,6 +46,16 @@ contrato. Si la ventana cambia, cambian las particiones sin tocar este archivo.
    se materializa después de cargar los lotes. Comprueba que cada observación de la
    capa intermedia sea un hecho.
 
+## Lo que queda en el esquema de operación (T064)
+
+Cada corrida deja su rastro en el esquema `operacion` de `postgres-analytics`
+(`ingestion/operacion.py`, `docs/datos/esquema-de-operacion.md`). `lote_promovido`
+escribe la corrida, un paso por la capa cruda y por cada compuerta, cada fila
+apartada con su motivo y tal como llegó, y el incidente si el lote se detuvo;
+`capa_intermedia` agrega su paso. Las horas de cada paso viajan con el lote desde
+la capa cruda. Si la escritura falla, el activo falla: una fila apartada sin su
+registro no se deja pasar en silencio.
+
 ## El sensor y H2
 
 El sensor mira la carpeta de llegada cada pocos segundos. Al ver un archivo nuevo
@@ -68,9 +78,9 @@ cuenta sus 15 minutos (SLA-D-05): sin él, los 15 minutos no tienen desde cuánd
 Necesita `dagster` **y** `dagster-webserver`, las dos en la misma versión. Están
 en `requirements.txt`; con sólo la primera, `dagster dev` falla pidiendo la otra.
 
-Sin `CANASTAMX_SIMULAR`, la capa cruda va a MinIO, y la intermedia y la de consumo
-a `postgres-analytics`: hacen falta las `S3_*` y las `ANALYTICS_*` del `.env`
-(`set -a; source .env; set +a`). Con simulación, la intermedia y la de consumo
+Sin `CANASTAMX_SIMULAR`, la capa cruda va a MinIO, y la intermedia, la de consumo
+y el esquema de operación a `postgres-analytics`: hacen falta las `S3_*` y las
+`ANALYTICS_*` del `.env` (`set -a; source .env; set +a`). Con simulación, las tres
 quedan en `capa-intermedia.duckdb`, dentro de la carpeta de corridas.
 """
 
@@ -110,6 +120,7 @@ import compuerta
 import estrella
 import intermedia
 import lote as reglas_de_lote
+import operacion
 import reparacion
 from ingesta import CORRIDAS, leer_contrato, sha256_de
 from salida_segura import CODIFICACION_DE_LOS_HIJOS, entorno_utf8
@@ -231,6 +242,7 @@ def _disparo(context):
     compute_kind="duckdb",
 )
 def capa_cruda(context: AssetExecutionContext) -> dict:
+    iniciado_en = operacion.ahora()
     quincena = context.partition_key
     archivo = archivo_del_lote(quincena)
     if archivo is None:
@@ -293,10 +305,19 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
         "ingerido_en": ingerido_en,
         "salida": MetadataValue.md(f"```\n{hecho.stdout[-2000:]}\n```"),
     })
+    # Lo que el esquema de operación necesita de esta capa, y su paso: del archivo
+    # entero a lo que se escribió del alcance. En simulación no hay esas cifras.
+    recorte = registro.get("recorte") if isinstance(registro.get("recorte"), dict) else {}
+    operacion_del_lote = {
+        "archivo": str(archivo), "sha256_entrada": registro.get("sha256_entrada"),
+        "ingesta": registro,
+        "pasos": [operacion.paso("CRUDA", "ingesta", context.run.run_id, iniciado_en,
+                                 operacion.ahora(), entrada=recorte.get("filas_del_archivo"),
+                                 salida=cinco.get("filas_escritas"))]}
     return {"quincena": quincena, "archivo": str(archivo),
             "lote": nombre_de_lote(quincena), "ingerido_en": ingerido_en,
             "simulado": SIMULAR, "registro": registro,
-            "huella": huella_del_lote(registro)}
+            "huella": huella_del_lote(registro), "operacion": operacion_del_lote}
 
 
 # ── Activo 2 · las filas revisadas, una por una ────────────────────────────
@@ -309,6 +330,7 @@ def capa_cruda(context: AssetExecutionContext) -> dict:
     compute_kind="pandera",
 )
 def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
+    iniciado_en = operacion.ahora()
     contrato = leer_contrato()
     ruta = Path(capa_cruda["archivo"])
     # El ALCANCE, no el archivo: las mismas filas que la ingesta escribió al
@@ -321,6 +343,13 @@ def filas_revisadas(context: AssetExecutionContext, capa_cruda: dict) -> dict:
              "ingerido_en": capa_cruda.get("ingerido_en")}
 
     limpias, registros, resumen = compuerta.revisar_lote(df, contrato, ruta.name)
+    # Las columnas del archivo, para el aviso de las que el contrato no declara
+    # (CU-02 · 2a), y el paso de esta compuerta.
+    op = dict(capa_cruda.get("operacion") or {})
+    op["columnas_del_archivo"] = [str(c) for c in df.columns]
+    op["pasos"] = [*op.get("pasos", []), operacion.paso_de_compuerta(
+        compuerta.NOMBRE_COMPUERTA, resumen, context.run.run_id, iniciado_en, operacion.ahora())]
+    traza["operacion"] = op
     if limpias is None:
         # Nivel LOTE: le falta una columna al archivo entero. No hay filas que
         # revisar, y el lote no se ingiere a medias (CU-02 · 2b).
@@ -378,6 +407,29 @@ def _registrar_lote(context, contrato, lote_nombre, quincena, resumen, frescura)
     return registro
 
 
+def _registrar_corrida(context, contrato, quincena, lote_nombre, filas_revisadas, resumen,
+                       pasos, cuarentena):
+    """La corrida en el esquema de operación, con los pasos que traía el lote más
+    los de este activo. Devuelve su id."""
+    traza = dict(filas_revisadas.get("operacion") or {})
+    if not traza.get("archivo"):
+        # Una salida de `filas_revisadas` de antes de T064 no trae la traza: se toma
+        # el archivo de la carpeta de llegada.
+        ruta = archivo_del_lote(quincena)
+        traza.update(archivo=str(ruta) if ruta else None,
+                     sha256_entrada=sha256_de(ruta) if ruta else None)
+    traza.update(pasos=[*traza.get("pasos", []), *pasos], disparo=_disparo(context),
+                 ejecucion=context.run.run_id)
+    referencia = ((resumen.get("frescura") or {}).get("fecha_referencia")
+                  or FECHA_REFERENCIA or dt.date.today().isoformat())
+    r = operacion.registrar_lote(contrato, lote_nombre, traza, resumen, cuarentena,
+                                 referencia, simular=SIMULAR)
+    context.log.info("corrida %s en %s.%s · %s pasos · %s filas en cuarentena · %s",
+                     r["id"], r["motor"], operacion.ESQUEMA, r["pasos"], r["cuarentena"],
+                     ", ".join(r["incidentes"]) or "sin incidentes")
+    return r["id"]
+
+
 @asset(
     partitions_def=QUINCENAS,
     description="Lo que necesita el lote completo: el `?` que no se puede reparar "
@@ -395,10 +447,12 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
     if filas_revisadas["detenido"]:
         resumen = dict(filas_revisadas["resumen"])
         registro = _registrar_lote(context, contrato, lote_nombre, quincena, resumen, None)
+        corrida_id = _registrar_corrida(context, contrato, quincena, lote_nombre,
+                                        filas_revisadas, resumen, [], [])
         context.add_output_metadata({"resultado": resumen["resultado"],
                                      "motivo_lote": resumen.get("motivo_lote"),
-                                     "registro": str(registro)})
-        return {**traza, "resumen": resumen, "promovidas": None}
+                                     "registro": str(registro), "corrida_id": corrida_id})
+        return {**traza, "resumen": resumen, "promovidas": None, "corrida_id": corrida_id}
 
     limpias = filas_revisadas["limpias"]
     por_fila = filas_revisadas["resumen"]
@@ -407,8 +461,11 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
     # grupo y del 5%: así cuenta para D-07, y los grupos se forman con el texto ya
     # reparado (las filas siguen tal como llegaron; la reparación la aplica la
     # capa intermedia, con el mismo mapa).
+    horas = [operacion.ahora()]
     reparables, rep_registros, res_rep = reparacion.apartar_irreparables(limpias, contrato)
+    horas.append(operacion.ahora())
     promovibles, grupos, res_grupo = reglas_de_lote.revisar_grupos(reparables, contrato)
+    horas.append(operacion.ahora())
     frescura = reglas_de_lote.revisar_frescura(
         limpias, contrato, FECHA_REFERENCIA)
 
@@ -430,6 +487,15 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
         "frescura": frescura,
     }
     resumen = compuerta.decidir_promocion(resumen, contrato)
+    horas.append(operacion.ahora())
+    pasos = [
+        operacion.paso_de_compuerta(reparacion.NOMBRE_COMPUERTA, res_rep, context.run.run_id,
+                                    *horas[0:2]),
+        operacion.paso_de_compuerta(reglas_de_lote.NOMBRE_COMPUERTA, res_grupo,
+                                    context.run.run_id, *horas[1:3]),
+        operacion.paso_de_promocion(resumen, res_grupo["filas_salida"], context.run.run_id,
+                                    *horas[2:4]),
+    ]
 
     SALIDAS.mkdir(parents=True, exist_ok=True)
     for nombre, filas in (("reparacion", rep_registros), ("grupo", grupos)):
@@ -438,9 +504,16 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
             for r in filas:
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
     registro = _registrar_lote(context, contrato, lote_nombre, quincena, resumen, frescura)
+    # Las tres cuarentenas, fila por fila, y el incidente si el lote se detiene. Los
+    # JSONL de arriba se quedan como respaldo: traen además la evidencia de cada
+    # motivo (qué valor, qué gemelos, qué diferencia).
+    corrida_id = _registrar_corrida(context, contrato, quincena, lote_nombre, filas_revisadas,
+                                    resumen, pasos,
+                                    [*filas_revisadas["registros"], *rep_registros, *grupos])
 
     context.add_output_metadata({
         "resultado": resumen["resultado"],
+        "corrida_id": corrida_id,
         "proporcion_en_cuarentena": resumen["proporcion_en_cuarentena"],
         "umbral": resumen["umbral"],
         "filas_salida": resumen["filas_salida"],
@@ -467,19 +540,12 @@ def lote_promovido(context: AssetExecutionContext, filas_revisadas: dict) -> dic
     # Un lote detenido no deja salir nada: D-07 dice que no se promueve ni la parte
     # que pasó.
     salen = None if resumen["resultado"] == "DETENIDO" else promovibles
-    return {**traza, "resumen": resumen, "promovidas": salen}
+    return {**traza, "resumen": resumen, "promovidas": salen, "corrida_id": corrida_id}
 
 
 # ── Activo 4 · la capa intermedia (T048) ───────────────────────────────────
 
-@asset(
-    partitions_def=QUINCENAS,
-    description="La capa intermedia del lote: el texto reparado, el precio tipado "
-                "y sin captura doble, en postgres-analytics. Reemplaza la "
-                "partición; un lote detenido la deja vacía.",
-    compute_kind="duckdb",
-)
-def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dict:
+def _cargar_la_capa_intermedia(context, lote_promovido):
     contrato = leer_contrato()
     quincena, lote_nombre = lote_promovido["quincena"], lote_promovido["lote"]
     resumen = lote_promovido["resumen"]
@@ -525,6 +591,45 @@ def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dic
     })
     return {"quincena": quincena, "lote": lote_nombre,
             "filas": res_capa["filas_salida"], "huella": huella}
+
+
+def _paso_intermedio(context, corrida_id, iniciado_en, entrada, salida, resultado):
+    """El paso de la capa intermedia en su corrida. Si la carga falló, la corrida
+    queda FALLIDA; si eso tampoco se puede anotar, se dice y gana el error de la
+    carga, que es el que importa."""
+    if corrida_id is None:      # un `lote_promovido` de antes de T064
+        return
+    nuevo = operacion.paso("INTERMEDIA", "capa_intermedia", context.run.run_id, iniciado_en,
+                           operacion.ahora(), entrada=entrada, salida=salida,
+                           resultado=resultado)
+    try:
+        operacion.agregar_paso(corrida_id, nuevo, simular=SIMULAR,
+                               fallida=resultado == "FALLO")
+    except Exception as e:
+        if resultado != "FALLO":
+            raise
+        context.log.error("no se pudo anotar el fallo en la corrida %s: %s", corrida_id, e)
+
+
+@asset(
+    partitions_def=QUINCENAS,
+    description="La capa intermedia del lote: el texto reparado, el precio tipado "
+                "y sin captura doble, en postgres-analytics. Reemplaza la "
+                "partición; un lote detenido la deja vacía.",
+    compute_kind="duckdb",
+)
+def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dict:
+    iniciado_en = operacion.ahora()
+    corrida_id = lote_promovido.get("corrida_id")
+    promovidas = lote_promovido.get("promovidas")
+    entrada = 0 if promovidas is None else len(promovidas)
+    try:
+        r = _cargar_la_capa_intermedia(context, lote_promovido)
+    except Exception:
+        _paso_intermedio(context, corrida_id, iniciado_en, entrada, None, "FALLO")
+        raise
+    _paso_intermedio(context, corrida_id, iniciado_en, entrada, r["filas"], "PASO")
+    return r
 
 
 # ── Activo 5 · la capa de consumo (T053) ──────────────────────────────────

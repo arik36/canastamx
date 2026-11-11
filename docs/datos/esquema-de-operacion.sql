@@ -10,7 +10,11 @@
 --     (las columnas marcadas «interfaz analítica»).
 -- Nadie más escribe aquí, y esta interfaz no escribe en la capa de consumo.
 --
--- Probarlo con el compose:
+-- Se puede aplicar las veces que sea: no borra nada ni falla si ya existe (T064).
+-- La plataforma lo aplica antes de escribir cada corrida, y su simulación lo
+-- traduce a DuckDB (services/data-platform/ingestion/operacion.py). A mano:
+--   python services/data-platform/ingestion/operacion.py --aplicar
+-- o con el compose:
 --   docker exec -i cmx-postgres-analytics psql -U canastamx -d canastamx_analytics \
 --     < docs/datos/esquema-de-operacion.sql
 -- ════════════════════════════════════════════════════════════════════════════
@@ -25,8 +29,11 @@ SET search_path = operacion;
 -- FILA están declarados en `motivos_de_fila`, con la misma `regla` que aquí, y
 -- `tests/test_compuerta.py` comprueba que los dos catálogos y el `enum` de
 -- `analitica.yaml` digan lo mismo. La columna se queda para el próximo nombre
--- que se proponga antes de que el contrato lo tenga.
-CREATE TABLE motivo (
+-- que se proponga antes de que el contrato lo tenga. Al volver a aplicar el SQL,
+-- un motivo que ya existe toma lo que diga aquí; su código y su nivel no cambian.
+-- Sólo se reescribe si algo cambió: así dos corridas que lo aplican a la vez no
+-- chocan por las mismas filas.
+CREATE TABLE IF NOT EXISTS motivo (
   codigo       text PRIMARY KEY,
   nivel        text NOT NULL CHECK (nivel IN ('FILA', 'LOTE', 'CORRIDA')),
   efecto       text NOT NULL CHECK (efecto IN ('CUARENTENA', 'LOTE_DETENIDO', 'AVISO', 'PUBLICACION_DETENIDA')),
@@ -54,14 +61,21 @@ INSERT INTO motivo (codigo, nivel, efecto, regla, en_contrato, descripcion) VALU
   ('rechazo_mayor_al_umbral',    'LOTE', 'LOTE_DETENIDO', 'promocion_del_lote.rechazo_maximo', true, 'Más del 5% de las filas del lote en cuarentena (D-07)'),
   ('columnas_extra',             'LOTE', 'AVISO', 'columnas_extra.politica', true, 'Columnas que el contrato no declara: no se ingieren y el lote entra'),
   ('frescura_avisa',             'CORRIDA', 'AVISO', 'frescura.avisa_dias', true, 'El dato más reciente tiene 20 días o más'),
-  ('frescura_bloquea',           'CORRIDA', 'PUBLICACION_DETENIDA', 'frescura.bloquea_dias', true, 'El dato más reciente tiene 45 días o más: la capa de consumo deja de publicarse vigente');
+  ('frescura_bloquea',           'CORRIDA', 'PUBLICACION_DETENIDA', 'frescura.bloquea_dias', true, 'El dato más reciente tiene 45 días o más: la capa de consumo deja de publicarse vigente')
+ON CONFLICT (codigo) DO UPDATE SET efecto = EXCLUDED.efecto, regla = EXCLUDED.regla,
+  en_contrato = EXCLUDED.en_contrato, descripcion = EXCLUDED.descripcion
+  WHERE (motivo.efecto, motivo.regla, motivo.en_contrato, motivo.descripcion)
+    IS DISTINCT FROM (EXCLUDED.efecto, EXCLUDED.regla, EXCLUDED.en_contrato, EXCLUDED.descripcion);
 
 -- ── 2 · Corridas · CU-01, CU-02 paso 8, RF-08 ──────────────────────────────
 -- Una fila por corrida. Un lote reprocesado tiene varias (CU-05 · 5a).
-CREATE TABLE corrida (
+-- El lote se llama como el archivo de la fuente, que no nombra igual los dos años:
+-- 07-2026_Q2 en 2026 y 01-2025_01 en 2025 (ingesta-capa-cruda.md). Las dos son
+-- la misma quincena: 2026-07-Q2 y 2025-01-Q1.
+CREATE TABLE IF NOT EXISTS corrida (
   id                   bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  lote                 text NOT NULL CHECK (lote ~ '^(0[1-9]|1[0-2])-[0-9]{4}_Q[12]$'),
-  quincena             text GENERATED ALWAYS AS (substr(lote, 4, 4) || '-' || substr(lote, 1, 2) || '-' || substr(lote, 9, 2)) STORED,
+  lote                 text NOT NULL CHECK (lote ~ '^(0[1-9]|1[0-2])-[0-9]{4}_(Q[12]|0[12])$'),
+  quincena             text GENERATED ALWAYS AS (substr(lote, 4, 4) || '-' || substr(lote, 1, 2) || '-Q' || right(lote, 1)) STORED,
   archivo              text NOT NULL,
   sha256_entrada       char(64) NOT NULL,
   version_contrato     text NOT NULL,
@@ -80,10 +94,10 @@ CREATE TABLE corrida (
   CHECK (resultado IS NULL OR terminada_en IS NOT NULL),
   CHECK (filas_aceptadas + filas_en_cuarentena <= filas_leidas)
 );
-CREATE INDEX corrida_por_lote ON corrida (lote, iniciada_en DESC);
+CREATE INDEX IF NOT EXISTS corrida_por_lote ON corrida (lote, iniciada_en DESC);
 
 -- ── 3 · Pasos · el linaje de CU-05 paso 5 y RF-12 ──────────────────────────
-CREATE TABLE paso (
+CREATE TABLE IF NOT EXISTS paso (
   corrida_id           bigint NOT NULL REFERENCES corrida (id) ON DELETE CASCADE,
   orden                smallint NOT NULL CHECK (orden >= 1),
   capa                 text NOT NULL CHECK (capa IN ('ARCHIVO', 'CRUDA', 'COMPUERTA', 'INTERMEDIA', 'CONSUMO')),
@@ -99,24 +113,27 @@ CREATE TABLE paso (
 
 -- ── 4 · Filas en cuarentena · CU-02 3a, 4a y 5a, SLA-D-09 ──────────────────
 -- `nivel` fijo en FILA y la llave compuesta impiden guardar aquí un motivo de lote.
-CREATE TABLE cuarentena (
+-- `ocurrencia`: la misma fila puede llegar dos veces idéntica, con la misma
+-- huella. La primera copia es la 1 y la segunda la 2, como en la capa intermedia.
+CREATE TABLE IF NOT EXISTS cuarentena (
   id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   corrida_id    bigint NOT NULL REFERENCES corrida (id),
   motivo        text NOT NULL,
   nivel         text NOT NULL DEFAULT 'FILA' CHECK (nivel = 'FILA'),
   compuerta     text NOT NULL,
   huella_fila   char(64) NOT NULL,
+  ocurrencia    integer NOT NULL DEFAULT 1 CHECK (ocurrencia >= 1),
   grupo         text,
   fila          jsonb NOT NULL,
   detectada_en  timestamptz NOT NULL DEFAULT now(),
   FOREIGN KEY (motivo, nivel) REFERENCES motivo (codigo, nivel),
-  UNIQUE (corrida_id, huella_fila, motivo),
+  UNIQUE (corrida_id, huella_fila, ocurrencia, motivo),
   CHECK (motivo <> 'colision_precio_alta' OR grupo IS NOT NULL)
 );
-CREATE INDEX cuarentena_por_corrida ON cuarentena (corrida_id, motivo);
+CREATE INDEX IF NOT EXISTS cuarentena_por_corrida ON cuarentena (corrida_id, motivo);
 
 -- ── 5 · Incidentes y avisos · CU-04, RF-13, SLA-D-05 y SLA-D-09 ────────────
-CREATE TABLE incidente (
+CREATE TABLE IF NOT EXISTS incidente (
   id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   severidad        text NOT NULL CHECK (severidad IN ('AVISO', 'INCIDENTE')),
   corrida_id       bigint NOT NULL REFERENCES corrida (id),
@@ -137,10 +154,10 @@ CREATE TABLE incidente (
   CHECK (estado = 'CERRADO' OR (cerrado_en IS NULL AND causa IS NULL AND decision IS NULL)),
   CHECK (cerrado_en IS NULL OR cerrado_en >= abierto_en)
 );
-CREATE INDEX incidente_abierto ON incidente (abierto_en) WHERE estado = 'ABIERTO';
+CREATE INDEX IF NOT EXISTS incidente_abierto ON incidente (abierto_en) WHERE estado = 'ABIERTO';
 
 -- ── 6 · La cola de variantes · CU-06 2b y CU-14 ─────────────────────────────
-CREATE TABLE variante (
+CREATE TABLE IF NOT EXISTS variante (
   id                     bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   original_producto      text NOT NULL,
   original_presentacion  text NOT NULL,
@@ -160,12 +177,12 @@ CREATE TABLE variante (
   CHECK (estado = 'PENDIENTE' OR (resuelta_en IS NOT NULL AND resuelta_por IS NOT NULL)),
   CHECK ((estado = 'ASIGNADA') = (asignado_producto IS NOT NULL AND asignado_presentacion IS NOT NULL))
 );
-CREATE INDEX variante_pendiente ON variante (parecido DESC) WHERE estado = 'PENDIENTE';
+CREATE INDEX IF NOT EXISTS variante_pendiente ON variante (parecido DESC) WHERE estado = 'PENDIENTE';
 
 -- ── 7 · El diccionario de artículos · CU-06 pasos 3 y 3a, CU-14 paso 5, RF-D10
 -- Lo escribe sólo la plataforma: en cada corrida pasa aquí las variantes ya
 -- resueltas, y la decisión del operador gana sobre la automática (CU-06 · 3a).
-CREATE TABLE equivalencia (
+CREATE TABLE IF NOT EXISTS equivalencia (
   original_producto      text NOT NULL,
   original_presentacion  text NOT NULL,
   canonico_producto      text NOT NULL,
@@ -180,13 +197,13 @@ CREATE TABLE equivalencia (
 -- ── Vistas que lee la interfaz analítica ─────────────────────────────────────
 
 -- La corrida vigente de cada lote: la última (CU-05 · 5a)
-CREATE VIEW corrida_vigente AS
+CREATE OR REPLACE VIEW corrida_vigente AS
 SELECT DISTINCT ON (lote) *
 FROM corrida
 ORDER BY lote, iniciada_en DESC;
 
 -- Los seis indicadores de la consola (CU-05 · GET /api/v1/operacion/estado)
-CREATE VIEW estado_de_la_plataforma AS
+CREATE OR REPLACE VIEW estado_de_la_plataforma AS
 WITH ultima AS (
   SELECT * FROM corrida ORDER BY iniciada_en DESC LIMIT 1
 ), vigentes AS (
@@ -207,7 +224,7 @@ SELECT
   (SELECT count(*) FROM incidente WHERE estado = 'ABIERTO')                                  AS incidentes_abiertos;
 
 -- H2 · minutos entre el inicio de la corrida y el incidente (SLA-D-05: menos de 15)
-CREATE VIEW deteccion AS
+CREATE OR REPLACE VIEW deteccion AS
 SELECT i.id AS incidente_id, c.lote, c.iniciada_en, i.abierto_en,
        round(extract(epoch FROM (i.abierto_en - c.iniciada_en)) / 60.0, 2) AS minutos,
        (i.abierto_en - c.iniciada_en) < interval '15 minutes'               AS cumple_h2
@@ -218,7 +235,7 @@ WHERE i.severidad = 'INCIDENTE';
 -- Cobertura y precisión de la cola (RF-14 · GET /api/v1/reconciliacion/cola)
 -- Cobertura: variantes con decisión (automática o del operador) entre las detectadas.
 -- Precisión: sugerencias que el operador aprobó entre las que revisó.
-CREATE VIEW metricas_de_normalizacion AS
+CREATE OR REPLACE VIEW metricas_de_normalizacion AS
 WITH a AS (SELECT count(*) AS n FROM equivalencia WHERE origen = 'AUTOMATICA'),
      v AS (SELECT count(*)                                      AS detectadas,
                   count(*) FILTER (WHERE estado <> 'PENDIENTE') AS revisadas,
