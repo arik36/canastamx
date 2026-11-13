@@ -1,6 +1,7 @@
 """Compara una respuesta con su esquema en analitica.yaml 0.2.1 (ADR 017: el contrato
-publicado manda). Cubre lo que usan las cuatro rutas: objetos, listas, `$ref`,
-`required`, `enum`, `pattern` y `minimum`. Un campo que el esquema no declara también
+publicado manda). Cubre lo que usan las rutas: objetos, listas, `$ref`, `required`,
+`enum`, `pattern`, `minimum`, y desde T069 los números, `oneOf` y los tipos que
+admiten `null` (`type: [string, "null"]`). Un campo que el esquema no declara también
 es un error: así un `snake_case` que se cuele no pasa."""
 
 import re
@@ -21,6 +22,12 @@ def _resuelto(nodo):
     return nodo
 
 
+def operaciones():
+    """[(ruta, método, operación)] de todo el contrato."""
+    return [(ruta, metodo, o) for ruta, metodos in CONTRATO["paths"].items()
+            for metodo, o in metodos.items()]
+
+
 def esquema(ruta, metodo, estado, medio="application/json"):
     respuesta = _resuelto(CONTRATO["paths"][ruta][metodo]["responses"][str(estado)])
     return respuesta["content"][medio]["schema"]
@@ -28,9 +35,22 @@ def esquema(ruta, metodo, estado, medio="application/json"):
 
 def errores(valor, nodo, donde="$"):
     e = _resuelto(nodo)
+    if "oneOf" in e:
+        cumplen = [o for o in e["oneOf"] if not errores(valor, o, donde)]
+        if len(cumplen) == 1:
+            return []
+        return [f"{donde}: cumple {len(cumplen)} de las {len(e['oneOf'])} opciones de oneOf"]
     if "enum" in e and valor not in e["enum"]:
         return [f"{donde}: {valor!r} no está en {e['enum']}"]
     tipo = e.get("type")
+    if isinstance(tipo, list):                  # [string, "null"]: uno de los dos
+        if valor is None:
+            return [] if "null" in tipo else [f"{donde}: no admite null"]
+        tipo = next(t for t in tipo if t != "null")
+    elif valor is None:
+        return [] if tipo in (None, "null") else [f"{donde}: no admite null"]
+    if tipo == "null":
+        return [f"{donde}: tiene que ser null"]
     if tipo == "object":
         if not isinstance(valor, dict):
             return [f"{donde}: no es objeto"]
@@ -54,6 +74,10 @@ def errores(valor, nodo, donde="$"):
     if tipo == "integer":
         if not isinstance(valor, int) or isinstance(valor, bool):
             return [f"{donde}: no es entero"]
+        return [f"{donde}: menor que {e['minimum']}"] if valor < e.get("minimum", valor) else []
+    if tipo == "number":
+        if not isinstance(valor, int | float) or isinstance(valor, bool):
+            return [f"{donde}: no es número"]
         return [f"{donde}: menor que {e['minimum']}"] if valor < e.get("minimum", valor) else []
     if tipo == "boolean" and not isinstance(valor, bool):
         return [f"{donde}: no es booleano"]

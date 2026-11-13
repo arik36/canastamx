@@ -67,3 +67,10 @@ def requiere_rol(rol):
         return claims
 
     return sesion_con_rol
+
+
+def token_de_la_sesion(
+        credenciales: Annotated[HTTPAuthorizationCredentials | None, Depends(_portador)]):
+    """El token tal como llegó, para presentárselo al dominio (`cuenta.py`, D-11).
+    Sólo tiene sentido en una ruta que ya pasó por `requiere_rol`."""
+    return credenciales.credentials if credenciales else None

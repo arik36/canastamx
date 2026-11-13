@@ -106,3 +106,30 @@ La cantidad es un entero positivo. `Canasta` expone sólo `id`, `nombre` y `line
 Los datos inválidos, incluida la paginación y los parámetros de quitar un artículo,
 responden 400. Todos los errores usan `application/problem+json` con `type`, `title`
 y `status`. Sin sesión válida se responde 401 mediante el manejador compartido.
+
+## Implementación de la consola y de los clientes (T069, #211)
+
+La interfaz analítica sirve trece de las diecinueve operaciones de `analitica.yaml`
+0.2.1: las cuatro de T058, las seis de la consola (`x-rol: OPERADOR`, sobre el esquema
+de operación) y las tres de los clientes (`costearCanasta`, `articulosAnomalos` y
+`serieDeArticulo`, sobre la estrella). Cómo se comporta cada una está en
+`services/analytics-api/README.md`. Las otras seis no tienen quién las pida desde el
+recorte del 5 de noviembre: `rangoHistorico` y `preciosVigentes` (alertas),
+`colaDeVariantes` y `resolverVariante` (reconciliación), `indiceContraInpc` y
+`exportarArticulo`.
+
+**Quién cierra un incidente (D-11).** El token no trae el correo (ADR 020). La
+analítica se lo pregunta al dominio con el mismo token, en `GET /api/v1/cuentas/yo`
+(D-10), y sólo acepta la cuenta del `sub`. Es la única vez que la analítica llama al
+dominio; `DOMINIO_URL` dice dónde corre.
+
+**Lo que el contrato 0.2.1 no alcanza a decir.** Al implementarlo salieron estos
+huecos. El código responde lo que se indica, y cada uno queda para la próxima
+versión del contrato, que publica A con B:
+
+| Operación | Qué falta en el contrato | Qué responde hoy |
+|---|---|---|
+| `linajeDeLote` | `Corrida` no trae el archivo ni los pasos: con el contrato no se puede mostrar «qué compuertas pasó y cuántas filas quedaron en cada capa» (CU-05 · 5). Los datos están en `operacion.paso` | Las corridas del lote, en orden |
+| `estadoDeLaPlataforma` | No declara el 404 de «no hay corridas» (CU-05 · 2b), y `ultimoDato` es obligatorio aunque ningún lote haya pasado | 404 `SinDatos`; sin `ultimoDato` si no hay dato |
+| `cerrarIncidente` | No declara el 400 de un cuerpo inválido ni el 503 de cuando el dominio no dice de quién es la sesión | 400 `DatosInvalidos` y 503, en `application/problem+json` |
+| `costearCanasta` | La respuesta dice la entidad y la quincena, pero no cuántas tiendas ni observaciones hay detrás de cada precio (R-04) | Lo que el esquema permite |
