@@ -241,3 +241,8 @@ jobs:
         run: |
           python3 infra/scripts/revisar-env.py .env.example infra/envs/test/.env.example
           python3 -m unittest discover -s infra/scripts -p 'test_*.py' -v
+
+      # T049 · la comprobación de aislamiento que T070 y T076 corren antes de cada
+      # corrida: pasa con la terminal de pruebas y se detiene con la de desarrollo.
+      - name: Comprobación de aislamiento del entorno de pruebas
+        run: python3 -m unittest discover -s infra/envs/test -p 'test_*.py' -v
