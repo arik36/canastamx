@@ -23,7 +23,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * </ul>
  *
  * <p>{@code POST /api/v1/sesiones} no pasa por aquí: recibe las credenciales en el
- * cuerpo y su 401 es la decisión D-12, todavía abierta.
+ * cuerpo y no acepta Bearer. Su 401 queda sin {@code WWW-Authenticate} como
+ * excepción explícita (D-12, opción B, votada el 2 de noviembre de 2026): anunciar
+ * Bearer nombraría un mecanismo que esta ruta no acepta. No cambia el
+ * comportamiento ni los clientes; los 401 de las rutas protegidas conservan su desafío.
  */
 @RestControllerAdvice
 class SinSesionHandler {

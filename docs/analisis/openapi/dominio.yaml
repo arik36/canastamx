@@ -13,7 +13,9 @@ info:
 
     **0.2.2** fija el token —HS256, la clave y sus claims (ADR 020, en propuesta)— y
     declara el desafío `WWW-Authenticate` de los 401 de las rutas con sesión. El 401
-    de `POST /api/v1/sesiones` sigue sin desafío: es la decisión D-12, abierta.
+    de `POST /api/v1/sesiones` queda sin `WWW-Authenticate` como excepción explícita
+    (D-12, opción B, votada el 2 de noviembre de 2026): recibe el correo y la
+    contraseña en el cuerpo y no acepta Bearer. No cambia el comportamiento ni los clientes.
 
     Las convenciones y las decisiones de arquitectura (P-01 a P-15) ya se votaron.
     Están en `docs/analisis/openapi/README.md`.
@@ -405,9 +407,11 @@ components:
     CredencialesInvalidas:
       description: |
         El correo o la contraseña no son válidos, o el cuerpo no se puede leer. Mismo
-        `type` que `SinSesion`, pero sin `WWW-Authenticate`: la ruta recibe las
-        credenciales en el cuerpo, no con Bearer. Qué hacer con ese encabezado es la
-        decisión D-12 (`docs/equipo/decisiones-pendientes.md`).
+        `type` que `SinSesion`, pero sin `WWW-Authenticate`: excepción explícita de
+        `POST /api/v1/sesiones` (D-12, opción B, votada el 2 de noviembre de 2026).
+        La ruta recibe el correo y la contraseña en el cuerpo y no acepta Bearer;
+        anunciarlo nombraría un mecanismo que esta ruta no acepta. No cambia el
+        comportamiento ni los clientes (`docs/equipo/decisiones-pendientes.md`).
       content:
         application/problem+json:
           schema: { $ref: "#/components/schemas/Problema" }

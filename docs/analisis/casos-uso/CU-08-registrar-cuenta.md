@@ -41,7 +41,7 @@
 
 **7a · Las credenciales no son válidas**
 1. El sistema rechaza el inicio de sesión.
-2. El sistema informa que las credenciales proporcionadas no son válidas.
+2. El sistema informa que las credenciales proporcionadas no son válidas. El 401 de `POST /api/v1/sesiones` queda sin `WWW-Authenticate` como excepción explícita (D-12, opción B, votada el 2 de noviembre de 2026): recibe el correo y la contraseña en el cuerpo y no acepta Bearer. No cambia el comportamiento ni los clientes; los 401 de las rutas protegidas por Bearer conservan su desafío.
 3. La persona consumidora puede proporcionar nuevamente sus credenciales.
 4. Vuelve al paso 6 del flujo principal.
 
