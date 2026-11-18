@@ -13,6 +13,7 @@
 # Uso, desde la raíz del repositorio:
 #   bash infra/scripts/sembrar-cuentas.sh           # docker-compose.yml y .env de la raíz
 #   bash infra/scripts/sembrar-cuentas.sh --test    # infra/envs/test/
+#   bash infra/scripts/sembrar-cuentas.sh --prod    # infra/envs/prod/, en la VM (T054)
 #
 # Requisitos: el servicio postgres-oltp arriba y la tabla usuario creada. La
 # tabla la crea Flyway al arrancar el dominio o sus pruebas; este guion no
@@ -31,7 +32,9 @@ case "${1:-}" in
   "")     COMPOSE=(docker compose);                                  ENV_FILE=".env" ;;
   --test) COMPOSE=(docker compose -f infra/envs/test/docker-compose.yml)
           ENV_FILE="infra/envs/test/.env" ;;
-  *)      echo "Uso: bash $0 [--test]" >&2; exit 2 ;;
+  --prod) COMPOSE=(docker compose -f infra/envs/prod/docker-compose.yml --env-file infra/envs/prod/.env)
+          ENV_FILE="infra/envs/prod/.env" ;;
+  *)      echo "Uso: bash $0 [--test | --prod]" >&2; exit 2 ;;
 esac
 
 [[ -f "$ENV_FILE" ]] || { echo "No existe $ENV_FILE. Copia su .env.example y complétalo." >&2; exit 1; }

@@ -1,0 +1,21 @@
+# Qué entra a la imagen de la plataforma de datos, que se construye desde la raíz
+# del repositorio. Docker usa este archivo, y no un .dockerignore de la raíz,
+# porque está junto al Dockerfile y se llama como él.
+#
+# Se excluye todo y se dejan pasar sólo las tres cosas que la imagen copia.
+*
+!contracts/
+!docs/datos/esquema-de-operacion.sql
+!services/data-platform/
+
+# Y de la plataforma, ni pruebas, ni datos, ni evidencia de nadie.
+services/data-platform/tests/
+services/data-platform/ingestion/lotes/
+services/data-platform/ingestion/corridas/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.ruff_cache/
+**/.venv/
+**/.env
+**/.env.*
