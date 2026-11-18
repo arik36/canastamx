@@ -1,4 +1,4 @@
-// Prism produce y valida las respuestas; este adaptador sólo elige un ejemplo por consulta.
+// Prism sirve la búsqueda; precios y costo usan fixtures sintéticos de canasta.cjs.
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -6,6 +6,7 @@ const http = require('node:http');
 const { spawn } = require('node:child_process');
 const YAML = require('yaml');
 const { ejemplos, elegirEjemplo, entidadesCubiertas, quincena } = require('./escenarios.cjs');
+const { responderCanasta } = require('./canasta.cjs');
 
 async function iniciarSimulador({ puerto = 4011, puertoPrism = 4012, host = '0.0.0.0', silencioso = false } = {}) {
   const contrato = path.resolve(__dirname, '../../../docs/analisis/openapi/analitica.yaml');
@@ -36,6 +37,7 @@ async function iniciarSimulador({ puerto = 4011, puertoPrism = 4012, host = '0.0
   };
   const servidor = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://simulador.local');
+    if (await responderCanasta(req, res, url)) return;
     if (req.method !== 'GET' || !['/health', '/api/v1/entidades', '/api/v1/articulos'].includes(url.pathname)) {
       res.writeHead(404, { 'content-type': 'application/problem+json', 'x-canastamx-fuente': 'simulador' });
       res.end(JSON.stringify({ type: 'urn:canastamx:simulador:ruta', title: 'Ruta fuera del simulador de búsqueda', status: 404 })); return;
@@ -62,7 +64,7 @@ async function iniciarSimulador({ puerto = 4011, puertoPrism = 4012, host = '0.0
   });
   try {
     let preparado = false;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 400; i++) {
       if (fallo) throw fallo;
       try { if ((await fetch(`http://127.0.0.1:${puertoPrism}/health`)).ok) { preparado = true; break; } } catch {}
       await new Promise(resolve => setTimeout(resolve, 150));

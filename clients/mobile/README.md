@@ -58,7 +58,7 @@ Recorrido manual de navegación en Android con Expo Go:
 
 1. Al abrir, comprueba las cuatro pestañas, en este orden: **Inicio**, **Descubrir**,
    **Canasta** y **Cuenta**. Alertas no debe aparecer en la barra inferior.
-2. Desde Inicio, pulsa **Probar detalle de artículo** y regresa con la flecha.
+2. Desde Inicio, busca un artículo, toca un resultado y regresa con la flecha.
 3. Abre el detalle otra vez y regresa con Atrás de Android.
 4. Desde la campana del encabezado abre **Mis alertas**. La barra de pestañas
    debe ocultarse; regresa con la flecha a la pestaña desde la que entraste.
@@ -95,11 +95,11 @@ app/
 Las rutas `/`, `/canasta` y `/alertas` conservan su URL; el grupo `(tabs)` no
 forma parte de la dirección. Se incorporan `/descubrir` y `/cuenta`.
 `/alertas` está en la pila y es accesible desde la campana y desde Cuenta.
-El botón temporal de Inicio abre `/articulo/prueba`; ese identificador no
-representa un artículo real ni fija el contrato de datos futuro.
+Inicio abre `/articulo/comparar` con el par canónico `producto` y `presentacion`,
+y la entidad consultada. El segmento de ruta no es un identificador del almacén.
 
 La organización se documenta en el [ADR 007](../../docs/adr/007-navegacion-mobile.md).
-Esta corrección no añade catálogos, precios, canastas ni alertas de ejemplo.
+Los datos de desarrollo sólo viven en `mocks/`; las pantallas consumen las API configuradas.
 La consulta real a `/health` permanece en Inicio.
 
 `node_modules/`, `.expo/`, archivos de entorno y salidas de compilación están
@@ -210,8 +210,9 @@ Muestra el correo y un avatar con su inicial, nunca un nombre. Incluye
   límite de ocho segundos; un error deja un mensaje y termina la carga.
 - El cliente no contiene `JWT_SECRET` ni verifica firmas: el dominio valida el
   token. Las variables `EXPO_PUBLIC_` son públicas.
-- Esta tarea no implementa registro, datos de canasta ni sincronización. La
-  navegación como invitado no envía una canasta al servidor.
+- El acceso no implementa registro. T056 utiliza esta sesión para guardar y
+  recuperar las canastas; el invitado puede consultar precios y recibe una
+  invitación a iniciar sesión antes de guardar artículos.
 
 La persistencia se explica en el [ADR 021](../../docs/adr/021-persistencia-sesion-mobile.md).
 La API y el gestor de sesión se separan del almacenamiento nativo para probar
@@ -247,3 +248,16 @@ Registro de comprobaciones de acceso: [T046](docs/evidencia/t046/README.md).
 ## Búsqueda de Inicio (T051 · #189)
 
 Consulta el arranque, los escenarios de Prism y la evidencia en [la guía de búsqueda](docs/t051-busqueda-analitica.md). La analítica usa EXPO_PUBLIC_ANALITICA_URL, independiente del dominio.
+
+## Detalle y canasta (T056 · #203)
+
+Desde un resultado de Inicio se comparan los precios por establecimiento con su
+fecha, entidad, quincena y población. Con una sesión de consumidor se crea y
+selecciona una canasta, se agregan artículos, se fijan cantidades y se quitan líneas.
+Las canastas se recuperan del dominio al restaurar la sesión.
+
+La analítica calcula el costo por cadena; la app muestra el total recibido, los
+artículos sin precio y el alcance de la estimación. Un faltante no se presenta
+como precio cero. El simulador se identifica expresamente.
+
+Arranque, pruebas y recorrido de aceptación: [guía T056](docs/t056-detalle-canasta.md).
