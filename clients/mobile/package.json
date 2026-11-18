@@ -7,7 +7,7 @@
     "start": "expo start --go",
     "android": "expo start --go --android",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/sesion.test.cjs tests/analitica.test.cjs",
+    "test": "node --test --test-concurrency=1 tests/sesion.test.cjs tests/analitica.test.cjs tests/canastas.test.cjs tests/canasta-provider.test.cjs",
     "simulador": "node mocks/servidor.cjs"
   },
   "engines": {
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@stoplight/prism-cli": "5.14.2",
     "@types/react": "~19.2.2",
+    "react-test-renderer": "19.2.0",
     "typescript": "~5.9.2",
     "yaml": "2.8.1"
   }

@@ -1,11 +1,11 @@
-import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { consultarMiCuenta, iniciarSesion } from "../api/sesion";
 import { EstadoSesion, GestorSesion } from "./gestor-sesion";
 
 const CLAVE = "canastamx.sesion.token";
-type Contexto = EstadoSesion & { entrar(correo: string, contrasena: string): Promise<boolean>; salir(): Promise<boolean>; reintentar(): Promise<void> };
+type Contexto = EstadoSesion & { entrar(correo: string, contrasena: string): Promise<boolean>; salir(): Promise<boolean>; reintentar(): Promise<void>; tokenDeSesion(): string };
 const SesionContext = createContext<Contexto | null>(null);
 
 export function SesionProvider({ children }: { children: ReactNode }) {
@@ -18,12 +18,16 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     iniciar: iniciarSesion, consultar: consultarMiCuenta,
   }, setEstado);
   const sesion = gestor.current;
+  const tokenDeSesion = useCallback(() => {
+    if (estado.estado !== "conSesion") throw new Error("Inicia sesión para guardar tu canasta.");
+    return sesion.obtenerToken();
+  }, [estado.estado, sesion]);
   useEffect(() => {
     void sesion.restaurar();
     const subscription = AppState.addEventListener("change", state => { if (state === "active") void sesion.restaurar(); });
     return () => { subscription.remove(); sesion.cancelar(); };
   }, [sesion]);
-  return <SesionContext.Provider value={{ ...estado, entrar: (correo, contrasena) => sesion.entrar(correo, contrasena), salir: () => sesion.salir(), reintentar: () => sesion.restaurar() }}>{children}</SesionContext.Provider>;
+  return <SesionContext.Provider value={{ ...estado, tokenDeSesion, entrar: (correo, contrasena) => sesion.entrar(correo, contrasena), salir: () => sesion.salir(), reintentar: () => sesion.restaurar() }}>{children}</SesionContext.Provider>;
 }
 export function useSesion() {
   const sesion = useContext(SesionContext);

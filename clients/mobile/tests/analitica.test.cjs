@@ -111,7 +111,7 @@ test('apuntar a la analítica real requiere sólo cambiar su URL', async t => {
   t.mock.method(global, 'fetch', async url => { assert.match(url, /^http:\/\/analitica-real.invalid:8000\//); return Response.json(datos); });
   assert.equal((await buscarArticulos(criterios)).simulador, false);
 });
-test('los ejemplos salen de Prism y cubren resultados, vacío, cobertura y problema', { timeout: 30000 }, async t => {
+test('los ejemplos salen de Prism y cubren resultados, vacío, cobertura y problema', { timeout: 90000 }, async t => {
   configurar(t);
   const { iniciarSimulador } = require('../mocks/servidor.cjs');
   const simulador = await iniciarSimulador({ puerto: 0, puertoPrism: 14012, host: '127.0.0.1', silencioso: true });

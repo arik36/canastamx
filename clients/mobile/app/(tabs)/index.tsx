@@ -103,7 +103,9 @@ export default function Inicio() {
           </View>}
         </View>
       </View>}
-      renderItem={({ item }) => <View style={styles.tarjeta}>
+      renderItem={({ item }) => <Pressable style={styles.tarjeta} accessibilityRole="button" accessibilityLabel={`Ver precios de ${item.nombre}, ${item.articulo.presentacion}`}
+        onPress={() => router.push({ pathname: "/articulo/[id]", params: { id: "comparar", producto: item.articulo.producto,
+          presentacion: item.articulo.presentacion, entidad: conDatos!.entidad } })}>
         <Text style={styles.catalogo}>{item.catalogo}</Text>
         <Text accessibilityRole="header" style={styles.subtitulo}>{item.nombre}</Text>
         <Text style={styles.texto}>{item.articulo.presentacion}</Text>
@@ -111,7 +113,8 @@ export default function Inicio() {
         <Text style={styles.precio}>${item.precioTipico.monto} {item.precioTipico.moneda}</Text>
         <Text style={styles.meta}>{conDatos?.entidad} · {conDatos?.quincena}</Text>
         <Text style={styles.meta}>Población: {item.observaciones} observaciones de precio</Text>
-      </View>}
+        <Text style={styles.enlaceTexto}>Ver precios y agregar a canasta</Text>
+      </Pressable>}
       ListFooterComponent={<View style={styles.pie}>
         {conDatos && conDatos.total > 0 && criterios && <>
           <Text style={styles.meta}>Mostrando {pagina + 1}–{pagina + conDatos.resultados.length} de {conDatos.total}</Text>
@@ -121,9 +124,6 @@ export default function Inicio() {
           </View>
         </>}
         <Text style={styles.meta}>Precios observados en QQP; no garantizan precio ni existencia en caja.</Text>
-        <Pressable accessibilityRole="button" style={styles.enlace} onPress={() => router.push({ pathname: "/articulo/[id]", params: { id: "prueba" } })}>
-          <Text style={styles.enlaceTexto}>Probar detalle de artículo</Text>
-        </Pressable>
         <Pressable accessibilityRole="button" accessibilityState={{ expanded: mostrarDominio }} style={styles.enlace} onPress={() => setMostrarDominio(valor => !valor)}>
           <Text style={styles.enlaceTexto}>{mostrarDominio ? "Ocultar" : "Ver"} estado del servicio de cuenta</Text>
         </Pressable>

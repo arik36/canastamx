@@ -87,4 +87,10 @@ export class GestorSesion {
     }
   }
   cancelar() { ++this.version; }
+  obtenerToken(): string {
+    if (!this.token || (this.vencimiento && Date.now() >= this.vencimiento)) {
+      throw new ErrorDeAcceso("Tu sesión venció. Vuelve a iniciar sesión.", 401);
+    }
+    return this.token;
+  }
 }
