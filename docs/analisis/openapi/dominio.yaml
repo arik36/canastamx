@@ -11,7 +11,7 @@ info:
     **0.2.1** agrega `GET /api/v1/cuentas/yo`, que devuelve la `Cuenta` de quien tiene
     la sesión (D-10, opción A).
 
-    **0.2.2** fija el token —HS256, la clave y sus claims (ADR 020, en propuesta)— y
+    **0.2.2** fija el token —HS256, la clave y sus claims (ADR 020, aceptado el 7 de noviembre de 2026)— y
     declara el desafío `WWW-Authenticate` de los 401 de las rutas con sesión. El 401
     de `POST /api/v1/sesiones` queda sin `WWW-Authenticate` como excepción explícita
     (D-12, opción B, votada el 2 de noviembre de 2026): recibe el correo y la
@@ -341,8 +341,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        Token de `POST /api/v1/sesiones` (ADR 020, en propuesta: falta ratificarlo con la
-        analítica, que lo verifica para `x-rol`).
+        Token de `POST /api/v1/sesiones` (ADR 020, aceptado el 7 de noviembre de 2026).
+        La analítica lo verifica para `x-rol` desde T058 (#199).
 
         - **Algoritmo:** HS256. Un token con cualquier otro `alg` se rechaza.
         - **Clave:** los 32 bytes que resultan de decodificar `JWT_SECRET`, Base64 estándar
