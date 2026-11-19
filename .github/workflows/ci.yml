@@ -239,10 +239,44 @@ jobs:
       # ejemplos se quedan en el formato que los dos leen igual.
       - name: Formato de los .env de ejemplo
         run: |
-          python3 infra/scripts/revisar-env.py .env.example infra/envs/test/.env.example
+          python3 infra/scripts/revisar-env.py .env.example infra/envs/test/.env.example \
+            infra/envs/prod/.env.example
           python3 -m unittest discover -s infra/scripts -p 'test_*.py' -v
 
       # T049 · la comprobación de aislamiento que T070 y T076 corren antes de cada
       # corrida: pasa con la terminal de pruebas y se detiene con la de desarrollo.
       - name: Comprobación de aislamiento del entorno de pruebas
         run: python3 -m unittest discover -s infra/envs/test -p 'test_*.py' -v
+
+  # ── T054 · las imágenes del despliegue, en arm64 como la VM ─────────────────
+  # La VM de Oracle es Ampere A1, arm64 (ADR 008). Este trabajo corre en una
+  # máquina arm64 de GitHub, gratis en un repositorio público, y construye las
+  # imágenes con el mismo docker-compose.yml que la VM. Si un Dockerfile se rompe,
+  # o una dependencia no existe para arm64, sale rojo aquí y no el día del
+  # despliegue. No levanta nada ni usa secretos: el .env es de mentira.
+  imagenes:
+    name: Imágenes del despliegue (arm64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Un .env de mentira, sólo para que Compose interpole
+        run: |
+          sed -E -e 's/^([A-Z0-9_]+)=$/\1=ci/' \
+                 -e "s#^CARPETA_DE_LOTES=.*#CARPETA_DE_LOTES=$RUNNER_TEMP/lotes#" \
+                 infra/envs/prod/.env.example > "$RUNNER_TEMP/prod.env"
+
+      - name: El docker-compose.yml del despliegue es válido
+        run: docker compose -f infra/envs/prod/docker-compose.yml --env-file "$RUNNER_TEMP/prod.env" config --quiet
+
+      - name: Construir las imágenes
+        run: docker compose -f infra/envs/prod/docker-compose.yml --env-file "$RUNNER_TEMP/prod.env" build
+
+      - name: Las cuatro imágenes propias son arm64
+        run: |
+          for imagen in web domain-service analytics-api data-platform; do
+            arquitectura=$(docker image inspect "canastamx/$imagen:prod" --format '{{.Architecture}}')
+            echo "canastamx/$imagen:prod → $arquitectura"
+            [ "$arquitectura" = arm64 ] || exit 1
+          done
