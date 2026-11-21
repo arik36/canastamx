@@ -10,7 +10,7 @@ para el analista; consola y cola para el operador. Next.js 16, React 19 y Tailwi
 cd clients/web
 npm ci
 cp .env.example .env.local      # DOMINIO_URL vacía = http://localhost:8081
-npm run dev
+npm run dev                     # ANALITICA_URL vacía = el simulador, abajo
 ```
 
 Ábrela en **http://localhost:3000**, no en `127.0.0.1:3000`: Next 16 bloquea sus
@@ -18,12 +18,32 @@ recursos de desarrollo desde otro origen y la página queda sin JavaScript.
 
 El acceso necesita el servicio de dominio corriendo (`services/domain-service`, desde
 `main`) y una cuenta **ANALISTA** u **OPERADOR**. El registro sólo crea cuentas
-`CONSUMIDOR`, que no entran a la web; las otras dos se crean por configuración (T045), y
-el guion de semilla de T044 todavía no llega a `main`.
+`CONSUMIDOR`, que no entran a la web. Las otras dos las crea el guion de semilla, desde
+la raíz del repositorio y después de arrancar el dominio una vez, para que Flyway cree
+la tabla (en Windows, desde Git Bash):
+
+```bash
+bash infra/scripts/sembrar-cuentas.sh
+```
+
+Crea `analista@canastamx.mx` y `operador@canastamx.mx`, con la `SEMILLA_CONTRASENA`
+del `.env` de la raíz.
 
 Si el acceso funciona pero cada vista truena con «GET …/api/v1/cuentas/yo respondió
 404», el dominio que corre es anterior a #184: córrelo desde `main`. El simulador del
 contrato no sirve para entrar (`.env.example`).
+
+El tablero lee `GET /api/v1/anomalias` de la interfaz analítica. Con `ANALITICA_URL`
+vacía la pide al simulador del contrato, que se levanta desde la raíz:
+
+```bash
+npx @stoplight/prism-cli@5.14.2 mock -p 4011 -v debug docs/analisis/openapi/analitica.yaml
+```
+
+Con `-v debug`, el registro de Prism muestra el encabezado `authorization: Bearer …` de
+cada llamada. Para la interfaz de verdad (`services/analytics-api`, desde `main`),
+`ANALITICA_URL=http://localhost:8000`: necesita datos en la capa de consumo y el mismo
+`JWT_SECRET` que el dominio, o contesta 401.
 
 ## Cómo funciona la sesión
 
@@ -40,11 +60,11 @@ contrato no sirve para entrar (`.env.example`).
 ## Cómo se comprueba
 
 ```bash
-npm test          # reglas de rol, llamadas al dominio y revisión de las vistas
+npm test          # reglas de rol, llamadas al dominio y a la analítica, y las vistas
 npm run lint
 ```
 
-A mano, con el dominio corriendo:
+A mano, con el dominio y el simulador (o la analítica) corriendo:
 
 1. Entra como analista: abre el tablero y la barra muestra el correo y `ANALISTA`.
    Escribe `/consola` en la barra de direcciones: vuelves al tablero.
@@ -52,7 +72,11 @@ A mano, con el dominio corriendo:
 3. En las herramientas de desarrollo, a 1024 px de ancho la consola avisa del ancho
    mínimo y se desplaza de lado; a 1025 px el aviso no aparece (D-08).
 4. El acceso se ve completo a 360, 768 y 1280 px (`puntos-de-quiebre.md`).
-5. Ninguna cifra en pantalla sin su población y su fecha (RNF-16). Hoy las vistas no
-   muestran cifras; las del tablero llegan con T052 y, sin dato, dicen «se mide en T058».
-6. «Salir», al pie de la barra lateral, te regresa al acceso sin cookies `token` ni `rol`;
+5. Ninguna cifra en pantalla sin su población y su fecha (RNF-16). En el tablero, cada
+   variación lleva su entidad, su quincena y sus observaciones, y arriba de la tabla va
+   la población de la respuesta: observaciones, entidades y quincenas.
+6. Con el simulador, el tablero avisa que sus cifras son ejemplos; con `ANALITICA_URL`
+   en la analítica de verdad, ese aviso no sale. Con la analítica apagada, avisa que no
+   pudo leer las anomalías y la vista sigue en pie.
+7. «Salir», al pie de la barra lateral, te regresa al acceso sin cookies `token` ni `rol`;
    después, `/tablero` escrito a mano tampoco abre.
