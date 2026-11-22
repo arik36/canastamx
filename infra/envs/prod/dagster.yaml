@@ -1,0 +1,19 @@
+# Dagster en el despliegue (T054 · #201)
+#
+# docker-compose.yml monta este archivo en $DAGSTER_HOME de los dos contenedores
+# de la plataforma: el servidor y el daemon comparten el mismo estado.
+#
+# Lo único que cambia respecto a `dagster dev` es la COLA DE CORRIDAS. Sin ella,
+# al copiar los 38 lotes el sensor pide 38 corridas en la misma vuelta y Dagster
+# las lanza todas a la vez: en la VM (ADR 008: 12 GB para toda la pila) eso se
+# queda sin memoria. Con la cola corren de una en una, en el orden en que llegan,
+# y el daemon las va sacando.
+
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 1
+
+telemetry:
+  enabled: false

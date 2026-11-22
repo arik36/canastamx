@@ -49,7 +49,9 @@ DÓNDE ESCRIBE
 Con `CANASTAMX_SIMULAR`, en un DuckDB de la carpeta de corridas
 (`capa-intermedia.duckdb`), que es donde las compuertas ya dejan su evidencia. Sin
 simular, en `postgres-analytics`, con las `ANALYTICS_*` del `.env` y la extensión
-`postgres` de DuckDB: no hay dependencia nueva de pip. La primera vez, DuckDB la
+`postgres` de DuckDB: no hay dependencia nueva de pip. `ANALYTICS_HOST` es
+opcional, como en la interfaz analítica: por omisión `localhost`, y en el
+despliegue `postgres-analytics`, el nombre del servicio en la red de Compose (T054). La primera vez, DuckDB la
 descarga de extensions.duckdb.org, igual que la ingesta descarga httpfs. La
 contraseña nunca va en una cadena de SQL: viaja en las variables de libpq.
 
@@ -393,7 +395,8 @@ def adjuntar_destino(con, contrato, simular, carpeta=None):
             "no se pudo cargar la extensión postgres de DuckDB. La primera vez se "
             "descarga de extensions.duckdb.org, igual que httpfs para la ingesta: "
             f"hace falta red. DuckDB dijo: {e}") from None
-    variables = {"PGHOST": "localhost", "PGPORT": os.environ["ANALYTICS_PORT"],
+    variables = {"PGHOST": os.environ.get("ANALYTICS_HOST") or "localhost",
+                 "PGPORT": os.environ["ANALYTICS_PORT"],
                  "PGDATABASE": os.environ["ANALYTICS_DB"],
                  "PGUSER": os.environ["ANALYTICS_USER"],
                  "PGPASSWORD": os.environ["ANALYTICS_PASSWORD"]}
@@ -412,7 +415,8 @@ def adjuntar_destino(con, contrato, simular, carpeta=None):
     except duckdb.Error as e:
         mensaje = str(e).replace(variables["PGPASSWORD"], "***")
         raise RuntimeError(
-            f"no se pudo conectar a postgres-analytics (localhost:{variables['PGPORT']}, "
+            f"no se pudo conectar a postgres-analytics ({variables['PGHOST']}:"
+            f"{variables['PGPORT']}, "
             f"base {variables['PGDATABASE']}, usuario {variables['PGUSER']}): "
             f"{mensaje}") from None
     for sentencia in ddl(contrato, "postgres"):
@@ -421,7 +425,7 @@ def adjuntar_destino(con, contrato, simular, carpeta=None):
     # crear con postgres_execute no está en esa caché hasta limpiarla.
     con.execute("CALL pg_clear_cache()")
     return {"motor": "postgres",
-            "donde": f"localhost:{variables['PGPORT']}/{variables['PGDATABASE']}",
+            "donde": f"{variables['PGHOST']}:{variables['PGPORT']}/{variables['PGDATABASE']}",
             "tabla": f"{ESQUEMA}.{TABLA}"}
 
 

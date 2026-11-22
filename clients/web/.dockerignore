@@ -1,0 +1,6 @@
+# Lo que no entra a la imagen de la web. node_modules y .next se hacen dentro.
+node_modules/
+.next/
+npm-debug.log*
+.env
+.env.*
