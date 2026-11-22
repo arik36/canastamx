@@ -404,6 +404,7 @@ def test_las_variables_de_libpq_se_quedan_despues_de_adjuntar(contrato, monkeypa
     Se quedan puestas, y la contraseña sigue sin aparecer en ningún SQL."""
     for variable in ("PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD"):
         monkeypatch.delenv(variable, raising=False)     # al final quedan como estaban
+    monkeypatch.delenv("ANALYTICS_HOST", raising=False)
     monkeypatch.setenv("ANALYTICS_DB", "base_de_prueba")
     monkeypatch.setenv("ANALYTICS_USER", "usuario_de_prueba")
     monkeypatch.setenv("ANALYTICS_PASSWORD", "clave-de-prueba")
@@ -417,6 +418,22 @@ def test_las_variables_de_libpq_se_quedan_despues_de_adjuntar(contrato, monkeypa
         "PGUSER": "usuario_de_prueba", "PGPASSWORD": "clave-de-prueba"}
     assert not any("clave-de-prueba" in s for s in con.sentencias)
     assert "clave-de-prueba" not in json.dumps(destino)
+
+
+def test_en_el_despliegue_el_servidor_sale_de_analytics_host(contrato, monkeypatch):
+    """En la VM la plataforma corre en su contenedor, y la base no está en
+    `localhost` sino en el servicio `postgres-analytics` de la red de Compose (T054).
+    `ANALYTICS_HOST` lo dice, igual que en la interfaz analítica."""
+    for variable in ("PGHOST", "PGPORT", "PGDATABASE", "PGUSER", "PGPASSWORD"):
+        monkeypatch.delenv(variable, raising=False)
+    monkeypatch.setenv("ANALYTICS_HOST", "postgres-analytics")
+    monkeypatch.setenv("ANALYTICS_DB", "base_de_prueba")
+    monkeypatch.setenv("ANALYTICS_USER", "usuario_de_prueba")
+    monkeypatch.setenv("ANALYTICS_PASSWORD", "clave-de-prueba")
+    monkeypatch.setenv("ANALYTICS_PORT", "5432")
+    destino = intermedia.adjuntar_destino(_ConexionQueAnota(), contrato, simular=False)
+    assert os.environ["PGHOST"] == "postgres-analytics"
+    assert destino["donde"] == "postgres-analytics:5432/base_de_prueba"
 
 
 # ── PostgreSQL de verdad · sólo si se pide ─────────────────────────────────
