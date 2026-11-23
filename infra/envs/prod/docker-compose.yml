@@ -89,6 +89,7 @@ services:
     restart: unless-stopped
     environment:
       DOMINIO_URL: http://domain-service:8081
+      ANALITICA_URL: http://analytics-api:8000
     depends_on: [domain-service]
     networks: [canastamx]
     labels:
