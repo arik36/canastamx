@@ -1,8 +1,23 @@
 contrato: qqp
-version: 1.3.6
+version: 1.3.7
 fuente: "PROFECO · Quién es Quién en los Precios"
-fecha: 2026-10-30
+fecha: 2026-11-23
 autor: alm
+
+# ── Qué cambió en 1.3.7 ─────────────────────────────────────────────────────
+#
+# Un campo nuevo, y ninguna regla de este contrato cambia de valor. Ninguna de
+# las 15 columnas cambia.
+#
+#   · `reconciliacion.reglas`: la ruta de `contracts/reconciliacion-v1.yaml`, las
+#     reglas de la reconciliación de productos versión uno (T053, #206): las
+#     cinco formas ortográficas de P1 (ADR 004), la lista de palabras que no
+#     identifican al artículo, por producto (ADR 014 §5 bis), y el umbral de la
+#     comparación difusa. Cierra el pendiente `vocabulario_que_no_identifica`,
+#     que pedía justo eso: su archivo versionado en `contracts/` y su regla de
+#     quién aprueba una entrada. Va en archivo aparte por lo mismo que el
+#     diccionario del `?`: es una tabla de decisiones que crece entrada por
+#     entrada, y cada entrada cita el par de la muestra que la justifica.
 
 # ── Qué cambió en 1.3.6 ─────────────────────────────────────────────────────
 #
@@ -522,6 +537,13 @@ clave_de_articulo:             # lo que el usuario compara; lo que agrupa la app
     200 pares del ADR 004 §1: el estrato difícil se construye sobre estos 1,597,
     no sobre los 5,015 del corpus.
 
+# ── La reconciliación de productos (1.3.7 · T053, #206 · CU-06) ─────────────
+# Qué presentaciones de un mismo producto son el mismo artículo. La clave de
+# artículo no cambia: la reconciliación reescribe `articulo_canonico_key` en la
+# capa de consumo, y los hechos conservan su artículo.
+reconciliacion:
+  reglas: contracts/reconciliacion-v1.yaml
+
 clave_de_fila:                 # lo que la compuerta usa para detectar duplicados
   columnas: [producto, presentacion, marca, nombre_comercial, direccion, fecha_registro]
   colisiones_conocidas: 74992  # medido sobre el alcance del contrato (ver `medicion`)
@@ -855,6 +877,7 @@ pendientes:
       reunión del viernes; el día que publique, entra como lote nuevo y la
       frescura se mide desde ahí.
   - id: vocabulario_que_no_identifica
+    estado: cerrado
     que: >
       Hallazgo del recuento de H3 (ADR 014 §5 bis, 28-sep-2026), y entra al
       contrato porque es una tabla de decisiones como la del mojibake.
@@ -874,6 +897,14 @@ pendientes:
 
       Vive aquí cuando exista, con su archivo versionado en `contracts/` y su
       regla de quién aprueba una entrada. Lo implementa A en T053, semana 8.
+    contestado: >
+      23-nov-2026 · A · Existe: `contracts/reconciliacion-v1.yaml`, declarado en
+      `reconciliacion.reglas` (1.3.7). Es por producto, cada entrada cita su par
+      y quién la clasificó, y su encabezado dice quién aprueba una entrada. Sólo
+      entran palabras clasificadas: las que son «sí» por el default de P3 se
+      anotan en `sin_clasificar` y no se quitan. El ejemplo de arriba, `agave
+      azul`, quedó al revés: el ADR 014 §6 resolvió el par 031 por la norma
+      -todo el tequila es de agave azul-, y en el tequila `azul` no identifica.
   - id: compuerta_fina_de_precio
     que: >
       El techo por catálogo no atrapa el error de captura típico (ver

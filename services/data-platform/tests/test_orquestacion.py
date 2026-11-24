@@ -924,6 +924,10 @@ def test_la_estrella_tiene_un_hecho_por_observacion_de_la_capa_intermedia(entorn
 
     articulos = _tabla(d, "consumo.dim_articulo")
     assert "Camarón" in set(articulos["producto"]), "el `?` reparado no llegó a la dimensión"
+    # La reconciliación corrió (#206), y en estos lotes ningún artículo es variante de
+    # otro: cada uno es su propio canónico.
+    assert md["reconciliacion"].value["estado"] == "aplicada"
+    assert md["reconciliacion"].value["variantes"] == 0
     assert (articulos["articulo_canonico_key"] == articulos["articulo_key"]).all()
     assert "central de abasto" in set(_tabla(d, "consumo.dim_cadena")["cadena_c"])
 
