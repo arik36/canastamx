@@ -98,6 +98,7 @@ services:
       - "traefik.http.routers.web.entrypoints=websecure"
       - "traefik.http.routers.web.tls.certresolver=letsencrypt"
       - "traefik.http.services.web.loadbalancer.server.port=3000"
+    mem_limit: 256m
 
   # ── El servicio de dominio: https://dominio.<DIRECCION_PUBLICA> ──────────────
   domain-service:
@@ -148,6 +149,7 @@ services:
       - "traefik.http.routers.analitica.entrypoints=websecure"
       - "traefik.http.routers.analitica.tls.certresolver=letsencrypt"
       - "traefik.http.services.analitica.loadbalancer.server.port=8000"
+    mem_limit: 384m
 
   # ── La plataforma de datos: el servidor de Dagster y su daemon ──────────────
   dagster-webserver:
@@ -156,10 +158,12 @@ services:
     ports:
       # Sólo en la VM. Desde tu computadora: ssh -L 3000:localhost:3000 ubuntu@<IP>
       - "127.0.0.1:${DAGSTER_PUERTO:-3000}:3000"
+    mem_limit: 768m
 
   dagster-daemon:
     <<: *plataforma
     command: ["dagster-daemon", "run", "-m", "orquestacion.definiciones"]
+    mem_limit: 1536m
 
   # ── Las dos bases: sin puertos publicados ───────────────────────────────────
   postgres-oltp:
@@ -177,6 +181,7 @@ services:
       timeout: 5s
       retries: 5
     networks: [canastamx]
+    mem_limit: 384m
 
   postgres-analytics:
     image: postgres:16-alpine
@@ -193,6 +198,7 @@ services:
       timeout: 5s
       retries: 5
     networks: [canastamx]
+    mem_limit: 1024m
 
   # ── La capa cruda: MinIO, sin puertos publicados ────────────────────────────
   minio:
@@ -210,6 +216,7 @@ services:
       timeout: 10s
       retries: 5
     networks: [canastamx]
+    mem_limit: 512m
 
   # Crea el bucket y se apaga, como en desarrollo.
   minio-init:

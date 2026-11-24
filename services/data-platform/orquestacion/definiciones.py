@@ -108,6 +108,7 @@ from dagster import (
     StaticPartitionsDefinition,
     asset,
     define_asset_job,
+    multiprocess_executor,
     sensor,
 )
 
@@ -719,4 +720,5 @@ defs = Definitions(
     assets=[capa_cruda, filas_revisadas, lote_promovido, capa_intermedia, capa_consumo],
     jobs=[corrida_del_lote],
     sensors=[archivo_nuevo],
+    executor=multiprocess_executor.configured({"max_concurrent": 1})
 )
