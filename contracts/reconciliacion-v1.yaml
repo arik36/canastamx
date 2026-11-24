@@ -1,0 +1,239 @@
+contrato: reconciliacion
+version: 1.0.0
+fecha: 2026-11-23
+autor: alm
+declarado_en: qqp 1.3.7 · reconciliacion.reglas
+
+# ── Qué es ─────────────────────────────────────────────────────────────────
+#
+# Las reglas con las que la reconciliación de productos versión uno (T053, #206)
+# decide que dos presentaciones de un mismo producto son el mismo artículo y, con
+# eso, reescribe `articulo_canonico_key` en `dim_articulo`
+# (services/data-platform/ingestion/reconciliacion.py). El código no tiene ninguna
+# escrita: si este archivo cambia, la reconciliación cambia con él.
+#
+# Es la receta del ADR 004 con lo que le agregó el ADR 014 §5 bis, en el orden en
+# que se aplica a cada presentación:
+#
+#   1. `formas_ortograficas` · lo que P1 dice que es sólo escritura: plural,
+#      conector, abreviatura, unidad y orden de palabras.
+#   2. `no_identifican` · las palabras que no identifican al artículo, POR
+#      PRODUCTO: color de empaque, nombre de línea comercial y lo que la norma o
+#      la costumbre ya dan por hecho (las clases de P3 que dicen «sí»).
+#   3. `difusa` · al final, sobre lo que 1 y 2 no unieron, calibrada para unir los
+#      «sí» de la muestra sin unir los «no».
+#
+# Dos presentaciones que después de 1 y 2 quedan escritas igual son el mismo
+# artículo. Si no quedan igual, sólo las puede unir 3.
+#
+# ── Lo que nunca hace ──────────────────────────────────────────────────────
+#
+#   · Comparar artículos de productos distintos. El universo de H3 es el mismo
+#     producto (ADR 004 §1), y `producto` es un catálogo de la fuente.
+#   · Unir presentaciones con números distintos o en otro orden: en esta fuente el
+#     número es lo que define el artículo (ADR 004 §1). Por eso se ordenan las
+#     palabras y no los números: `2 paquetes de 12` no es `12 paquetes de 2`.
+#   · Mirar la marca: no identifica (ADR 002 §2).
+#   · Tocar los hechos. Cada observación conserva su `articulo_key`; lo que cambia
+#     es a qué canónico apunta su artículo, y los agregados se recalculan.
+#
+# ── Quién aprueba una entrada de `no_identifican` ──────────────────────────
+#
+# Lo pedía el pendiente `vocabulario_que_no_identifica` del contrato:
+#
+#   · Cada entrada dice qué palabra quita, de qué producto, de qué clase de P3 es,
+#     qué par de la muestra (o qué fila) la justifica y quién la clasificó.
+#   · Una palabra entra SÓLO si alguien la clasificó en una de las tres clases de
+#     `clases_que_no_identifican`. El default de P3 («cuando no alcanza a
+#     decidir: sí») NO es una clasificación: es la postura de quien califica, que
+#     no favorece al sistema, y convertirlo en regla sería usarlo a favor del
+#     sistema. Esas palabras van en `sin_clasificar` y no se quitan: CU-06 · 2b,
+#     la palabra que no está clasificada no une.
+#   · La entrada la aprueba quien coordina el frente de datos (A) y la revisa
+#     alguien que no la escribió: los errores de criterio necesitan a otra persona
+#     (ADR 014 §8).
+#   · Una entrada nueva sube la versión de este archivo, y H3 se vuelve a medir con
+#     `services/data-platform/ingestion/h3.py`, que además lista TODAS las uniones
+#     del catálogo real: una palabra que no identifica en la muestra puede
+#     identificar en otra presentación del mismo producto, y eso sólo se ve ahí.
+
+# ── 1 · Las formas ortográficas · P1 del ADR 004 ────────────────────────────
+#
+# Se aplican sobre la forma canónica del contrato (`normalizacion.canonica`), que
+# ya quitó mayúsculas, acentos y puntuación. Cada una cita el par de la muestra
+# donde se ve.
+
+formas_ortograficas:
+  separar_numeros_de_letras: true     # `Mh1536` / `Mh 1536` (ADR 004 §3) · `200gr` / `200 gr`
+  quitar_secuencias:                  # abreviaturas que no dicen nada del artículo
+    - ["c", "u"]                      # `c/u` · par 021
+  quitar_antes_de_un_numero:          # se quita la palabra y el número se queda
+    - "no"                            # `fideo no 2` / `fideo 2` · par 012
+    - "num"
+    - "numero"
+  unidades:                           # una sola forma por unidad
+    g: ["g", "gr", "grs", "gramo", "gramos",
+        "ml", "mililitro", "mililitros"]   # gr/ml es la misma unidad para P1 · par 078
+    kg: ["kg", "kgs", "kilo", "kilos", "kilogramo", "kilogramos"]
+    l: ["l", "lt", "lts", "litro", "litros"]
+  plural: true                        # `letra` / `letras` (001) · `hoja` / `hojas` (013)
+  # Se quitan sólo ENTRE dos palabras: `800 a 880` / `800 o 880` (008),
+  # `estandar morena` / `estandar o morena` (009). Al principio o al final de la
+  # presentación una letra suelta puede ser un grado o un tamaño, y se queda.
+  conectores: ["a", "o", "u", "y", "e"]
+  preposiciones: ["de", "del", "con", "en", "para", "por", "al"]   # `con pavo` / `de pavo` (154)
+  nunca_se_quitan: ["sin"]            # `con alas` / `sin alas` son dos artículos (P2 · par 019)
+  orden: palabras                     # 033, 055 y 071; los números conservan su orden
+
+# ── 2 · Las palabras que no identifican · ADR 014 §5 bis ─────────────────────
+#
+# Por producto, nunca global: `azul` no identifica un jabón de pasta, y `blanco`
+# contra `integral` sí identifica un pan de caja. La llave es `producto_c`, el
+# producto en forma canónica. `quitar` quita la palabra o la frase donde aparezca
+# en la presentación; `cambiar` / `por` la reemplaza, para cuando la palabra sólo
+# no identifica al lado de otra.
+
+clases_que_no_identifican:            # P3 · «→ SÍ», con las palabras del ADR 004
+  - color de empaque
+  - nombre de línea comercial
+  - lo que la norma o la costumbre ya dan por hecho
+
+no_identifican:
+  jarabe p preparar bebidas:
+    - quitar: azul
+      clase: color de empaque
+      par: "015"
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+  jabon de tocador:
+    - quitar: rosa
+      clase: color de empaque
+      par: "020"                      # y, con la misma palabra, el 064
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+  pan de caja:
+    - quitar: rinde
+      clase: nombre de línea comercial
+      par: "024"
+      clasifico: A · 24-sep-2026 · EXCEPCIÓN
+  detergente p trastes:
+    - quitar: verde
+      clase: color de empaque
+      par: "025"
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+  jabon de pasta:
+    - quitar: rosa
+      clase: color de empaque
+      par: "027"                      # y el 046
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+    - quitar: azul
+      clase: color de empaque
+      par: "028"                      # y el 046
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+  producto lacteo:
+    - quitar: clasica
+      clase: nombre de línea comercial
+      par: "030"
+      clasifico: A · 24-sep-2026 · EXCEPCIÓN
+  tequila:
+    # El ADR 014 §5 bis usa `agave azul` como ejemplo de palabra que SÍ identifica;
+    # el §6 del mismo ADR lo resolvió al revés el 30 de septiembre, y es lo que dice
+    # la muestra. Manda el §6.
+    - quitar: azul
+      clase: lo que la norma o la costumbre ya dan por hecho
+      par: "031"                      # «todo el tequila es legalmente de agave azul»
+      clasifico: A · 30-sep-2026 · RESUELTO (ADR 014 §6)
+  gelatina en polvo:
+    # Sólo junto a `limon`, que es lo que dice la excepción: en otro sabor, `agua`
+    # puede ser lo que separa la gelatina de agua de la de leche.
+    - cambiar: agua limon
+      por: limon
+      clase: lo que la norma o la costumbre ya dan por hecho
+      par: "039"                      # «la gelatina de limón siempre es de agua»
+      clasifico: A · 24-sep-2026 · EXCEPCIÓN
+  talco para bebe:
+    - quitar: azul
+      clase: color de empaque
+      par: "089"                      # «jamás he visto polvo de talco de color»
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+    - quitar: rosa
+      clase: color de empaque
+      par: "089"
+      clasifico: D · 28-sep-2026 · recuento del ADR 014
+  camaron:
+    - quitar: congelado o descongelado
+      clase: lo que la norma o la costumbre ya dan por hecho
+      par: "112"                      # «cubre los dos estados: no restringe»
+      clasifico: A · 24-sep-2026 · EXCEPCIÓN
+  sal molida de mesa:
+    - quitar: natural
+      clase: nombre de línea comercial
+      par: "147"                      # «en sal de mesa es relleno comercial»
+      clasifico: A · 24-sep-2026 · EXCEPCIÓN
+
+# «Sí» de la muestra que la lista NO une, a propósito. No son reglas: `h3.py` los
+# reporta como fallos de cobertura con su razón, y el código comprueba que
+# ninguno esté también en `no_identifican`.
+sin_clasificar:
+  - producto: jabon de tocador
+    palabra: aqua
+    par: "063"
+    por_que: >
+      «Sí» por el default de P3: la calificadora escribió que `aqua` puede ser
+      variante, aroma o línea. Ninguna clase, así que no entra.
+  - producto: refresco
+    palabra: naranja
+    par: "090"
+    por_que: >
+      «Sí» por el default: `naranja` puede ser color de empaque o sabor. Si es
+      sabor, quitarla uniría el refresco de naranja con el que no dice sabor en
+      todas sus presentaciones.
+  - producto: arroz
+    palabra: verde
+    par: "081"
+    por_que: >
+      «Sí» sin razón escrita (calificación del 24 de septiembre, que nadie
+      releyó). Entra el día que alguien escriba de qué clase es.
+  - producto: detergente p trastes
+    palabra: pure lemon
+    par: "041"
+    por_que: >
+      Choca con el 045. El 025 (`liquido limon` / `liquido verde limon`) y el 041
+      (`liquido pure lemon` / `liquido verde limon`) son «sí» y el 045
+      (`liquido limon` / `liquido pure lemon`) es «no», sin razón escrita: los tres
+      no pueden ser ciertos, porque unir el 025 y el 041 une el 045. El ADR 014
+      §5 bis y el pendiente del contrato citan justamente `liquido limon` /
+      `liquido pure lemon` como ejemplo de nombre de línea. Se resuelve con una
+      segunda lectura del 045, no aquí.
+
+# ── 3 · La comparación difusa · ADR 004 §3 ──────────────────────────────────
+#
+# Al final, sobre lo que 1 y 2 no unieron. Sólo compara dos presentaciones del
+# mismo producto con los mismos números, el mismo número de palabras y UNA
+# palabra distinta, y compara esa palabra, no la presentación entera: enteras,
+# `congelado` / `descongelado` se parecen 0.962 y `letra` / `letras` 0.994
+# (ADR 004), y ningún umbral las separa.
+#
+# Calibración contra la muestra, la palabra que cambia y su parecido:
+#   se unen     lengua / lenguita 0.950 (006, sí) · viena / vienesa 0.943 (011, sí)
+#   no se unen  aa / aaa 0.911 (002) · nina / nino 0.883 (003 a 005)
+#               trocito / trozo 0.853 (036) · congelado / descongelado 0.843
+#               (diez pares de la mitad por parecido)
+# Cualquier umbral entre 0.911 y 0.943 separa la muestra; 0.93 es el punto medio
+# del hueco, redondeado. `aa` / `aaa` queda fuera dos veces: por el umbral y
+# porque tiene menos de `minimo_de_letras`.
+#
+# Lo que el umbral NO sabe, y conviene tenerlo escrito: une cualquier palabra que
+# sea otra con una terminación de más (manzana / manzanilla, 0.940), sea o no el
+# mismo artículo. Por eso `h3.py` lista las uniones del catálogo entero.
+
+difusa:
+  metrica: jaro_winkler_similarity    # la de DuckDB, la misma de h3-muestra-para-calificar.py
+  umbral: 0.93
+  minimo_de_letras: 4
+
+# Los casos que dicen si el umbral está flojo (ADR 004; criterio de #206). Si el
+# umbral uniera alguno, la reconciliación no corre: un umbral flojo es una regla
+# rota, no una regla (CU-06 · 1a).
+no_se_unen:
+  - ["congelado", "descongelado"]
+  - ["aa", "aaa"]
+  - ["nina", "nino"]

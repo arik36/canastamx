@@ -1,0 +1,246 @@
+H3 · LA RECONCILIACIÓN DE PRODUCTOS CONTRA LOS 200 PARES CALIFICADOS
+
+medido el 2026-11-23 · postgres localhost:5433/canastamx_analytics · esquema consumo
+reglas: reconciliacion-v1.yaml 1.0.0
+muestra: h3-muestra-para-calificar.txt · sha256 a4cf21d689056f62
+dim_articulo: 1,597 artículos · 1,567 canónicos
+✓ la estrella cargada tiene los grupos que dan estas reglas
+36 artículos de la muestra no están en dim_articulo, y 41 pares
+tienen alguno: la muestra salió del corpus con el recorte de catálogos, sin el de
+entidades ni el de la ventana (h3-muestra-para-calificar.py), y la plataforma
+ingiere sólo el alcance del contrato. La cifra 1 los mide con la misma
+reconciliación; la 2 los deja fuera.
+
+Cobertura en la mitad por parecido y precisión en la mitad al azar (ADR 004 §1).
+
+1 · SOBRE LOS 200 PARES · la cifra de H3 (ADR 004 §1, criterio de #206)
+Un par está UNIDO si la reconciliación, aplicada a los artículos de la muestra
+junto con el catálogo cargado, deja sus dos artículos en el mismo grupo.
+
+                           pares   sí   no  sí unidos  no unidos
+mitad por parecido           100   30   70         26          0
+mitad al azar                100    3   97          3          0
+los 200                      200   33  167         29          0
+sólo difieren en marca         0   · no entran en la cobertura (ADR 004 §2); cero por construcción
+
+COBERTURA · mitad por parecido · 26 / 30 = 86.7 %
+    población: los «sí» de esa mitad · meta ≥ 85 % · se cumple
+PRECISIÓN · mitad al azar · 3 / 3 = 100.0 %
+    población: los pares de esa mitad que la reconciliación unió · meta ≥ 90 % · se cumple
+precisión sobre los 200 · 29 / 29 = 100.0 %
+«no» que siguen separados · mitad por parecido 70 / 70 = 100.0 % · mitad al azar 97 / 97 = 100.0 %
+
+H3 SE CUMPLE sobre los 200 pares.
+
+2 · DENTRO DEL ALCANCE DE LA PLATAFORMA · los 159 pares con sus dos artículos en dim_articulo
+Un par está UNIDO si sus dos artículos tienen el mismo articulo_canonico_key en la
+estrella cargada. Es lo que ve el producto.
+
+                           pares   sí   no  sí unidos  no unidos      fuera
+mitad por parecido           100   30   70         21          0         11
+mitad al azar                100    3   97          3          0         30
+los 200                      200   33  167         24          0         41
+sólo difieren en marca         0   · no entran en la cobertura (ADR 004 §2); cero por construcción
+
+COBERTURA · mitad por parecido · 21 / 25 = 84.0 %
+    población: los «sí» de esa mitad dentro del alcance · meta ≥ 85 % · NO se cumple
+PRECISIÓN · mitad al azar · 3 / 3 = 100.0 %
+    población: los pares de esa mitad que la reconciliación unió · meta ≥ 90 % · se cumple
+precisión sobre los 200 · 24 / 24 = 100.0 %
+«no» que siguen separados · mitad por parecido 64 / 64 = 100.0 % · mitad al azar 67 / 67 = 100.0 %
+
+DENTRO DEL ALCANCE: NO SE CUMPLE.
+
+LAS DOS SON DENTRO DE LA MUESTRA: la lista de palabras y el umbral se calibraron
+contra estos mismos 200 pares (ADR 004). Dicen que las reglas reproducen la
+calificación; no cuánto cubren fuera de ella. Las uniones del catálogo entero
+están al final, para revisarlas a mano.
+
+──────────────────────────────────────────────────────────────────────────────
+LOS «SÍ», UNO POR UNO · con la cifra 1
+
+001 unido     pasta para sopa · paquete 200 gr letra  ||  paquete 200 gr letras
+       misma llave · plural (letras→letra)
+006 unido     pasta para sopa · paquete 200 gr lengua  ||  paquete 200 gr lenguita
+       difusa · lengua / lenguita 0.950 ≥ 0.93
+007 unido     harina de trigo · paquete 1 kg a 1 1 kg  ||  paquete 1 kg o 1 1 kg
+       misma llave · conector (a, o)
+008 unido     harina de trigo · paquete 800 a 880 gr  ||  paquete 800 o 880 gr
+       misma llave · conector (a, o)
+009 unido     azucar · bolsa plastico 2 kg estandar morena  ||  bolsa plastico 2 kg estandar o morena
+       misma llave · conector (o)
+010 unido     azucar · bolsa plastico 1 kg estandar morena  ||  bolsa plastico 1 kg estandar o morena
+       misma llave · conector (o)
+011 unido     salchicha · 1 kg granel viena  ||  1 kg granel vienesa  · fuera del alcance
+       difusa · viena / vienesa 0.943 ≥ 0.93
+012 unido     pasta para sopa · paquete 200 gr fideo 2  ||  paquete 200 gr fideo no 2
+       misma llave · abreviatura (no)
+013 unido     papel higienico · paquete 4 rollos 200 hoja dobles  ||  paquete 4 rollos 200 hojas dobles  · fuera del alcance
+       misma llave · plural (hojas→hoja)
+015 unido     jarabe p preparar bebidas · botella 700 ml horchata  ||  botella 700 ml horchata azul
+       misma llave · lista (azul (015))
+020 unido     jabon de tocador · barra 150 gr antibacterial  ||  barra 150 gr antibacterial rosa  · fuera del alcance
+       misma llave · lista (rosa (020))
+021 unido     cerveza · paquete con 12 latas de 355 ml  ||  paquete con 12 latas de 355 ml c u
+       misma llave · abreviatura (c u)
+024 unido     pan de caja · paquete grande 620 gr rebanado blanco  ||  paquete grande 620 gr rebanado blanco rinde
+       misma llave · lista (rinde (024))
+025 unido     detergente p trastes · botella 750 ml liquido limon  ||  botella 750 ml liquido verde limon
+       misma llave · lista (verde (025))
+027 unido     jabon de pasta · barra 400 gr con envoltura  ||  barra 400 gr con envoltura rosa
+       misma llave · lista (rosa (027))
+028 unido     jabon de pasta · barra 400 gr con envoltura  ||  barra 400 gr con envoltura azul
+       misma llave · lista (azul (028))
+030 unido     producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal  ||  caja 1 lt ultrapasteurizada con grasa vegetal clasica
+       misma llave · lista (clasica (030))
+031 unido     tequila · botella 950 ml reposado 100 de agave  ||  botella 950 ml reposado 100 de agave azul
+       misma llave · lista (azul (031))
+033 unido     jamon · 1 kg granel de cerdo y pavo virginia  ||  1 kg granel de pavo y cerdo virginia
+       misma llave · orden
+039 unido     gelatina en polvo · bolsa 120 gr agua limon  ||  bolsa 120 gr limon  · fuera del alcance
+       misma llave · lista (agua limon (039))
+041 SEPARADO  detergente p trastes · botella 750 ml liquido pure lemon  ||  botella 750 ml liquido verde limon
+       llaves distintas · 750 | botella g lemon liquido pure  ≠  750 | botella g limon liquido
+       sin clasificar, a propósito: Choca con el 045. El 025 (`liquido limon` / `liquido verde limon`) y el 041 (`liquido pure lemon` / `liquido verde limon`) son «sí» y el 045 (`liquido limon` / `liquido pure lemon`) es «no», sin razón escrita: los tres no pueden ser ciertos, porque unir el 025 y el 041 une el 045. El ADR 014 §5 bis y el pendiente del contrato citan justamente `liquido limon` / `liquido pure lemon` como ejemplo de nombre de línea. Se resuelve con una segunda lectura del 045, no aquí.
+046 unido     jabon de pasta · barra 400 gr con envoltura azul  ||  barra 400 gr con envoltura rosa
+       misma llave · lista (azul (028), rosa (027))
+055 unido     arroz · bolsa 900 gr extra grano largo  ||  bolsa 900 gr grano extra largo  · fuera del alcance
+       misma llave · orden
+063 SEPARADO  jabon de tocador · barra 135 gr  ||  barra 135 gr aqua
+       llaves distintas · 135 | barra g  ≠  135 | aqua barra g
+       sin clasificar, a propósito: «Sí» por el default de P3: la calificadora escribió que `aqua` puede ser variante, aroma o línea. Ninguna clase, así que no entra.
+064 unido     jabon de tocador · barra 150 gr  ||  barra 150 gr rosa
+       misma llave · lista (rosa (020))
+071 unido     toalla femenina · bolsa 8 piezas nocturna con alas extra largas flujo super abundante  ||  bolsa 8 piezas nocturna extra larga con alas flujo super abundante
+       misma llave · plural (largas→larga); orden
+078 unido     crema solida · frasco 200 gr  ||  frasco 200 ml
+       misma llave · unidad (gr→g, ml→g)
+081 SEPARADO  arroz · bolsa 900 gr super extra  ||  bolsa 900 gr super extra verde
+       llaves distintas · 900 | bolsa extra g super  ≠  900 | bolsa extra g super verde
+       sin clasificar, a propósito: «Sí» sin razón escrita (calificación del 24 de septiembre, que nadie releyó). Entra el día que alguien escriba de qué clase es.
+089 unido     talco para bebe · botella 200 gr azul  ||  botella 200 gr rosa
+       misma llave · lista (azul (089), rosa (089))
+090 SEPARADO  refresco · botella 2 lt no retornable  ||  botella 2 lt no retornable naranja
+       llaves distintas · 2 | botella l no retornable  ≠  2 | botella l naranja no retornable
+       sin clasificar, a propósito: «Sí» por el default: `naranja` puede ser color de empaque o sabor. Si es sabor, quitarla uniría el refresco de naranja con el que no dice sabor en todas sus presentaciones.
+112 unido     camaron · 1 kg granel macuil o camaron para pelar macuil  ||  1 kg granel macuil o camaron para pelar macuil congelado o descongelado
+       misma llave · lista (congelado o descongelado (112))
+147 unido     sal molida de mesa · bote 1 kg  ||  bote 1 kg natural
+       misma llave · lista (natural (147))
+154 unido     salchicha · paquete 500 gr con pavo  ||  paquete 500 gr de pavo
+       misma llave · preposición (con, de)
+
+──────────────────────────────────────────────────────────────────────────────
+LOS «NO» UNIDOS · 0 de 167
+
+ninguno
+
+──────────────────────────────────────────────────────────────────────────────
+FUERA DEL ALCANCE · 41 pares, 36 artículos
+
+pares: 011 013 020 026 039 043 047 055 068 074 084 102 105 106 108
+pares: 110 114 116 117 118 119 122 123 132 135 136 137 140 142 148
+pares: 156 166 169 175 182 183 185 186 187 191 200
+
+  arroz · bolsa 900 gr
+  arroz · bolsa 900 gr en grano
+  arroz · bolsa 900 gr grano extra largo
+  carne cerdo · 1 kg granel costilla con falda
+  carne pollo · 1 kg granel pierna entera
+  carne res · 1 kg granel bistec normal
+  carne res · 1 kg granel carne para asar corte 0
+  carne res · 1 kg granel costilla aguja o costilla punta aguja
+  carne res · 1 kg granel costilla especial
+  carne res · 1 kg granel milanesa de nuez o bola
+  carne res · 1 kg granel paleta
+  frijol · bolsa 1 kg negro san luis
+  frijol · bolsa 907 gr flor de mayo
+  gelatina en polvo · bolsa 120 gr agua limon
+  jabon de tocador · barra 135 gr extracto de sabila y aceite de aguacate
+  jabon de tocador · barra 150 gr antibacterial
+  jabon de tocador · barra 150 gr avena
+  jabon de tocador · barra 150 gr neutro
+  jamon · 1 kg granel de pavo tradicional
+  jamon · 1 kg granel de pavo y cerdo americano
+  jamon · 1 kg granel de pavo y cerdo pic nic
+  jitomate · 1 kg granel saladette huaje o tomate saladette huaje primera nacional
+  limon · 1 kg granel real amarillo
+  manzana · 1 kg granel gala en bolsa
+  manzana · 1 kg granel golden escolar
+  manzana · 1 kg granel manzana roja de chihuahua
+  manzana · 1 kg granel roja nacional
+  papa · 1 kg granel blanca mi tienda
+  papel higienico · paquete 4 rollos 200 hoja dobles
+  papel higienico · paquete 4 rollos 200 hojas
+  pasta para sopa · paquete 200 gr espaguetti
+  pasta para sopa · paquete 200 gr fideo corto
+  pastelillos y pan dulce empaquetado · paquete con 2 barritas fresa 67 gr
+  sal molida de mesa · bolsa 750 gr
+  salchicha · 1 kg granel vienesa
+  toalla femenina · bolsa 8 piezas confort manzanilla nocturna con alas
+
+──────────────────────────────────────────────────────────────────────────────
+TODAS LAS UNIONES DEL CATÁLOGO · 29 grupos, 30 variantes
+Cada grupo con su canónico (=) y por qué se le une cada variante (+).
+Una palabra que no identifica en la muestra puede identificar en otra
+presentación del mismo producto: aquí es donde se ve.
+
+= azucar · bolsa plastico 1 kg estandar o morena
+  + bolsa plastico 1 kg estandar morena  ·  misma llave · conector (o)
+= azucar · bolsa plastico 2 kg estandar o morena
+  + bolsa plastico 2 kg estandar morena  ·  misma llave · conector (o)
+= callo de hacha · 1 kg o congelado
+  + 1 kg congelado  ·  misma llave · conector (o)
+= camaron · 1 kg granel macuil o camaron para pelar macuil congelado o descongelado
+  + 1 kg granel macuil o camaron para pelar macuil  ·  misma llave · lista (congelado o descongelado (112))
+= camaron · 1 kg granel pacotilla o royal pacotilla o cocido pacotilla o pacotilla chiapas congelado o descongelado
+  + 1 kg granel pacotilla o royal pacotilla o cocido pacotilla o pacotilla chiapas  ·  misma llave · lista (congelado o descongelado (112))
+= cerveza · paquete con 12 latas de 355 ml
+  + paquete con 12 latas de 355 ml c u  ·  misma llave · abreviatura (c u)
+= crema solida · frasco 200 gr
+  + frasco 200 ml  ·  misma llave · unidad (gr→g, ml→g)
+= desodorante · roll on 50 gr powder dry para dama
+  + roll on 50 ml powder dry para dama  ·  misma llave · unidad (gr→g, ml→g)
+= detergente p trastes · botella 750 ml liquido limon
+  + botella 750 ml liquido verde limon  ·  misma llave · lista (verde (025))
+= harina de trigo · paquete 1 kg o 1 1 kg
+  + paquete 1 kg a 1 1 kg  ·  misma llave · conector (a, o)
+= harina de trigo · paquete 800 o 880 gr
+  + paquete 800 a 880 gr  ·  misma llave · conector (a, o)
+= jabon de pasta · barra 400 gr con envoltura rosa
+  + barra 400 gr con envoltura  ·  misma llave · lista (rosa (027))
+  + barra 400 gr con envoltura azul  ·  misma llave · lista (azul (028), rosa (027))
+= jabon de tocador · barra 150 gr
+  + barra 150 gr rosa  ·  misma llave · lista (rosa (020))
+= jamon · 1 kg granel de cerdo y pavo virginia
+  + 1 kg granel de pavo y cerdo virginia  ·  misma llave · orden
+= jarabe p preparar bebidas · botella 700 ml horchata
+  + botella 700 ml horchata azul  ·  misma llave · lista (azul (015))
+= pan de caja · paquete grande 620 gr rebanado blanco
+  + paquete grande 620 gr rebanado blanco rinde  ·  misma llave · lista (rinde (024))
+= pasta para sopa · paquete 200 gr fideo no 2
+  + paquete 200 gr fideo 2  ·  misma llave · abreviatura (no)
+= pasta para sopa · paquete 200 gr lenguita
+  + paquete 200 gr lengua  ·  difusa · lenguita / lengua 0.950 ≥ 0.93
+= pasta para sopa · paquete 200 gr letra
+  + paquete 200 gr letras  ·  misma llave · plural (letras→letra)
+= producto lacteo · caja 1 lt ultrapasteurizada con grasa vegetal
+  + caja 1 lt ultrapasteurizada con grasa vegetal clasica  ·  misma llave · lista (clasica (030))
+= sal molida de mesa · bolsa 1 kg
+  + bolsa 1 kg natural  ·  misma llave · lista (natural (147))
+= sal molida de mesa · bote 1 kg
+  + bote 1 kg natural  ·  misma llave · lista (natural (147))
+= sal molida de mesa · bote 750 gr
+  + bote 750 gr natural  ·  misma llave · lista (natural (147))
+= salchicha · 1 kg granel de pavo
+  + 1 kg granel con pavo  ·  misma llave · preposición (con, de)
+= salchicha · paquete 500 gr con pavo
+  + paquete 500 gr de pavo  ·  misma llave · preposición (con, de)
+= talco para bebe · botella 200 gr azul
+  + botella 200 gr rosa  ·  misma llave · lista (azul (089), rosa (089))
+= tequila · botella 950 ml reposado 100 de agave azul
+  + botella 950 ml reposado 100 de agave  ·  misma llave · lista (azul (031))
+= toalla femenina · bolsa 16 piezas regular con alas flujo abundante
+  + bolsa 16 piezas regulares con alas flujo abundante  ·  misma llave · plural (regulares→regular)
+= toalla femenina · bolsa 8 piezas nocturna con alas extra largas flujo super abundante
+  + bolsa 8 piezas nocturna extra larga con alas flujo super abundante  ·  misma llave · plural (largas→larga); orden

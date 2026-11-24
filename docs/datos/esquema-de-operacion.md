@@ -261,8 +261,11 @@ de `estado_de_la_plataforma` y cuatro cuentas que tienen que cuadrar. Son la
 cuarentena con su corrida, aceptadas más cuarentena igual a leídas, cada paso con el
 siguiente y cada lote detenido con su incidente.
 
-**La reconciliación (CU-06)** escribirá en `variante` lo dudoso, y en cada corrida
-pasará a `equivalencia` lo resuelto (#206).
+**La reconciliación (CU-06)** escribirá en `variante` lo dudoso y pasará a
+`equivalencia` lo resuelto el día que vuelva la cola de revisión, que salió con el
+recorte del 5 de noviembre. La versión uno (#206) no escribe en este esquema: corre en
+la carga de la capa de consumo, que no es una corrida de lote, y su resumen queda en la
+metadata del activo `capa_consumo`.
 
 ## 7 · Lo que queda abierto
 

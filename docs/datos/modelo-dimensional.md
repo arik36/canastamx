@@ -102,7 +102,7 @@ nombres viven una sola vez, en su dimensión.
 | `categoria` | La categoría más frecuente del artículo |
 | `catalogo_principal` | El catálogo más frecuente. Decide el ícono del artículo (ADR 010 · 6) |
 | `oculto_por_omision` | `true` para cerveza, vinos y licores, y cigarrillos (ADR 010 · 7) |
-| `articulo_canonico_key` | El artículo con el que se reconcilia. Hoy es igual a `articulo_key`; T053 lo reescribe con la reconciliación de H3 (ADR 014) |
+| `articulo_canonico_key` | El artículo con el que se reconcilia: el de más hechos de su grupo. Lo escribe la reconciliación de productos (`ingestion/reconciliacion.py`, #206) con las reglas de `contracts/reconciliacion-v1.yaml`; un artículo sin variantes es su propio canónico |
 
 ### `dim_establecimiento`
 
@@ -150,8 +150,10 @@ hechos.
 | `rango_historico` | artículo canónico × entidad · desde, hasta | El dominio, al validar el umbral de una alerta (CU-10, ADR 010 · 5) | **Rango histórico = mínimo y máximo de las medianas quincenales** del artículo en la entidad. Con medianas, un precio atípico no estira el rango |
 | Índice de canasta (H4) | quincena × entidad | Tablero, contra el INPC | **Se declara, no se construye todavía:** falta definir la canasta de H4 |
 
-Los tres se calculan sobre `articulo_canonico_key`. Cuando T053 reconcilie
-variantes, los agregados se recalculan y los hechos no se tocan.
+Los tres se calculan sobre `articulo_canonico_key`. La reconciliación (#206) corre en
+cada carga entre los hechos y los agregados: las variantes de un artículo se agregan
+juntas y los hechos no se tocan. Si sus reglas no se pueden leer, cada artículo queda
+como su propio canónico y la carga lo avisa (CU-06 · 1a).
 
 **Los cuantiles son `quantile_disc`**: la mediana, el p25 y el p75 son precios que se
 observaron, como el precio típico de la interfaz analítica, y nunca pasan por punto
@@ -328,8 +330,10 @@ GROUP BY ALL;
 
 ## 9 · Lo que este modelo deja abierto
 
-- **T053 · reconciliación:** llena `articulo_canonico_key`. Hasta entonces, cada
-  variante cuenta como artículo propio.
+- **La reconciliación, versión uno (#206):** llena `articulo_canonico_key` con lo que
+  está clasificado en `contracts/reconciliacion-v1.yaml`. Lo dudoso no va a ninguna
+  cola, porque la cola salió con el recorte del 5 de noviembre: cada artículo
+  conserva su canónico hasta que una regla lo una.
 - **H4 · índice de canasta:** falta definir qué artículos forman la canasta.
 - **La compuerta fina de precio:** compara cada precio contra su artículo, usando
   `agg_articulo_entidad_quincena`. Es pendiente del contrato.

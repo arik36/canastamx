@@ -30,9 +30,12 @@ qué:
     `columnas.precio.tipo`, la ventana de `dim_fecha` es `alcance.ventana` y las
     categorías ocultas son `presentacion.ocultar_por_defecto_en_canasta_basica`.
 
-Los tres agregados se calculan sobre `articulo_canonico_key`. Hoy es igual a
-`articulo_key`; la reconciliación (#206) lo reescribe y vuelve a llamar a
-`agregados()`, sin tocar los hechos.
+Los tres agregados se calculan sobre `articulo_canonico_key`, y ése lo escribe la
+reconciliación de productos (`reconciliacion.py`, #206) entre los hechos y los
+agregados: las variantes de un artículo apuntan a uno solo y sus precios se
+agregan juntos, sin tocar los hechos. Si sus reglas no se pueden leer, cada
+artículo queda como su propio canónico y la estrella se carga igual (CU-06 · 1a);
+`cargar()` devuelve el resumen de lo que hizo.
 
 DÓNDE ESCRIBE
 -------------
@@ -61,6 +64,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import intermedia
 import lote as reglas_de_lote
+import reconciliacion
 from ingesta import leer_contrato
 from salida_segura import preparar_salida
 
@@ -189,12 +193,16 @@ def _ocultas(contrato):
             f"FROM (VALUES {valores}) t(v)")
 
 
-def construir(con, contrato, origen=ORIGEN):
+def construir(con, contrato, origen=ORIGEN, reglas=None):
     """Crea en `con` las ocho tablas de la estrella a partir de `origen`.
 
     `origen` es la capa intermedia: `destino.intermedia.observacion` en la carga, o
     cualquier tabla con sus columnas en las pruebas. Devuelve cuántas filas quedó
     en cada tabla.
+
+    Entre los hechos y los agregados corre la reconciliación (#206), con las reglas
+    que declara el contrato o con `reglas`, si se le pasan. Lo que hizo queda en la
+    tabla local `reconciliacion` y lo cuenta `reconciliacion.resumen(con)`.
     """
     def canon(columna):
         return reglas_de_lote.expresion(contrato, "canonica", columna)
@@ -289,6 +297,9 @@ def construir(con, contrato, origen=ORIGEN):
         JOIN dim_establecimiento e USING (nombre_c, direccion_c, municipio_c, entidad)
         JOIN dim_cadena c USING (cadena_c)""")
 
+    # Después de los hechos, porque el canónico de cada grupo es el artículo con
+    # más hechos; antes de los agregados, porque se calculan sobre el canónico.
+    reconciliacion.reconciliar(con, contrato, reglas)
     agregados(con)
     return {t: con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in TABLAS}
 
@@ -296,9 +307,9 @@ def construir(con, contrato, origen=ORIGEN):
 def agregados(con):
     """Los tres agregados de §4, sobre `articulo_canonico_key`.
 
-    Leen las tablas locales `hechos_precio` y las dimensiones. La reconciliación
-    (#206) reescribe `articulo_canonico_key` y vuelve a llamar a esta función: los
-    hechos no se tocan."""
+    Leen las tablas locales `hechos_precio` y las dimensiones. Si
+    `articulo_canonico_key` cambia, volver a llamar a esta función basta: los hechos
+    no se tocan."""
     junta = """FROM hechos_precio h
         JOIN dim_articulo a USING (articulo_key)
         JOIN dim_establecimiento e USING (establecimiento_key)
@@ -393,7 +404,9 @@ def cargar(contrato=None, simular=False, carpeta=None):
 
     Comprueba que cada observación de la capa intermedia sea un hecho: un artículo
     o una tienda sin su dimensión perdería filas en silencio en el JOIN, y una
-    cuenta que no cuadra no se carga."""
+    cuenta que no cuadra no se carga. Devuelve también el resumen de la
+    reconciliación: si corrió, con qué versión de sus reglas y cuántos artículos
+    juntó (CU-06, paso 5)."""
     contrato = contrato or leer_contrato()
     con = intermedia._con()
     destino = intermedia.adjuntar_destino(con, contrato, simular, carpeta)
@@ -401,6 +414,7 @@ def cargar(contrato=None, simular=False, carpeta=None):
         crear_tablas(con, contrato, destino["motor"])
         observaciones = con.execute(f"SELECT count(*) FROM {ORIGEN}").fetchone()[0]
         cuentas = construir(con, contrato)
+        reconciliados = reconciliacion.resumen(con)
         if cuentas["hechos_precio"] != observaciones:
             raise RuntimeError(
                 f"la capa intermedia tiene {observaciones:,} observaciones y salieron "
@@ -416,7 +430,8 @@ def cargar(contrato=None, simular=False, carpeta=None):
         con.execute("DETACH destino")
     return {"motor": destino["motor"], "donde": destino["donde"], "esquema": ESQUEMA,
             "observaciones": int(observaciones), "filas": {t: int(n) for t, n in cuentas.items()},
-            "en_destino": {t: int(n) for t, n in en_destino.items()}, "huella": firma}
+            "en_destino": {t: int(n) for t, n in en_destino.items()}, "huella": firma,
+            "reconciliacion": reconciliados}
 
 
 def contar(contrato=None, simular=False, carpeta=None):
@@ -453,6 +468,15 @@ def main():
         r = cargar(contrato, simular=a.simular)
         print(f"✓ estrella recalculada desde {r['observaciones']:,} observaciones de la capa "
               f"intermedia · {r['motor']} {r['donde']} · huella {r['huella'][:12]}")
+        rec = r["reconciliacion"]
+        if rec["estado"] == reconciliacion.APLICADA:
+            print(f"✓ reconciliación {rec['version']} · {rec['articulos']:,} artículos · "
+                  f"{rec['variantes']:,} variantes en {rec['grupos']:,} grupos "
+                  f"({rec['por_llave']:,} por llave, {rec['por_difusa']:,} por la difusa) · "
+                  f"{rec['solos']:,} solos")
+        else:
+            print(f"✗ la reconciliación no corrió: {rec['motivo']}. Cada artículo quedó como "
+                  "su propio canónico (CU-06 · 1a)")
     destino, cuentas = contar(contrato, simular=a.simular)
     print(f"\n{destino['motor']} {destino['donde']} · esquema {ESQUEMA}\n")
     for t in TABLAS:

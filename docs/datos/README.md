@@ -103,6 +103,27 @@ Y ojo con la polaridad, porque es **al revés** entre los dos:
 - En `h3-muestra-para-calificar.txt`, «sí» significa *son el mismo artículo y
   el sistema NO los juntó*. Es un fallo de cobertura.
 
+### La medición de H3 · `h3-medicion.txt` (#206)
+
+La escribe `services/data-platform/ingestion/h3.py --escribir`, no un guión de esta
+carpeta. Lee la estrella cargada —`consumo.dim_articulo` de `postgres-analytics`, o
+el DuckDB de la simulación con `--simular`— y da dos cifras, cada una con su
+población:
+
+1. **Sobre los 200 pares**, la de H3 (ADR 004 §1 y 014): la reconciliación
+   implementada, aplicada a los artículos de la muestra junto con el catálogo.
+2. **Dentro del alcance de la plataforma**: sólo los pares con sus dos artículos en
+   `dim_articulo`. No son los 200, porque esta carpeta armó la muestra con el corpus
+   completo y el recorte de catálogos, sin el de entidades ni el de la ventana, y
+   la plataforma ingiere sólo el alcance del contrato.
+
+Trae también la fila de los pares que sólo difieren en `marca`, cada «sí» con la
+regla que lo unió o la razón por la que quedó aparte, los artículos de la muestra
+que quedan fuera del alcance y todas las uniones que la reconciliación hizo en el
+catálogo, para revisarlas a mano. Se regenera cada vez que cambian
+`contracts/reconciliacion-v1.yaml` o la muestra; la calificación no la toca. Se corre
+desde el repositorio: la muestra no viaja en la imagen de la plataforma.
+
 ## Documentos
 
 `recapitulado-perfilado.md` explica desde cero cómo funciona cada guión, qué

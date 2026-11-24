@@ -121,6 +121,7 @@ import estrella
 import intermedia
 import lote as reglas_de_lote
 import operacion
+import reconciliacion
 import reparacion
 from ingesta import CORRIDAS, leer_contrato, sha256_de
 from salida_segura import CODIFICACION_DE_LOS_HIJOS, entorno_utf8
@@ -645,12 +646,20 @@ def capa_intermedia(context: AssetExecutionContext, lote_promovido: dict) -> dic
 def capa_consumo(context: AssetExecutionContext) -> dict:
     contrato = leer_contrato()
     r = estrella.cargar(contrato, simular=SIMULAR)
+    # CU-06 · 1a: si las reglas de la reconciliación no se pudieron leer, la
+    # estrella se cargó con cada artículo como su propio canónico. No es un error
+    # de la carga, pero no puede pasar en silencio.
+    if r["reconciliacion"]["estado"] != reconciliacion.APLICADA:
+        context.log.warning("la reconciliación de productos no corrió: "
+                            f"{r['reconciliacion'].get('motivo')}. Cada artículo quedó como "
+                            "su propio canónico (CU-06 · 1a)")
     context.add_output_metadata({
         "observaciones": r["observaciones"],
         **{t: r["en_destino"][t] for t in estrella.TABLAS},
         "huella": r["huella"],
         "destino": MetadataValue.json({k: r[k] for k in ("motor", "donde", "esquema")}),
         "version_contrato": contrato["version"],
+        "reconciliacion": MetadataValue.json(r["reconciliacion"]),
     })
     return {"filas": r["en_destino"], "huella": r["huella"]}
 
