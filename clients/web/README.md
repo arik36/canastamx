@@ -33,17 +33,40 @@ Si el acceso funciona pero cada vista truena con «GET …/api/v1/cuentas/yo res
 404», el dominio que corre es anterior a #184: córrelo desde `main`. El simulador del
 contrato no sirve para entrar (`.env.example`).
 
-El tablero lee `GET /api/v1/anomalias` de la interfaz analítica. Con `ANALITICA_URL`
-vacía la pide al simulador del contrato, que se levanta desde la raíz:
+El tablero y la consola leen la interfaz analítica: el tablero, `GET /api/v1/anomalias`;
+la consola, las seis rutas de operación (`/operacion/estado`, `/corridas`,
+`/corridas/{lote}`, `/cuarentena`, `/incidentes` y el cierre). Con `ANALITICA_URL`
+vacía las pide al simulador del contrato, que se levanta desde la raíz:
 
 ```bash
 npx @stoplight/prism-cli@5.14.2 mock -p 4011 -v debug docs/analisis/openapi/analitica.yaml
 ```
 
 Con `-v debug`, el registro de Prism muestra el encabezado `authorization: Bearer …` de
-cada llamada. Para la interfaz de verdad (`services/analytics-api`, desde `main`),
-`ANALITICA_URL=http://localhost:8000`: necesita datos en la capa de consumo y el mismo
-`JWT_SECRET` que el dominio, o contesta 401.
+cada llamada. El simulador contesta ejemplos: la consola sale en verde, con ceros, y su
+único registro es un aviso, que no se cierra. Para cerrar un incidente hace falta la
+interfaz de verdad.
+
+Para la interfaz de verdad (`services/analytics-api`, desde `main`),
+`ANALITICA_URL=http://localhost:8000`. Necesita el mismo `JWT_SECRET` que el dominio, o
+contesta 401. El tablero pide datos en la capa de consumo, y la consola, corridas en el
+esquema de operación. Para cerrar un incidente, la analítica le pregunta al dominio
+quién cierra (D-11): su `DOMINIO_URL` tiene que alcanzarlo.
+
+### La consola
+
+- Arriba, la respuesta de los tres segundos (CU-05 · 3): verde si la última corrida fue
+  correcta y no hay incidentes abiertos; rojo si hay un incidente abierto, si la última
+  corrida se rechazó o falló, o si la frescura bloquea; azul si sólo hay avisos. Los
+  avisos de esquema no la cambian: informan y no se cierran (RF-13).
+- Los seis indicadores de CU-05, cada uno con su población y su fecha (RNF-16).
+- Los incidentes abiertos, cada uno con «Cerrar con causa» (CU-04). El cierre corre en
+  el servidor de la web (`src/app/consola/acciones.ts`), con el token de la cookie;
+  quien autoriza es la analítica. Si falla, el motivo sale junto al formulario y lo
+  escrito se queda.
+- El historial de avisos e incidentes, las corridas, y el linaje y la cuarentena del
+  lote que se elija (por omisión, el de la última corrida).
+- Todo lo que pide y revisa está en `src/lib/operacion.mjs`, con sus pruebas.
 
 ## Cómo funciona la sesión
 
@@ -74,9 +97,15 @@ A mano, con el dominio y el simulador (o la analítica) corriendo:
 4. El acceso se ve completo a 360, 768 y 1280 px (`puntos-de-quiebre.md`).
 5. Ninguna cifra en pantalla sin su población y su fecha (RNF-16). En el tablero, cada
    variación lleva su entidad, su quincena y sus observaciones, y arriba de la tabla va
-   la población de la respuesta: observaciones, entidades y quincenas.
-6. Con el simulador, el tablero avisa que sus cifras son ejemplos; con `ANALITICA_URL`
-   en la analítica de verdad, ese aviso no sale. Con la analítica apagada, avisa que no
-   pudo leer las anomalías y la vista sigue en pie.
-7. «Salir», al pie de la barra lateral, te regresa al acceso sin cookies `token` ni `rol`;
+   la población de la respuesta: observaciones, entidades y quincenas. En la consola,
+   cada indicador dice de qué corridas sale y hasta qué fecha, y cada lista cuántos
+   renglones muestra de cuántos hay.
+6. Con el simulador, el tablero y la consola avisan que sus cifras son ejemplos; con
+   `ANALITICA_URL` en la analítica de verdad, ese aviso no sale. Con la analítica
+   apagada, avisan que no la pudieron leer y la vista sigue en pie.
+7. Con la analítica de verdad y un incidente abierto, la consola sale en rojo. «Cerrar
+   con causa» lo cierra: sale el aviso verde y el historial lo trae con su causa, su
+   decisión, quién lo cerró y cuándo. Si alguien lo cerró antes, el formulario dice
+   «respondió 409» y conserva lo escrito.
+8. «Salir», al pie de la barra lateral, te regresa al acceso sin cookies `token` ni `rol`;
    después, `/tablero` escrito a mano tampoco abre.

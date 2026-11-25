@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test src/lib/rutas.test.mjs src/lib/dominio.test.mjs src/lib/analitica.test.mjs src/lib/vistas.test.mjs"
+    "test": "node --test src/lib/rutas.test.mjs src/lib/dominio.test.mjs src/lib/analitica.test.mjs src/lib/operacion.test.mjs src/lib/vistas.test.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
