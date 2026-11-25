@@ -1,6 +1,7 @@
 // npm test · revisión estática de las vistas: que existan las cinco rutas, que cada vista
-// pida su rol al dominio y que el aviso de ancho mínimo siga en 1025 px (D-08). No
-// sustituye abrirlas en el navegador a 1024 y 1025 px (README, «Cómo se comprueba»).
+// pida su rol al dominio, que el aviso de ancho mínimo siga en 1025 px (D-08) y que el
+// linaje de la consola no dé las aceptadas por filas de la intermedia. No sustituye
+// abrirlas en el navegador a 1024 y 1025 px (README, «Cómo se comprueba»).
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
@@ -34,6 +35,15 @@ test('las consolas conservan 1025 px y avisan por debajo de ese ancho (D-08)', (
     assert.match(pagina, /min-w-\[1025px\]/, vista)
     assert.match(pagina, /lg:hidden[^"]*">\s*⚠️ Pantalla pequeña/, vista)
   }
+})
+
+test('el linaje de la consola no hace pasar las aceptadas por las filas de la intermedia', () => {
+  // La intermedia quita la captura doble (services/data-platform/ingestion/intermedia.py):
+  // en 07-2026_Q2 entran 82,872 filas y quedan 80,894. El contrato 0.2.1 no trae cuántas
+  // quedan, así que la caja dice que su cifra es la de las que entran.
+  const consola = leer('app/consola/page.tsx')
+  assert.match(consola, /'Aceptadas, con captura doble'/)
+  assert.doesNotMatch(consola, /: 'Aceptadas' \}/)
 })
 
 test('la barra lateral toma el correo y el rol de la cuenta, no de cookies ni de un nombre', () => {

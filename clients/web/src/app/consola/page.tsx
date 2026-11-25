@@ -420,7 +420,7 @@ function Linaje({ corridas }: { corridas: Corrida[] }) {
     { capa: 'Archivo', cifra: vigente.lote, nota: 'El lote de la fuente' },
     { capa: 'Cruda', cifra: filas(vigente.filasLeidas), nota: 'Leídas del alcance' },
     { capa: 'Compuertas', cifra: filas(vigente.filasEnCuarentena), nota: 'Apartadas a cuarentena' },
-    { capa: 'Intermedia', cifra: filas(vigente.filasAceptadas), nota: detenido ? 'El lote se detuvo' : 'Aceptadas' },
+    { capa: 'Intermedia', cifra: filas(vigente.filasAceptadas), nota: detenido ? 'El lote se detuvo' : 'Aceptadas, con captura doble' },
   ]
   return (
     <>
@@ -455,9 +455,10 @@ function Linaje({ corridas }: { corridas: Corrida[] }) {
         </Tabla>
       )}
       <p className="mt-2 text-[11px] font-semibold text-[#5b5b5b]">
-        El contrato 0.2.1 todavía no trae el nombre del archivo, los pasos por compuerta ni las
-        filas de la capa de consumo (docs/analisis/openapi/README.md): el linaje se arma con los
-        conteos de la corrida.
+        El contrato 0.2.1 todavía no trae el nombre del archivo, los pasos por compuerta ni cuántas
+        filas quedan en cada capa (docs/analisis/openapi/README.md): el linaje se arma con los
+        conteos de la corrida. Cuando hay captura doble, la intermedia guarda menos filas de las
+        que entran, porque ahí se quita.
       </p>
     </>
   )
