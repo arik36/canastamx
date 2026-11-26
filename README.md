@@ -122,5 +122,6 @@ Quién hace qué cada semana, con su criterio de cierre: [`docs/equipo/cronogram
 | **Cómo trabajamos** | [`docs/equipo/README.md`](docs/equipo/README.md) — índice del manual |
 | Fichas de tarea de la semana | [`docs/equipo/fichas/`](docs/equipo/fichas/) |
 | Decisiones de arquitectura | [`docs/adr/`](docs/adr/) |
+| App Android: manual, capturas y guion de presentación | [`docs/movil/`](docs/movil/README.md) |
 | Documentos de entrega y presentaciones | Drive compartido <!-- enlace --> |
 | Prototipo de las vistas | Figma <!-- enlace --> |

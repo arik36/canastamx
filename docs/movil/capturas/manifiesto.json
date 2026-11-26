@@ -1,0 +1,65 @@
+[
+  {
+    "archivo": "01-inicio-v10.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/01-inicio-v10.png",
+    "version": "v10",
+    "bytes": 896014,
+    "sha256": "07DC30FC5C3C0BC9FD78E22A87C9D0180C8D5B03537F2A3B9E4B3BC800A3C507"
+  },
+  {
+    "archivo": "02-detalle-v10.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/02-detalle-v10.png",
+    "version": "v10",
+    "bytes": 695180,
+    "sha256": "3B194CED8BE2DB9C7BF7C9F5A9A881B26440E3F424E86FDF18829B49B6D8FA91"
+  },
+  {
+    "archivo": "03-portada-revision.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/03-portada-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 607221,
+    "sha256": "8FF2474A489D814253CC95E4664D78782C09EB80C68BC17C554A7CF28C0FDD91"
+  },
+  {
+    "archivo": "04-acceso-revision.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/04-acceso-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 289843,
+    "sha256": "4A5FAD7F3ABDABC37DE8877C3E0D8D7DE253EB793BE1E3DA8F9BFFAE1363477E"
+  },
+  {
+    "archivo": "05-registro-revision.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/05-registro-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 272940,
+    "sha256": "39C7F19D0B7E630822170654743F997DADD5EEC047A28F894D67D773E1B0F918"
+  },
+  {
+    "archivo": "06-cuenta-invitado-revision.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/06-cuenta-invitado-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 104182,
+    "sha256": "1796A9D8B47A2686317F74FC3AC3295614CBA1FA84026B6D6FBDCFA973064E11"
+  },
+  {
+    "archivo": "07-descubrir-revision.png",
+    "origen": "clients/mobile/docs/evidencia/t072-final/07-descubrir-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 73031,
+    "sha256": "872397FCB3B58F108ED4DCAFF36D50B11ABEE02DAC2B1FADC8549E4F761A9838"
+  },
+  {
+    "archivo": "08-mis-canastas-revision.png",
+    "origen": "docs/movil/capturas/08-mis-canastas-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 93959,
+    "sha256": "21FA715F10E85D71D8DB6A64739665E7FB210B2D0089C82098FB89358AB26DA4"
+  },
+  {
+    "archivo": "09-nueva-canasta-revision.png",
+    "origen": "docs/movil/capturas/09-nueva-canasta-revision.png",
+    "version": "revision v6 T072",
+    "bytes": 83564,
+    "sha256": "8BD0E2DDF36D2CB9F651A7E744692E488F26D62067C325A95EDC0A4AFC85D974"
+  }
+]
