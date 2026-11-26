@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import Link from 'next/link'
 
 import Sidebar from '@/components/Sidebar'
 import {
@@ -8,6 +9,7 @@ import {
   nombreDelArticulo,
   textoDePoblacion,
   urlDeAnalitica,
+  urlDelDetalle,
   variacionEnPorcentaje,
 } from '@/lib/analitica.mjs'
 import { exigirCuenta } from '@/lib/sesion'
@@ -65,7 +67,12 @@ export default async function Page() {
                         key={`${fila.articulo.producto}|${fila.articulo.presentacion}|${fila.entidad}|${fila.quincena}`}
                         className="hover:bg-gray-50"
                       >
-                        <td className="px-6 py-4 text-gray-900">{nombreDelArticulo(fila.articulo)}</td>
+                        <td className="px-6 py-4 text-gray-900">
+                          {/* La vista 3 se abre desde aquí (navegacion.md) */}
+                          <Link href={urlDelDetalle(fila)} className="font-bold text-[#158683] underline">
+                            {nombreDelArticulo(fila.articulo)}
+                          </Link>
+                        </td>
                         <td className="px-6 py-4 text-gray-700">{fila.entidad}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-700">{fila.quincena}</td>
                         <td className="px-6 py-4 text-right font-bold whitespace-nowrap text-[#d32f2f]">
