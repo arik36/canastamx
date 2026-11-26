@@ -4,10 +4,13 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
+    "postinstall": "node scripts/preparar-android.cjs",
     "start": "expo start --go",
     "android": "expo start --go --android",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --test-concurrency=1 tests/sesion.test.cjs tests/analitica.test.cjs tests/canastas.test.cjs tests/canasta-provider.test.cjs",
+    "test": "node --test --test-concurrency=1 tests/sesion.test.cjs tests/analitica.test.cjs tests/canastas.test.cjs tests/canasta-provider.test.cjs tests/build.test.cjs tests/imagenes.test.cjs",
+    "build:verificar": "node scripts/verificar-build.cjs",
+    "build:android": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-android.ps1",
     "simulador": "node mocks/servidor.cjs"
   },
   "engines": {
@@ -15,7 +18,9 @@
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
+    "@expo/vector-icons": "^15.0.2",
     "expo": "~55.0.0",
+    "expo-build-properties": "~55.0.18",
     "expo-constants": "~55.0.17",
     "expo-font": "~55.0.8",
     "expo-linking": "~55.0.17",

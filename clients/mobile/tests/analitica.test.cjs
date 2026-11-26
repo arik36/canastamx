@@ -79,13 +79,28 @@ test('JSON ilegible y red caída terminan con errores explicados', async t => {
   reemplazo.mock.mockImplementation(async () => { throw new TypeError('Network request failed'); });
   await assert.rejects(buscarArticulos(criterios), /No hay conexión/);
 });
-test('corta la espera a los ocho segundos', async t => {
+test('tolera respuestas lentas hasta cinco minutos y después cancela la búsqueda', async t => {
   configurar(t);
   t.mock.timers.enable({ apis: ['setTimeout'] });
   t.mock.method(global, 'fetch', async (_, opciones) => new Promise((_, reject) => { opciones.signal.addEventListener('abort', () => reject(new Error('Abortado'))); }));
   const pendiente = buscarArticulos(criterios);
   t.mock.timers.tick(8000);
-  await assert.rejects(pendiente, /8 segundos/);
+  assert.equal(global.fetch.mock.calls[0].arguments[1].signal.aborted, false);
+  t.mock.timers.tick(292000);
+  assert.equal(global.fetch.mock.calls[0].arguments[1].signal.aborted, true);
+  await assert.rejects(pendiente, /5 minutos/);
+});
+test('acepta una respuesta que llega a los cuatro minutos', async t => {
+  configurar(t);
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  t.mock.method(global, 'fetch', async (_, opciones) => new Promise((resolve, reject) => {
+    opciones.signal.addEventListener('abort', () => reject(new Error('Abortado')));
+    setTimeout(() => resolve(Response.json(datos)), 240000);
+  }));
+  const pendiente = buscarArticulos(criterios);
+  t.mock.timers.tick(240000);
+  assert.equal(global.fetch.mock.calls[0].arguments[1].signal.aborted, false);
+  assert.equal((await pendiente).datos.total, 1);
 });
 test('propaga la cancelación al editar criterios o desmontar la pantalla', async t => {
   configurar(t);
@@ -131,4 +146,39 @@ test('los ejemplos salen de Prism y cubren resultados, vacío, cobertura y probl
     assert.equal(error.problema.title, 'Consulta inválida');
     assert.match(error.problema.detail, /simulador/); return true;
   });
+});
+
+test('el catálogo elegido se envía al servicio, sin limitarlo a la página anterior', async t => {
+  configurar(t);
+  let direccion;
+  t.mock.method(global, 'fetch', async url => { direccion = new URL(url); return Response.json(datos); });
+  await buscarArticulos({ ...criterios, catalogo: 'FRUTAS Y LEGUMBRES' });
+  assert.equal(direccion.searchParams.get('catalogo'), 'FRUTAS Y LEGUMBRES');
+});
+
+test('explorar combina artículos reales sin duplicar la identidad ni inventar precios', async t => {
+  configurar(t);
+  const { explorarArticulos } = require('../api/explorar.ts');
+  const consultas = [];
+  t.mock.method(global, 'fetch', async url => {
+    consultas.push(new URL(url));
+    return Response.json(datos);
+  });
+  const r = await explorarArticulos('Guanajuato', 'BASICOS');
+  assert.equal(consultas.length, 6);
+  assert.ok(consultas.every(u => u.searchParams.get('q').length >= 2 && u.searchParams.get('catalogo') === 'BASICOS'));
+  assert.equal(r.datos.total, datos.resultados.length);
+  assert.deepEqual(r.datos.resultados, datos.resultados);
+});
+
+test('explorar conserva la falta de cobertura y rechaza mezclar quincenas', async t => {
+  configurar(t);
+  const { explorarArticulos } = require('../api/explorar.ts');
+  let sinCobertura = true, n = 0;
+  t.mock.method(global, 'fetch', async () => Response.json(sinCobertura
+    ? { cobertura: false, entidad: 'Colima', entidadesCubiertas }
+    : { ...datos, quincena: n++ === 0 ? '2026-07-Q1' : '2026-07-Q2' }));
+  assert.equal((await explorarArticulos('Colima')).datos.cobertura, false);
+  sinCobertura = false;
+  await assert.rejects(explorarArticulos('Guanajuato'), /actualizando/);
 });

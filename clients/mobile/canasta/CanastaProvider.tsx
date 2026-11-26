@@ -8,7 +8,9 @@ type Contexto = {
   canastas: api.Canasta[]; actual?: api.Canasta; ocupada: boolean; error: string; listaCargada: boolean; requiereRecarga: boolean;
   seleccionar(id: string): void; recargar(): Promise<boolean>;
   crear(nombre: string): Promise<boolean>;
+  renombrar(nombre: string): Promise<boolean>; borrar(): Promise<boolean>;
   agregar(articulo: api.Articulo, cantidad: number): Promise<boolean>;
+  agregarEn(id: string, articulo: api.Articulo, cantidad: number): Promise<boolean>;
   fijar(linea: api.Linea): Promise<boolean>; quitar(articulo: api.Articulo): Promise<boolean>;
 };
 const Context = createContext<Contexto | null>(null);
@@ -81,7 +83,14 @@ export function CanastaProvider({ children }: { children: ReactNode }) {
   return <Context.Provider value={{ canastas: visibles, actual, ocupada, error, listaCargada, requiereRecarga,
     seleccionar: id => { if (!peticion.current.ocupada) { setId(id); setError(""); } }, recargar,
     crear: nombre => ejecutar((t, s) => api.crearCanasta(t, nombre, s)),
+    renombrar: nombre => modificar((t, id, s) => api.renombrarCanasta(t, id, nombre, s)),
+    borrar: () => actual ? ejecutar(async (t, s) => {
+      await api.borrarCanasta(t, actual.id, s);
+      return visibles.filter(c => c.id !== actual.id);
+    }) : Promise.resolve(false),
     agregar: (articulo, cantidad) => modificar((t, id, s) => api.guardarLinea(t, id, { articulo, cantidad }, false, s)),
+    agregarEn: (id, articulo, cantidad) => visibles.some(c => c.id === id)
+      ? ejecutar((t, s) => api.guardarLinea(t, id, { articulo, cantidad }, false, s)) : Promise.resolve(false),
     fijar: linea => modificar((t, id, s) => api.guardarLinea(t, id, linea, true, s)),
     quitar: articulo => modificar((t, id, s) => api.quitarArticulo(t, id, articulo, s)),
   }}>{children}</Context.Provider>;

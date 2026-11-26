@@ -1,0 +1,21 @@
+{
+  "cli": { "version": ">= 16.0.0", "appVersionSource": "local" },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "node": "20.20.2",
+      "android": { "buildType": "apk" },
+      "env": {
+        "CANASTAMX_COMPILACION": "entrega",
+        "EXPO_PUBLIC_API_URL": "https://dominio.canastamx.duckdns.org",
+        "EXPO_PUBLIC_ANALITICA_URL": "https://analitica.canastamx.duckdns.org"
+      }
+    },
+    "production": {
+      "extends": "preview",
+      "distribution": "store",
+      "android": { "buildType": "app-bundle" }
+    }
+  }
+}

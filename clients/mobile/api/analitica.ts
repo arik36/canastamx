@@ -15,7 +15,7 @@ export type BusquedaSinCobertura = {
   cobertura: false; entidad: string; entidadesCubiertas: string[];
 };
 export type ResultadoDeBusqueda = BusquedaConDatos | BusquedaSinCobertura;
-export type CriteriosBusqueda = { q: string; entidad: string; offset?: number };
+export type CriteriosBusqueda = { q: string; entidad: string; offset?: number; catalogo?: string };
 export type Problema = { type: string; title: string; status: number; detail?: string; instance?: string };
 
 export class ErrorAnalitica extends Error {
@@ -67,10 +67,13 @@ export async function buscarArticulos(criterios: CriteriosBusqueda, signal?: Abo
   signal?.addEventListener("abort", cancelar);
   if (signal?.aborted) controller.abort();
   let agotado = false;
-  const timer = setTimeout(() => { agotado = true; controller.abort(); }, 8000);
+  // El despliegue público ha superado 30 s; mantener un plazo finito y la
+  // cancelación inmediata al cambiar los criterios. No se reintenta en bucle.
+  const timer = setTimeout(() => { agotado = true; controller.abort(); }, 300000);
   const offset = criterios.offset ?? 0;
   if (!entero(offset, 0)) { clearTimeout(timer); signal?.removeEventListener("abort", cancelar); throw new ErrorAnalitica("La página solicitada no es válida."); }
-  const query = `q=${encodeURIComponent(criterios.q.trim())}&entidad=${encodeURIComponent(criterios.entidad.trim())}&limit=20&offset=${offset}`;
+  const query = `q=${encodeURIComponent(criterios.q.trim())}&entidad=${encodeURIComponent(criterios.entidad.trim())}&limit=20&offset=${offset}`
+    + (criterios.catalogo ? `&catalogo=${encodeURIComponent(criterios.catalogo)}` : "");
   try {
     const respuesta = await fetch(`${base}/api/v1/articulos?${query}`, {
       signal: controller.signal,
@@ -92,7 +95,7 @@ export async function buscarArticulos(criterios: CriteriosBusqueda, signal?: Abo
     };
   } catch (error) {
     if (signal?.aborted) throw error;
-    if (agotado) throw new ErrorAnalitica("La analítica no respondió en 8 segundos. Vuelve a intentar.");
+    if (agotado) throw new ErrorAnalitica("La búsqueda no respondió en 5 minutos. Vuelve a intentar más tarde.");
     if (error instanceof TypeError) throw new ErrorAnalitica("No hay conexión con la analítica. Revisa la red y que el servicio esté encendido.");
     if (error instanceof SyntaxError) throw new ErrorAnalitica("La analítica devolvió una respuesta que no podemos leer.");
     throw error;

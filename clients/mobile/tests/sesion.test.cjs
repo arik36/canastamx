@@ -141,3 +141,44 @@ test('la espera se corta a los ocho segundos', async t => {
   t.mock.timers.tick(8000);
   await assert.rejects(consulta, /8 segundos/);
 });
+
+test('registro crea consumidor sin Bearer ni rol solicitado y conserva la contraseña literal', async t => {
+  process.env.EXPO_PUBLIC_API_URL = 'https://dominio.invalid';
+  const peticiones = [];
+  t.mock.method(global, 'fetch', async (url, opciones) => {
+    peticiones.push({ url, opciones });
+    return new Response(JSON.stringify(cuenta), { status: 201 });
+  });
+  assert.deepEqual(await api.registrarCuenta(' consumidor@example.invalid ', 'ClaveSegura8 '), cuenta);
+  assert.equal(peticiones.length, 1);
+  assert.equal(peticiones[0].url, 'https://dominio.invalid/api/v1/cuentas');
+  assert.equal(peticiones[0].opciones.method, 'POST');
+  assert.equal(peticiones[0].opciones.headers.Authorization, undefined);
+  assert.deepEqual(JSON.parse(peticiones[0].opciones.body), { correo: cuenta.correo, contrasena: 'ClaveSegura8 ' });
+});
+
+test('registro valida correo, reglas de contraseña y confirmación antes de llamar al servicio', async t => {
+  const llamada = t.mock.method(global, 'fetch', async () => { throw new Error('No debe llamar'); });
+  for (const clave of ['corta', 'sinmayuscula8', 'SinNumeros', 'A8' + 'x'.repeat(71)]) {
+    await assert.rejects(api.registrarCuenta('a@b.mx', clave), /contraseña/);
+  }
+  assert.match(api.validarRegistro('no-correo', 'ClaveValida8', 'ClaveValida8'), /correo/);
+  assert.match(api.validarRegistro('a@b.mx', 'ClaveValida8', 'otra'), /no coinciden/);
+  assert.equal(api.validarRegistro('a@b.mx', 'ClaveValida8', 'ClaveValida8'), '');
+  assert.equal(llamada.mock.callCount(), 0);
+});
+
+for (const [status, mensaje] of [[409, /Ya existe una cuenta/], [400, /Revisa el correo/], [503, /más tarde/]]) {
+  test(`registro comunica HTTP ${status} y nunca lo interpreta como éxito`, async t => {
+    t.mock.method(global, 'fetch', async () => new Response('{}', { status }));
+    await assert.rejects(api.registrarCuenta('a@b.mx', 'ClaveValida8'), mensaje);
+  });
+}
+
+test('registro rechaza respuestas incompletas y cuentas con privilegios', async t => {
+  let respuesta = {};
+  t.mock.method(global, 'fetch', async () => new Response(JSON.stringify(respuesta), { status: 201 }));
+  await assert.rejects(api.registrarCuenta('a@b.mx', 'ClaveValida8'), /no cumple/);
+  respuesta = { ...cuenta, rol: 'OPERADOR' };
+  await assert.rejects(api.registrarCuenta('a@b.mx', 'ClaveValida8'), /consumidor/);
+});
