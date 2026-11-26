@@ -1,9 +1,11 @@
 import { Inter_400Regular } from "@expo-google-fonts/inter/400Regular";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import { SesionProvider } from "../session/SesionProvider";
+import { Stack, usePathname, useRootNavigationState, useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+import { SesionProvider, useSesion } from "../session/SesionProvider";
 import { CanastaProvider } from "../canasta/CanastaProvider";
+import { RegionProvider } from "../components/RegionProvider";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { colors, fonts, fontSizes } from "../theme/design-system";
@@ -11,6 +13,20 @@ import { colors, fonts, fontSizes } from "../theme/design-system";
 export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
+
+function EntradaInicial() {
+  const { estado } = useSesion();
+  const ruta = usePathname();
+  const navegacion = useRootNavigationState();
+  const router = useRouter();
+  const revisado = useRef(false);
+  useEffect(() => {
+    if (revisado.current || !navegacion?.key || estado === "cargando") return;
+    revisado.current = true;
+    if (estado === "invitado" && ruta === "/") router.replace("/acceso");
+  }, [estado, ruta, navegacion?.key, router]);
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -29,7 +45,8 @@ export default function RootLayout() {
 
   return (
     <SesionProvider>
-      <CanastaProvider>
+      <CanastaProvider><RegionProvider>
+      <EntradaInicial />
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -47,7 +64,7 @@ export default function RootLayout() {
           },
         }}
       >
-        <Stack.Screen name="acceso" options={{ title: "Acceso" }} />
+        <Stack.Screen name="acceso" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="alertas"
@@ -55,10 +72,10 @@ export default function RootLayout() {
         />
         <Stack.Screen
           name="articulo/[id]"
-          options={{ title: "", headerBackTitle: "Inicio" }}
+          options={{ headerShown: false }}
         />
       </Stack>
-      </CanastaProvider>
+      </RegionProvider></CanastaProvider>
     </SesionProvider>
   );
 }

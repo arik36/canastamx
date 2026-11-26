@@ -1,263 +1,208 @@
-# CanastaMX · Cliente móvil
+# CanastaMX · Aplicación Android
 
-La navegación sigue D-01 y el ADR 007 ratificado: **Inicio, Descubrir, Canasta
-y Cuenta** son las cuatro pestañas. **Detalle de artículo** y **Mis alertas**
-se abren en la pila raíz. Se conserva la consulta real a `/health` de T039 y
-el sistema de diseño de D. Se utiliza «artículo», conforme al ADR 002.
+Cliente Expo SDK 55 / React Native. La versión T072 (#215) adapta el diseño de
+Karen a pantallas nativas: portada, acceso y registro, catálogo de artículos,
+comparación, canastas y cuenta. La carpeta `App_Karen` permanece intacta.
 
-El acceso de #159 se abre desde Cuenta. Usa el dominio real para iniciar sesión y
-obtener el correo mediante D-10; no se muestran datos ficticios de una cuenta.
+La barra conserva **Inicio, Descubrir, Canasta y Cuenta** (D-01). Descubrir indica
+«No está disponible en esta versión». Las alertas salen del alcance aprobado;
+la ruta antigua `/alertas` redirige a Cuenta. No se ofrecen funciones de alertas,
+favoritos, recuperación de contraseña ni datos de perfil ficticios.
 
-## Requisitos
+## Desarrollo
 
-- Node **20.20.2**, fijado en `.nvmrc`.
-- npm y las versiones del archivo `package-lock.json`.
-- Android con [Expo Go para SDK 55](https://expo.dev/go?sdkVersion=55&platform=android&device=true).
-- Computadora y teléfono en la misma red Wi-Fi.
-
-Se conserva Expo SDK 55 y el entorno de T014 documentado en el
-[ADR 006](../../docs/adr/006-entorno-mobile-expo.md).
-
-## Instalar y arrancar
-
-Desde `clients/mobile/`, con Node 20 activo:
+Requisitos: Node **20.20.2** (`.nvmrc`), npm y Android con
+[Expo Go SDK 55](https://expo.dev/go?sdkVersion=55&platform=android&device=true).
+Desde `clients/mobile/`:
 
 ```powershell
-node --version
 npm.cmd ci
+# Copia .env.example a .env sólo si no tienes configuración local.
 npm.cmd start -- --port 8082
 ```
 
-El puerto 8082 evita competir con el 8081 del servicio de dominio. No es
-necesario arrancar ese servicio para recorrer la navegación; la consulta de T039 sí lo requiere.
+Configura dos direcciones independientes, sin rutas `/api/v1`:
 
-En Expo Go, escanea el QR de la terminal. Mantén la terminal abierta.
-Si aparece incompatibilidad de SDK, utiliza la versión para SDK 55 enlazada arriba.
+- `EXPO_PUBLIC_API_URL`: servicio de dominio, por ejemplo el puerto local 8081.
+- `EXPO_PUBLIC_ANALITICA_URL`: interfaz analítica, por ejemplo el puerto local 8000.
 
-Si no hay comunicación por la red local:
+En un teléfono, `localhost` es el propio teléfono. Para desarrollo usa una
+dirección alcanzable por él; también puedes usar USB y `adb reverse` para enlazar
+únicamente los puertos locales necesarios. Expo Go necesita su servidor de
+desarrollo activo. **El APK de entrega funciona sin Expo Go ni ese servidor.**
+
+Las variables `EXPO_PUBLIC_` quedan dentro del instalable: nunca llevan secretos.
+El dominio requiere PostgreSQL y su configuración JWT, incluso para `/health`;
+consulta [su README](../../services/domain-service/README.md).
+
+## Generar el APK de entrega (#215)
+
+`app.json` fija la identidad `mx.tecnm.canastamx`, versión `1.0.0`, código Android
+`1`. Conserva esa identidad y la misma clave de firma para las actualizaciones;
+incrementa `android.versionCode` antes de distribuir una actualización.
+
+La entrega validada es el APK v10 conectado a los servidores públicos. Su
+SHA-256, firma, pruebas y capturas están en [T072](docs/t072-version-final.md).
+Puedes generarlo localmente con `npm.cmd run build:android -- -ServidoresPublicos`,
+siguiendo la sección de Windows de abajo. EAS es una opción adicional; #215
+no exige usar ese proveedor ni publicar en una tienda.
+
+### Opción de compilación con EAS
+
+El perfil **preview** de `eas.json` genera un **APK firmado para distribución
+interna**; **production** genera AAB para una tienda. No se necesita publicar en
+una tienda para instalar el APK en los dos teléfonos.
+
+1. Consigue las dos direcciones HTTPS reales de #201. Configura en tu entorno
+   local ambas variables anteriores y comprueba:
+
+   ```powershell
+   npm.cmd run build:verificar
+   ```
+
+   Esta comprobación revisa la configuración, no acredita que el servidor esté
+   accesible. Rechaza direcciones de ejemplo, HTTP, direcciones IP y credenciales
+   incrustadas. La compilación EAS repite el control automáticamente.
+
+2. Con la cuenta Expo del equipo, vincula el proyecto **una sola vez**:
+
+   ```powershell
+   npx.cmd eas-cli login
+   npx.cmd eas-cli init
+   ```
+
+   Conserva el `extra.eas.projectId` que genere y la firma administrada por EAS.
+   No crees otra identidad ni regeneres la firma al actualizar la app.
+
+3. Configura las mismas dos variables públicas en el entorno EAS `preview`
+   mediante su panel (visibilidad de texto público). No basta con tenerlas en
+   una terminal local: el servidor de compilación también debe recibirlas.
+
+4. Genera y descarga el APK:
+
+   ```powershell
+   npx.cmd eas-cli build --platform android --profile preview
+   ```
+
+   Guarda el identificador del build, commit de origen, SHA-256 y certificado de
+   firma junto con las capturas. El enlace que entrega EAS permite descargar el
+   mismo APK en ambos teléfonos. Instálalo autorizando esa fuente de instalación
+   en cada dispositivo. Desactiva esa autorización después si ya no la necesitas.
+
+Las direcciones se incorporan al compilar: cambiarlas requiere generar otro APK.
+El build de entrega desactiva HTTP sin cifrar y bloquea los permisos de micrófono
+y superposición que no usa el producto.
+
+### APK conectado a los servidores públicos en Windows
+
+Las direcciones de #201 están en `servidores-publicos.json`: Dominio en
+`https://dominio.canastamx.duckdns.org` y Analítica en
+`https://analitica.canastamx.duckdns.org`. El responsable comprobó ambos estados
+`UP` desde un teléfono el 25 de noviembre de 2026.
+
+Con Node 20, SDK Android y JDK 21 configurados, ejecutar:
 
 ```powershell
-npm.cmd start -- --port 8082 --tunnel
+npm.cmd run build:android -- -ServidoresPublicos
 ```
 
-El túnel requiere internet y puede solicitar instalar `@expo/ngrok`.
-En Windows se usan `npm.cmd` y `npx.cmd` para evitar depender de la política
-de ejecución de scripts de PowerShell.
+Resultado: `artifacts/canastamx-servidores.apk`. Lleva JavaScript y recursos
+incluidos, exige HTTPS y desactiva HTTP sin cifrar. No necesita Docker, Expo,
+servicios locales ni `adb reverse` para funcionar: requiere internet y los
+servidores públicos disponibles. Este modo local conserva la firma de desarrollo
+del proyecto nativo; todavía queda pendiente la firma final de distribución.
+Para actualizar la validación instalada, utilizar la misma clave que en el APK
+anterior; no desinstalar la app para resolver una firma diferente.
+
+Verificar búsqueda, detalle, registro/sesión y canastas con los servicios locales
+apagados. El estado `UP` comprueba disponibilidad, pero no acredita este recorrido.
+
+### APK de validación local en Windows
+
+Para revisar la app antes de contar con #201, se incluye un guion separado.
+Requiere Android Studio con SDK/NDK y sus licencias aceptadas, JDK y Node 20 en
+PATH. La primera compilación descarga componentes de Gradle y Android.
+Usa JDK 17 o 21 en `JAVA_HOME`. `postinstall` aplica a React Native 0.83.10 la
+[corrección de Foojay para Gradle 9](https://github.com/reactwg/react-native-releases/issues/1349).
+Si la ruta del proyecto es larga, el guion compila una copia nueva bajo la
+carpeta temporal, sin `.env`, y copia el APK de vuelta a `artifacts/`. Conserva
+esa copia temporal para diagnosticar la compilación.
+
+```powershell
+npm.cmd run build:android -- -ValidacionLocal
+```
+
+Resultado: `artifacts/canastamx-validacion.apk`, generado con `expo prebuild` y
+`gradlew assembleRelease`, con JavaScript y recursos empaquetados. Incluye ARM64
+y x86_64 y usa **la firma de desarrollo del proyecto nativo generado**: es para
+validar localmente, no es el APK firmado final de EAS. No intercambies ambas
+firmas en una instalación que contenga información que quieras conservar.
+
+Este APK se llama **CanastaMX · Validación** y consulta sólo
+`127.0.0.1:8084` (dominio) y `127.0.0.1:8004` (analítica). Para usar servicios locales
+necesita los correspondientes enlaces USB `adb reverse`. Es el único modo que
+permite HTTP. No escribe `.env` ni contiene cuentas de prueba.
+
+El guion genera `android/` a partir de la configuración Expo. Esa carpeta y los
+APK, claves y artefactos están ignorados. No ejecutes prebuild sobre una carpeta
+nativa editada a mano sin respaldar sus cambios.
+
+## Comportamiento y datos
+
+- **Registro:** `POST /api/v1/cuentas`, sin Bearer ni rol enviado. Correo válido,
+  contraseña de 8–72 caracteres con mayúscula y número y confirmación. Un 409
+  explica que la cuenta existe. Al terminar se solicita iniciar sesión; no se
+  interpreta la creación de cuenta como una sesión iniciada. Las contraseñas se
+  limpian al enviar y no se persisten. Si una petición de registro pierde la
+  conexión, el aviso permite intentar entrar si la cuenta alcanzó a crearse.
+- **Sesión:** `POST /sesiones` y `GET /cuentas/yo`. Sólo el token se conserva con
+  SecureStore; el correo viene del servidor. Sólo entra el rol CONSUMIDOR. Al
+  abrir o volver al primer plano se restaura la sesión; salir elimina sus datos.
+- **Inicio:** búsqueda paginada real por artículo y entidad. La entidad elegida
+  en el encabezado también se usa para el costo de canasta. Cambiarla descarta
+  resultados antiguos. El catálogo se envía al servicio. El orden y el rango de precios filtran **sólo la página
+  consultada**, como indica la pantalla; no representan todo el catálogo. Al abrir se ofrece una selección de artículos mediante búsquedas de productos habituales, sin inventar precios ni devolver todo el catálogo.
+- **Detalle:** identidad canónica `producto` + `presentacion`; muestra precios
+  por establecimiento, marca, fecha, entidad, quincena y población recibidos.
+- **Canastas:** crear, seleccionar, renombrar, eliminar con confirmación, sumar,
+  fijar cantidades y quitar artículos con confirmación; todo persiste mediante
+  el dominio. Si una escritura pierde la respuesta, hay que recuperar el estado
+  antes de enviar otra. Eliminar la última canasta deja disponible la creación.
+- **Costo:** lo calcula la analítica. Se muestran estimaciones independientes
+  por cadena y sus faltantes. No se suman cadenas para inventar un total de
+  compra; un artículo sin precio no equivale a cero. Las fotografías son
+  ilustrativas de categoría, porque el contrato no entrega fotografías de cada
+  producto. No se inventan descuentos, precios anteriores ni marcas.
+
+Conserva los avisos de precios observados QQP y «No somos PROFECO». El simulador
+se identifica como datos de prueba. Fuentes de recursos: [assets/README.md](assets/README.md).
 
 ## Verificar
 
 ```powershell
+npm.cmd test
 npm.cmd run typecheck
-npx.cmd expo install --check
 ```
 
-Si acabas de cambiar las rutas, arranca Expo para que regenere los tipos de
-`.expo/types/` antes de comprobar TypeScript.
+La suite cubre acceso, registro, sesión, cancelación, contratos, simulador,
+canastas y configuración de compilación. El simulador abre puertos temporales.
+Guías anteriores: [T039](docs/evidencia/t039/README.md),
+[T046](docs/evidencia/t046/README.md), [T051](docs/t051-busqueda-analitica.md) y
+[T056](docs/t056-detalle-canasta.md).
 
-Recorrido manual de navegación en Android con Expo Go:
+### Aceptación pendiente en dos teléfonos distintos
 
-1. Al abrir, comprueba las cuatro pestañas, en este orden: **Inicio**, **Descubrir**,
-   **Canasta** y **Cuenta**. Alertas no debe aparecer en la barra inferior.
-2. Desde Inicio, busca un artículo, toca un resultado y regresa con la flecha.
-3. Abre el detalle otra vez y regresa con Atrás de Android.
-4. Desde la campana del encabezado abre **Mis alertas**. La barra de pestañas
-   debe ocultarse; regresa con la flecha a la pestaña desde la que entraste.
-5. Cambia a Descubrir y Canasta; comprueba también la campana desde ellas.
-6. En **Cuenta**, pulsa **Mis alertas**, regresa y verifica que sigues en Cuenta.
-7. Comprueba que Inicio conserva la consulta y el refresco de T039. «Estado: UP»
-   usa verde oscuro `#007A44` sobre crema, conforme a `diseno.md`.
-8. La campana y «Mis alertas» deben tener fondo turquesa, relleno y un área
-   táctil mínima de 48 × 48. Ábrelos y regresa a la misma pestaña.
-9. Cada pestaña muestra su título una sola vez, en el encabezado. Detalle y
-   Mis alertas conservan el título central porque no tienen título de encabezado.
+Usar **el mismo APK de entrega** conectado a las direcciones públicas y repetir
+en cada teléfono, con una cuenta nueva diferente:
 
-Graba el recorrido o adjunta capturas a la solicitud. Indica si la prueba se
-realizó en teléfono físico o en BlueStacks; el empaquetado y TypeScript no
-sustituyen la verificación de la navegación en Android.
+1. Crear cuenta desde la app, comprobar confirmación e iniciar sesión.
+2. Buscar un artículo y comparar precios en su detalle.
+3. Crear canasta y agregar el artículo; aumentar/reducir cantidad.
+4. Cerrar y reabrir: recuperar cuenta y canasta.
+5. Comprobar el aviso de Descubrir, cambiar entidad y cerrar sesión.
 
-## Estructura
-
-```text
-app/
-├── _layout.tsx
-├── acceso.tsx            # Iniciar sesión, ruta /acceso
-├── alertas.tsx           # MisAlertas, ruta /alertas
-├── (tabs)/
-│   ├── _layout.tsx
-│   ├── index.tsx         # Inicio
-│   ├── descubrir.tsx     # Descubrir
-│   ├── canasta.tsx       # MiCanasta
-│   └── cuenta.tsx        # Cuenta
-└── articulo/
-    └── [id].tsx          # DetalleDeArticulo
-```
-
-Las rutas `/`, `/canasta` y `/alertas` conservan su URL; el grupo `(tabs)` no
-forma parte de la dirección. Se incorporan `/descubrir` y `/cuenta`.
-`/alertas` está en la pila y es accesible desde la campana y desde Cuenta.
-Inicio abre `/articulo/comparar` con el par canónico `producto` y `presentacion`,
-y la entidad consultada. El segmento de ruta no es un identificador del almacén.
-
-La organización se documenta en el [ADR 007](../../docs/adr/007-navegacion-mobile.md).
-Los datos de desarrollo sólo viven en `mocks/`; las pantallas consumen las API configuradas.
-La consulta real a `/health` permanece en Inicio.
-
-`node_modules/`, `.expo/`, archivos de entorno y salidas de compilación están
-ignorados. Se versionan el código, la configuración y `package-lock.json`.
-
-## Sistema de diseño de D (T028)
-
-Fuente: [especificación del equipo](../../docs/entregas/diseno.md).
-La integración se documenta en el [ADR 011](../../docs/adr/011-sistema-diseno-mobile.md).
-
-- `theme/design-system.ts`: valores compartidos de color, fuente, tamaño, radio y espaciado.
-- `components/PantallaVacia.tsx`: presentación común; `showTitle={false}` evita
-  duplicar el título que ya muestra el encabezado de cada pestaña.
-- Fondo crema `#F0EADF`, texto tinta `#2F2F2F` y turquesa `#23BBB7` en el botón y la pestaña activa.
-- Inter Regular y SemiBold incluidas como archivos estáticos por `@expo-google-fonts/inter`, cargadas con `expo-font` antes de mostrar las pantallas; funcionan en Expo Go.
-- Títulos de 24, etiquetas de navegación y botón de 14, botón con radio de 12 y espaciados en múltiplos de cuatro. Se conserva el escalado de texto del sistema.
-- Verde reservado para éxito. No se usan rojo ni naranja en pantallas vacías.
-
-Al revisar en el teléfono, comprueba los cuatro títulos con Inter, el fondo crema,
-la pestaña activa turquesa y el botón redondeado. Verifica que la barra de pestañas
-no se superponga con la navegación de Android y que el texto siga legible al
-ampliar el tamaño de fuente del sistema. Recorre Inicio → detalle → regreso →
-Descubrir → Canasta → Cuenta → Mis alertas → regreso antes de grabar la evidencia. Estas verificaciones visuales
-requieren ejecución en el dispositivo; compilar no las sustituye.
-
-## Primera llamada real al dominio (T039)
-
-Inicio consulta `GET /health`, fuera de `/api/v1`, según `dominio.yaml`.
-La respuesta muestra `status`, `service` y la hora ISO `time` que envía el servidor.
-El botón **Refrescar** vuelve a consultar. **Reintentar** aparece si falla la
-conexión. Cada consulta tiene un límite de 8 segundos y se cancela al desmontar
-el componente; una respuesta inválida o un error HTTP también se muestran.
-
-### Preparar el servicio
-
-Con JDK 21, desde la raíz del repositorio y en Git Bash:
-
-```bash
-cd services/domain-service
-./mvnw spring-boot:run
-```
-
-En PowerShell, el equivalente es `./mvnw.cmd spring-boot:run`.
-La versión actual del dominio necesita PostgreSQL y las variables locales de
-base de datos y JWT, incluso para arrancar y consultar `/health`. Sigue
-[services/domain-service/README.md](../../services/domain-service/README.md) y
-mantén esa terminal abierta.
-El puerto **8081** es del dominio; si Traefik lo usaba, cambia únicamente su
-variable local `TRAEFIK_WEB_PORT` a **8880** y aplica
-`docker compose up -d traefik` desde la raíz del repositorio.
-
-En otra terminal comprueba `curl http://localhost:8081/health`.
-
-### Configurar Android
-
-Copia `.env.example` a `.env` dentro de `clients/mobile` sólo si no tienes ya uno.
-Completa `EXPO_PUBLIC_API_URL` con la dirección accesible desde Android, sin
-agregar `/health`. Usa la IPv4 de tu computadora y el puerto 8081 para un teléfono
-en la misma red. Verifica esa dirección con `/health` en el navegador de Android.
-El emulador oficial de Android usa `10.0.2.2` para alcanzar la computadora;
-en BlueStacks verifica la conexión con la IPv4 de la computadora, pues su red
-puede ser diferente. Desde el teléfono, `localhost` es el propio teléfono.
-
-El `.env` local está ignorado; `.env.example` se versiona sin valor. Las variables
-`EXPO_PUBLIC_` se incluyen en la app y no deben contener secretos.
-
-Con Node 20, reinicia Expo para cargar la configuración:
-
-```bash
-npx expo start -c --port 8082
-```
-
-Abre el proyecto con Expo Go para SDK 55 en Android. La prueba se hace en Android,
-no en Expo web: el servicio no configura CORS para el navegador.
-
-### Evidencia de aceptación
-
-1. En Inicio verifica **Cargando**, después **Estado: UP**, el servicio y su hora.
-2. Pulsa **Refrescar** dos veces: la hora del servidor debe cambiar.
-3. Captura la respuesta real de la app.
-4. Detén el dominio con `Ctrl+C` en su terminal y pulsa **Refrescar**.
-5. En un máximo aproximado de 8 segundos debe aparecer un error y **Reintentar**;
-   la conexión puede fallar antes del tiempo límite. Captura ese estado.
-6. Arranca el dominio de nuevo y pulsa **Reintentar** para comprobar la recuperación.
-7. Ejecuta `npm run typecheck` y adjunta las dos capturas al issue #120 o su PR.
-
-TypeScript y el empaquetado no acreditan estas pruebas de Android: deben
-realizarse con el servicio real y las capturas correspondientes.
-
-Evidencia de la prueba realizada en BlueStacks con Android 11: [respuesta, refresco, error y recuperación](docs/evidencia/t039/README.md).
-
-## Acceso conectado al dominio (T046 · #159)
-
-Desde **Cuenta → Iniciar sesión**, escribe el correo y la contraseña de una
-cuenta de prueba creada en tu dominio local. La app llama a
-`POST /api/v1/sesiones` y después a `GET /api/v1/cuentas/yo` con Bearer.
-Muestra el correo y un avatar con su inicial, nunca un nombre. Incluye
-«Explorar sin cuenta» y el aviso «No somos PROFECO».
-
-- El rol `CONSUMIDOR` abre Cuenta. `ANALISTA` y `OPERADOR` reciben una indicación
-  de usar la plataforma web; no se persiste su token en el móvil.
-- Sólo el token se guarda con `expo-secure-store`; correo y contraseña no se
-  persisten. La contraseña se limpia del formulario al enviarse. No se guardan
-  credenciales en `.env`, en el código ni en capturas.
-- Al abrir la app o volver al primer plano se consulta `/cuentas/yo`. Un 401
-  elimina la sesión; un fallo de red ofrece reintentar o continuar sin cuenta.
-- Cerrar sesión borra el token y el perfil en memoria. Cada solicitud tiene un
-  límite de ocho segundos; un error deja un mensaje y termina la carga.
-- El cliente no contiene `JWT_SECRET` ni verifica firmas: el dominio valida el
-  token. Las variables `EXPO_PUBLIC_` son públicas.
-- El acceso no implementa registro. T056 utiliza esta sesión para guardar y
-  recuperar las canastas; el invitado puede consultar precios y recibe una
-  invitación a iniciar sesión antes de guardar artículos.
-
-La persistencia se explica en el [ADR 021](../../docs/adr/021-persistencia-sesion-mobile.md).
-La API y el gestor de sesión se separan del almacenamiento nativo para probar
-rechazos, restauración, cierre y respuestas tardías:
-
-```bash
-npm test
-npm run typecheck
-```
-
-### Prueba manual en Android
-
-1. Arranca PostgreSQL y el dominio con su configuración local. En el teléfono o
-   BlueStacks comprueba la URL del dominio en `/health` y ajusta la dirección de
-   `clients/mobile/.env`; reinicia Expo si cambió la IP.
-2. En Cuenta, abre Iniciar sesión. Envía un correo válido con una contraseña
-   incorrecta: debe aparecer el aviso y desaparecer el indicador de carga.
-3. Usa credenciales válidas de tu base de pruebas: Cuenta muestra el correo y su
-   inicial. Captura el resultado sin incluir contraseña ni token.
-4. Recarga la app desde Expo: debe recuperar Cuenta consultando `/cuentas/yo`.
-5. Cierra sesión, recarga y verifica que continúa como invitado. Desde Acceso,
-   «Explorar sin cuenta» debe regresar a Inicio.
-6. Con el dominio detenido intenta entrar: debe terminar con un error, como
-   máximo al vencer el límite de ocho segundos. Arranca el dominio y reintenta.
-7. Recorre las cuatro pestañas, el detalle y ambos accesos a Mis alertas.
-
-El acceso Android se valida en Expo Go, no en Expo web. Usa datos sintéticos en
-una base local aislada; no publiques contraseñas ni tokens como evidencia. Las
-pruebas automatizadas del gestor y de la API no sustituyen este recorrido.
-
-Registro de comprobaciones de acceso: [T046](docs/evidencia/t046/README.md).
-
-## Búsqueda de Inicio (T051 · #189)
-
-Consulta el arranque, los escenarios de Prism y la evidencia en [la guía de búsqueda](docs/t051-busqueda-analitica.md). La analítica usa EXPO_PUBLIC_ANALITICA_URL, independiente del dominio.
-
-## Detalle y canasta (T056 · #203)
-
-Desde un resultado de Inicio se comparan los precios por establecimiento con su
-fecha, entidad, quincena y población. Con una sesión de consumidor se crea y
-selecciona una canasta, se agregan artículos, se fijan cantidades y se quitan líneas.
-Las canastas se recuperan del dominio al restaurar la sesión.
-
-La analítica calcula el costo por cadena; la app muestra el total recibido, los
-artículos sin precio y el alcance de la estimación. Un faltante no se presenta
-como precio cero. El simulador se identifica expresamente.
-
-Arranque, pruebas y recorrido de aceptación: [guía T056](docs/t056-detalle-canasta.md).
+Tomar capturas del registro completado, Cuenta, búsqueda, detalle, canasta y
+Descubrir. No capturar contraseñas ni tokens. Anotar modelo/Android de cada
+**teléfono físico**, fecha, red usada y build probado; adjuntar capturas al PR.
+Un emulador, dos ejecuciones en un teléfono o las pruebas automáticas no cumplen
+este criterio. Estado y evidencias: [T072](docs/t072-version-final.md).

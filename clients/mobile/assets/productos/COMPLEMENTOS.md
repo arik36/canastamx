@@ -1,0 +1,9 @@
+# Ilustraciones complementarias
+
+[Imagen original](complementos-v1.png). Generada con la herramienta integrada
+el 25 de noviembre de 2026. Lámina 4 × 4, revisada visualmente, sin marcas.
+Se conserva el PNG completo y se muestra cada celda en la vista nativa.
+
+## Prompt completo
+
+Use case: product-mockup. Create ONE square high-resolution 2048x2048 photorealistic grocery and personal-care texture atlas, exactly 4 columns by 4 rows of equal square cells, edge-to-edge. No gutters, borders, text, labels, logos, brands or watermarks. Each item centered inside central 75% of its square, same warm ivory tabletop, soft studio light. Exact row-major layout: Row1: (1) unbranded silver stand-up retort pouch, opened with cooked flaked tuna in a small white bowl beside it, NO can; (2) brown wholegrain rice with raw brown rice grains beside a bowl; (3) tall pale sage green shampoo bottle with pump, no label; (4) pale pink hair conditioner squeeze bottle standing on its broad flip cap, no label. Row2: (5) glass jar of thick brown Mexican cajeta caramel with spoon showing caramel; (6) unbranded white gelatin powder sachet with spoon of pale amber gelatin powder and a small clear uncolored jelly mold; (7) loose brown sugar in a bowl; (8) refried brown beans in a bowl. Row3: (9) block and slices of yellow cheese; (10) fresh raw dark pink tuna steak; (11) whole and sliced green apple; (12) whole and halved red onion. Row4: (13) dried red ancho and guajillo chili peppers; (14) tan wholegrain flour with unbranded kraft paper bag and wheat grains; (15) white corn flour with unbranded paper bag and a corn cob; (16) fresh green lettuce. Ensure exact cell geometry and object order, realistic accurate materials, clearly differentiate personal care containers and foods. This is illustrative generic imagery.

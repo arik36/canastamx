@@ -17,6 +17,8 @@ async function solicitar(ruta: string, opciones: RequestInit): Promise<unknown> 
   try {
     const respuesta = await fetch(`${base}${ruta}`, { ...opciones, signal: controller.signal });
     if (!respuesta.ok) {
+      if (ruta === "/api/v1/cuentas" && respuesta.status === 409) throw new ErrorDeAcceso("Ya existe una cuenta con ese correo. Inicia sesión para continuar.", 409);
+      if (ruta === "/api/v1/cuentas" && respuesta.status === 400) throw new ErrorDeAcceso("Revisa el correo y la contraseña: usa entre 8 y 72 caracteres, una mayúscula y un número.", 400);
       if (respuesta.status === 401) throw new ErrorDeAcceso(ruta.endsWith("/sesiones")
         ? "El correo o la contraseña no son válidos." : "Tu sesión venció. Vuelve a iniciar sesión.", 401);
       throw new ErrorDeAcceso("No pudimos completar el acceso. Intenta de nuevo más tarde.", respuesta.status);
@@ -41,12 +43,34 @@ export async function iniciarSesion(correo: string, contrasena: string): Promise
   return data as Sesion;
 }
 
-export async function consultarMiCuenta(token: string): Promise<Cuenta> {
-  const data = await solicitar("/api/v1/cuentas/yo", { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } });
+function validarCuenta(data: unknown): Cuenta {
   if (!esObjeto(data) || typeof data.id !== "string" || !data.id || typeof data.correo !== "string"
     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.correo) || !esRol(data.rol)
     || typeof data.fechaDeRegistro !== "string" || !Number.isFinite(Date.parse(data.fechaDeRegistro))) {
     throw new ErrorDeAcceso("La respuesta de la cuenta no cumple el contrato del servicio.");
   }
   return data as Cuenta;
+}
+
+export async function consultarMiCuenta(token: string): Promise<Cuenta> {
+  return validarCuenta(await solicitar("/api/v1/cuentas/yo", { headers: { Accept: "application/json", Authorization: `Bearer ${token}` } }));
+}
+
+export function validarRegistro(correo: string, contrasena: string, confirmacion: string): string {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim())) return "Escribe un correo electrónico válido.";
+  if (contrasena.length < 8 || contrasena.length > 72 || !/[A-Z]/.test(contrasena) || !/[0-9]/.test(contrasena)) {
+    return "La contraseña debe tener entre 8 y 72 caracteres, una mayúscula y un número.";
+  }
+  if (contrasena !== confirmacion) return "Las contraseñas no coinciden.";
+  return "";
+}
+
+export async function registrarCuenta(correo: string, contrasena: string): Promise<Cuenta> {
+  const error = validarRegistro(correo, contrasena, contrasena);
+  if (error) throw new ErrorDeAcceso(error);
+  const cuenta = validarCuenta(await solicitar("/api/v1/cuentas", { method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ correo: correo.trim(), contrasena }) }));
+  if (cuenta.rol !== "CONSUMIDOR") throw new ErrorDeAcceso("El servicio no devolvió una cuenta de consumidor.");
+  return cuenta;
 }

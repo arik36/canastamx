@@ -1,5 +1,5 @@
-import { PantallaVacia } from "../components/PantallaVacia";
+import { Redirect } from "expo-router";
 
 export default function MisAlertas() {
-  return <PantallaVacia title="Mis alertas" withHeader />;
+  return <Redirect href="/(tabs)/cuenta" />;
 }

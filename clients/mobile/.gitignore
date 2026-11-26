@@ -8,3 +8,15 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+# Proyecto nativo generado y artefactos locales
+/android/
+/ios/
+/artifacts/
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# Capturas de iteraciones locales; evidencia de entrega en t072-final/.
+/docs/evidencia/t072/
+/docs/evidencia/t072-v2/
